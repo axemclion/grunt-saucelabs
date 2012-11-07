@@ -7,6 +7,7 @@ module.exports = function(grunt){
 	var SauceTunnel = function(user, key){
 		this.user = user;
 		this.key = key;
+		this.baseUrl = ["https://", this.user, ':', this.key, '@saucelabs.com', '/rest/v1/', this.user].join("");
 	};
 	
 	SauceTunnel.prototype.openTunnel = function(callback){
@@ -16,13 +17,13 @@ module.exports = function(grunt){
 		this.proc.stdout.on('data', function(data){
 			console.log(data.toString().replace(/[\n\r]/g, ''));
 			if (data.toString().match(/Connected\! You may start your tests/)) {
-				console.log('=> Saucelabs Tunnel established');
+				//console.log('=> Saucelabs Tunnel established');
 				callback();
 			}
 		});
 		
 		this.proc.stderr.on('data', function(data){
-			console.log(data.toString().replace(/[\n\r]/g, ''));
+			//console.log(data.toString().replace(/[\n\r]/g, ''));
 		});
 		
 		this.proc.on('exit', function(code){
@@ -30,10 +31,9 @@ module.exports = function(grunt){
 		});
 	};
 	
-	SauceTunnel.prototype.getTunnelCount = function(callback){
-		var url = ["https://", this.user, ':', this.key, '@saucelabs.com', '/rest/v1/', this.user, '/tunnels'].join("");
+	SauceTunnel.prototype.getTunnels = function(callback){
 		request({
-			url: url,
+			url: this.baseUrl + '/tunnels',
 			json: true
 		}, function(err, resp, body){
 			callback(body);
@@ -41,24 +41,44 @@ module.exports = function(grunt){
 	};
 	
 	SauceTunnel.prototype.killAllTunnels = function(callback){
-		throw "Method not implemented yet";
+		var me = this;
+		console.log("Trying to kil all tunnels");
+		this.getTunnels(function(tunnels){
+			(function killTunnel(i){
+				if (i >= tunnels.length) {
+					setTimeout(callback, 1000 * 5);
+					return;
+				}
+				console.log("Killing tunnel ", tunnels[i]);
+				request({
+					method: "DELETE",
+					url: me.baseUrl + "/tunnels/" + tunnels[i],
+					json: true
+				}, function(){
+					killTunnel(i + 1);
+				})
+			}(0));
+		});
 	};
 	
 	SauceTunnel.prototype.start = function(callback){
-		var retryCount = 0, me = this;
-		this.getTunnelCount(function(tunnels){
+		var me = this;
+		this.getTunnels(function(tunnels){
 			if (tunnels.length > 0) {
-				console.log("=> Saucelabs tunnels already exist, will try to connect again in a minute", tunnels);
-				console.log("curl -v -X DELETE https://" + me.user + ":" + me.key + "@saucelabs.com/rest/v1/" + me.user + "/tunnels/" + tunnels[0]);
-				if (retryCount++ > 10) {
-					console.log("=> Waited for %s retries, now trying to shut down all tunnels and try again", retryCount);
-					this.killAllTunnels(function(){
-						me.start(callback);
-					});
-				}
-				setTimeout(function(){
-					me.start(callback);
-				}, 1000 * 60);
+				var retryCount = 0;
+				(function waitForTunnelsToDie(retryCount){
+					console.log("=> %s. Saucelabs tunnels already exist, will try to connect again in a minute", retryCount, tunnels);
+					if (retryCount > 5) {
+						console.log("=> Waited for %s retries, now trying to shut down all tunnels and try again", retryCount);
+						me.killAllTunnels(function(){
+							me.start(callback);
+						});
+					} else {
+						setTimeout(function(){
+							waitForTunnelsToDie(retryCount + 1);
+						}, 1000 * 60);
+					}
+				}(0));
 			} else {
 				console.log("=> SauceLabs trying to open tunnel");
 				me.openTunnel(callback);
