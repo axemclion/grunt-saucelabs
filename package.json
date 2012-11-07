@@ -1,0 +1,61 @@
+{
+  "name": "grunt-saucelabs-qunit",
+  "description": "Grunt task running Qunit tests using Saucelabs",
+  "version": "0.0.1",
+  "homepage": "https://github.com/axemclion/grunt-saucelabs-qunit",
+  "author": {
+    "name": "Parashuram",
+    "email": "code@nparashuram.com",
+    "url": "http://nparashuram.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/twolfson/grunt-saucelabs-qunit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/twolfson/grunt-saucelabs-qunit/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/twolfson/grunt-saucelabs-qunit/blob/master/LICENSE-MIT"
+    }
+  ],
+  "main": "grunt.js",
+  "bin": {
+    "grunt-saucelabs-qunit": "bin/grunt-saucelabs-qunit"
+  },
+  "engines": {
+    "node": ">=0.6"
+  },
+  "scripts": {
+    "test": "grunt --base ./test/ --config ./test/grunt.js"
+  },
+  "dependencies": {
+    "request":  "*",
+	"wd" : "*",
+	"saucelabs" : "*",
+	"request" : "*",
+	"wd" : "*",
+	"fs" : "*",
+    "grunt": "~0.3.12",
+	"colors" : "*"
+  },
+  
+  "devDependencies": {
+    "grunt": "~0.3.12"
+  },
+  "keywords": [
+    "gruntplugin",
+    "grunt",
+    "saucelabs",
+	"test"
+  ],
+  "_id": "grunt-saucelabs-qunit@0.0.1",
+  "optionalDependencies": {},
+  "_engineSupported": true,
+  "_npmVersion": "1.1.16",
+  "_nodeVersion": "v0.6.15",
+  "_defaultsLoaded": true,
+  "_from": "grunt-saucelabs-qunit@*"
+}
