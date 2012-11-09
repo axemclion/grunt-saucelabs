@@ -14,12 +14,16 @@ module.exports = function(grunt){
 	SauceTunnel.prototype.openTunnel = function(callback){
 		var args = ["-jar", grunt.file.expand("**/Sauce-Connect.jar"), this.user, this.key];
 		this.proc = proc.spawn('java', args);
+		var calledBack = false;
 		
 		this.proc.stdout.on('data', function(data){
 			console.log(data.toString().replace(/[\n\r]/g, ''));
 			if (data.toString().match(/Connected\! You may start your tests/)) {
 				// console.log('=> Saucelabs Tunnel established');
-				callback();
+				if (!calledBack) {
+					calledBack = true;
+					callback(true)
+				}
 			}
 		});
 		
@@ -29,6 +33,11 @@ module.exports = function(grunt){
 		
 		this.proc.on('exit', function(code){
 			console.log('=> Saucelabs Tunnel disconnected ', code);
+			if (!calledBack) {
+				calledBack = true;
+				callback(false);
+			}
+			
 		});
 	};
 	
@@ -85,7 +94,9 @@ module.exports = function(grunt){
 			}
 			else {
 				console.log("=> SauceLabs trying to open tunnel".inverse);
-				me.openTunnel(callback);
+				me.openTunnel(function(status){
+					callback(status);
+				});
 			}
 		});
 	};
@@ -95,98 +106,138 @@ module.exports = function(grunt){
 		this.killAllTunnels(function(){
 			callback();
 		});
+	};
+	
+	var TestRunner = function(user, key){
+		this.browser = wd.remote('ondemand.saucelabs.com', 80, user, key);
+		this.browser.on('status', function(info){
+			// console.log('> \x1b[36m%s\x1b[0m', info);
+		});
+		this.browser.on('command', function(meth, path){
+			// console.log(' > \x1b[33m%s\x1b[0m: %s', meth, path);
+		});
+	};
+	
+	TestRunner.prototype.forEachBrowser = function(configs){
+		var me = this;
+		return {
+			testPages: function(pages, callback){
+				var success = true;
+				(function initBrowser(i){
+					if (i >= configs.length) {
+						callback(success);
+						return;
+					}
+					console.log("Starting tests on browser configuration".cyan, configs[i]);
+					me.browser.init(configs[i], function(err, sessionId){
+						if (err) {
+							console.log("Could not initialize browser for session".red, sessionId, configs[i]);
+							success = false;
+							initBrowser(i + 1);
+							return;
+						}
+						(function testPage(j){
+							if (j >= pages.length) {
+								me.browser.quit();
+								initBrowser(i + 1);
+								return;
+							}
+							console.log("Starting test for page (%s) %s".cyan, j, pages[j]);
+							me.browser.get(pages[j], function(err){
+								if (err) {
+									console.log("Could not fetch page (%s)%s".red, j, pages[j]);
+									success = false;
+									testPage(j + 1);
+									return;
+								}
+								me.qunitRunner(function(status){
+									success = success && status;
+									testPage(j + 1);
+								});
+							});
+						}(0));
+					});
+				}(0))
+			}
+		};
+	};
+	
+	TestRunner.prototype.qunitRunner = function(callback){
+		var browser = this.browser;
+		var testResult = "qunit-testresult";
+		console.log("Starting qunit tests".cyan);
+		browser.waitForElementById(testResult, 1000 * 5, function(){
+			console.log("Test div found, fetching the test result element".cyan);
+			browser.elementById(testResult, function(err, el){
+				if (err) {
+					console.log("Could not get element by id", err);
+					callback(false);
+					return;
+				}
+				console.log("Fetched test result element, waiting for text inside it to change to complete");
+				var retryCount = 0;
+				(function isCompleted(){
+					browser.text(el, function(err, text){
+						if (err) {
+							console.log("Could not see test inside element", err)
+							callback(false);
+							return;
+						}
+						if (!text.match(/completed/) && ++retryCount < 10) {
+							console.log("%s. Still running", retryCount);
+							setTimeout(isCompleted, 1000 * 5);
+							return;
+						}
+						if (retryCount >= 10) {
+							console.log("Failed, ran for more than 10 retries".red);
+							callback(false);
+							return;
+						}
+						x = text.split(/\n|of|,/);
+						if (parseInt(x[1], 10) !== parseInt(x[2], 10)) {
+							console.log(" => Tests ran result %s".red, text);
+							callback(false);
+						}
+						else {
+							console.log(" => Tests ran result %s".green, text);
+							callback(true);
+						}
+					});
+				}());
+			});
+		});
 	}
 	
 	grunt.registerMultiTask('saucelabs-qunit', 'Run Qunit test cases using SauceLab browsers', function(){
 		var me = this, done = this.async();
 		this.data.url = this.data.url || this.data.urls;
-		if (Object.prototype.toString.call(this.data.url) === '[object Array]') {
+		if (grunt.utils._.isArray(this.data.url)) {
 			pages = this.data.url;
 		}
 		else {
 			pages = [this.data.url];
 		}
 		
+		grunt.utils._.map(this.data.browsers, function(d){
+			d.name = d.name || me.data.testname || "";
+			d.tags = d.tags || me.data.tags || [];
+		});
+		var configs = this.data.browsers || [{}];
+		
 		var tunnel = new SauceTunnel(this.data.username, this.data.key, this.data.tunnelTimeout || 120);
 		console.log("=> Starting Tunnel to Saucelabs".inverse.bold);
 		
-		function teardown(status, message){
-			try {
-				console.log.apply(console, arguments);
-			} 
-			catch (e) {
-				console.log(message);
-			}
-			tunnel.stop(function(){
-				done(status);
-			});
-		}
-		
 		tunnel.start(function(isCreated){
-			var browser = wd.remote('ondemand.saucelabs.com', 80, me.data.username, me.data.key);
-			browser.on('status', function(info){
-				// console.log('> \x1b[36m%s\x1b[0m', info);
-			});
-			
-			browser.on('command', function(meth, path){
-				// console.log(' > \x1b[33m%s\x1b[0m: %s', meth, path);
-			});
-			
-			browser.init(function(){
-				console.log("Browser initialized".inverse);
-				var hasFailed = false;
-				(function testpage(i){
-					if (i >= pages.length) {
-						teardown(!hasFailed, "All pages tested successfully");
-						return;
-					}
-					browser.get(pages[i], function(err){
-						if (err) {
-							teardown(false, "Could not fetch page", err);
-							return;
-						}
-						console.log("Fetched the page, now waiting for tests");
-						var testResult = "qunit-testresult";
-						browser.waitForElementById(testResult, 1000 * 5, function(){
-							console.log("Test div found, fetching the test result element");
-							browser.elementById(testResult, function(err, el){
-								if (err) {
-									teardown(false, "Could not get element by id", err);
-									return;
-								}
-								console.log("Fetched test result element, waiting for text inside it to change to complete");
-								var retryCount = 0;
-								(function isCompleted(){
-									browser.text(el, function(err, text){
-										if (err) {
-											teardown(false, "Could not see text inside element", err);
-											return;
-										}
-										if (!text.match(/completed/) && ++retryCount < 10) {
-											console.log("%s. Still running", retryCount);
-											setTimeout(isCompleted, 1000 * 5);
-											return;
-										}
-										if (retryCount >= 10) {
-											teardown(false, "More than number of retries");
-											return;
-										}
-										x = text.split(/\n|of|,/);
-										if (parseInt(x[1], 10) !== parseInt(x[2], 10)) {
-											hasFailed = true;
-											console.log(" => (%s:%s) Tests ran for %s with result %s".red, i + 1, pages.length, pages[i], text);
-										}
-										else {
-											console.log(" => (%s:%s) Tests ran for %s with result %s".green, i + 1, pages.length, pages[i], text);
-										}
-										testpage(i + 1);
-									});
-								}());
-							});
-						});
-					});
-				}(0));
-			});
+			if (!isCreated) {
+				done(false);
+			}
+			var test = new TestRunner(me.data.username, me.data.key);
+			test.forEachBrowser(configs).testPages(pages, function(status){
+				console.log("All tests completed with status %s", status);
+				tunnel.stop(function(){
+					done(status);
+				});
+			})
 		});
 	});
 };
