@@ -3,7 +3,7 @@ module.exports = function(grunt){
 		lint: {
 			files: ['grunt.js', 'tasks/**/*.js']
 		}
-	})
+	});
 	grunt.loadTasks('tasks');
 	grunt.registerTask('default', 'lint');
 };

@@ -22,7 +22,7 @@ module.exports = function(grunt){
 				// console.log('=> Saucelabs Tunnel established');
 				if (!calledBack) {
 					calledBack = true;
-					callback(true)
+					callback(true);
 				}
 			}
 		});
@@ -66,7 +66,7 @@ module.exports = function(grunt){
 					json: true
 				}, function(){
 					killTunnel(i + 1);
-				})
+				});
 			}(0));
 		});
 	};
@@ -83,16 +83,14 @@ module.exports = function(grunt){
 						me.killAllTunnels(function(){
 							me.start(callback);
 						});
-					}
-					else {
+					} else {
 						console.log("=> %s. Saucelabs tunnels already exist, will try to connect again %s seconds.".red, retryCount, me.tunnelTimeout / 5);
 						setTimeout(function(){
 							waitForTunnelsToDie(retryCount + 1);
 						}, 1000 * me.tunnelTimeout / 5);
 					}
 				}(0));
-			}
-			else {
+			} else {
 				console.log("=> SauceLabs trying to open tunnel".inverse);
 				me.openTunnel(function(status){
 					callback(status);
@@ -118,11 +116,18 @@ module.exports = function(grunt){
 		});
 	};
 	
-	TestRunner.prototype.forEachBrowser = function(configs){
+	TestRunner.prototype.forEachBrowser = function(configs, onTestComplete){
 		var me = this;
 		return {
 			testPages: function(pages, callback){
 				var success = true;
+				function onPageTested(status, page, config){
+					if (typeof onTestComplete === "function") {
+						var ret = onTestComplete(status, page, config);
+						status = typeof ret === "undefined" ? status : ret;
+					}
+					success = success && status;
+				}
 				(function initBrowser(i){
 					if (i >= configs.length) {
 						callback(success);
@@ -146,18 +151,18 @@ module.exports = function(grunt){
 							me.browser.get(pages[j], function(err){
 								if (err) {
 									console.log("Could not fetch page (%s)%s".red, j, pages[j]);
-									success = false;
+									onPageTested(false, pages[j], configs[i]);
 									testPage(j + 1);
 									return;
 								}
 								me.qunitRunner(function(status){
-									success = success && status;
+									onPageTested(status, pages[j], configs[i]);
 									testPage(j + 1);
 								});
 							});
 						}(0));
 					});
-				}(0))
+				}(0));
 			}
 		};
 	};
@@ -179,7 +184,7 @@ module.exports = function(grunt){
 				(function isCompleted(){
 					browser.text(el, function(err, text){
 						if (err) {
-							console.log("Could not see test inside element", err)
+							console.log("Could not see test inside element", err);
 							callback(false);
 							return;
 						}
@@ -197,8 +202,7 @@ module.exports = function(grunt){
 						if (parseInt(x[1], 10) !== parseInt(x[2], 10)) {
 							console.log(" => Tests ran result %s".red, text);
 							callback(false);
-						}
-						else {
+						} else {
 							console.log(" => Tests ran result %s".green, text);
 							callback(true);
 						}
@@ -206,15 +210,14 @@ module.exports = function(grunt){
 				}());
 			});
 		});
-	}
+	};
 	
 	grunt.registerMultiTask('saucelabs-qunit', 'Run Qunit test cases using SauceLab browsers', function(){
 		var me = this, done = this.async();
 		this.data.url = this.data.url || this.data.urls;
 		if (grunt.utils._.isArray(this.data.url)) {
 			pages = this.data.url;
-		}
-		else {
+		} else {
 			pages = [this.data.url];
 		}
 		
@@ -232,12 +235,12 @@ module.exports = function(grunt){
 				done(false);
 			}
 			var test = new TestRunner(me.data.username, me.data.key);
-			test.forEachBrowser(configs).testPages(pages, function(status){
+			test.forEachBrowser(configs, me.data.onTestComplete).testPages(pages, function(status){
 				console.log("All tests completed with status %s", status);
 				tunnel.stop(function(){
 					done(status);
 				});
-			})
+			});
 		});
 	});
 };
