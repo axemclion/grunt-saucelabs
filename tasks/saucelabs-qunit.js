@@ -17,7 +17,9 @@ module.exports = function(grunt){
 		var calledBack = false;
 		
 		this.proc.stdout.on('data', function(data){
-			console.log(data.toString().replace(/[\n\r]/g, ''));
+			if (!data.toString().match(/^\[-u,/g)){
+				console.log(data.toString().replace(/[\n\r]/g, ''));	
+			}
 			if (data.toString().match(/Connected\! You may start your tests/)) {
 				// console.log('=> Saucelabs Tunnel established');
 				if (!calledBack) {
@@ -28,7 +30,7 @@ module.exports = function(grunt){
 		});
 		
 		this.proc.stderr.on('data', function(data){
-			// console.log(data.toString().replace(/[\n\r]/g, ''));
+			console.log(data.toString().replace(/[\n\r]/g, '').red);
 		});
 		
 		this.proc.on('exit', function(code){
