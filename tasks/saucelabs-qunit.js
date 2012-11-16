@@ -12,7 +12,7 @@ module.exports = function(grunt){
 	};
 
 	SauceTunnel.prototype.openTunnel = function(callback){
-		var args = [ "-jar", grunt.file.expand("**/Sauce-Connect.jar"), this.user, this.key ];
+		var args = [ "-jar", grunt.file.expand("**/Sauce-Connect.jar")[0], this.user, this.key ];
 		this.proc = proc.spawn('java', args);
 		var calledBack = false;
 
@@ -193,7 +193,7 @@ module.exports = function(grunt){
 							return;
 						}
 						if (!text.match(/completed/) && ++retryCount < testTimeout / testInterval) {
-							console.log("%s. Still running, Time passed - %s of %s milliseconds", retryCount, testInterval * retryCount, testTimeout);
+							console.log("%s. Still running, Time passed - %s of %s milliseconds".red, retryCount, testInterval * retryCount, testTimeout);
 							setTimeout(isCompleted, testInterval);
 							return;
 						}
