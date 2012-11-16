@@ -8,17 +8,17 @@ module.exports = function(grunt){
 		this.user = user;
 		this.key = key;
 		this.tunnelTimeout = tunnelTimeout;
-		this.baseUrl = ["https://", this.user, ':', this.key, '@saucelabs.com', '/rest/v1/', this.user].join("");
+		this.baseUrl = [ "https://", this.user, ':', this.key, '@saucelabs.com', '/rest/v1/', this.user ].join("");
 	};
-	
+
 	SauceTunnel.prototype.openTunnel = function(callback){
-		var args = ["-jar", grunt.file.expand("**/Sauce-Connect.jar"), this.user, this.key];
+		var args = [ "-jar", grunt.file.expand("**/Sauce-Connect.jar"), this.user, this.key ];
 		this.proc = proc.spawn('java', args);
 		var calledBack = false;
-		
+
 		this.proc.stdout.on('data', function(data){
-			if (!data.toString().match(/^\[-u,/g)){
-				console.log(data.toString().replace(/[\n\r]/g, ''));	
+			if (!data.toString().match(/^\[-u,/g)) {
+				console.log(data.toString().replace(/[\n\r]/g, ''));
 			}
 			if (data.toString().match(/Connected\! You may start your tests/)) {
 				// console.log('=> Saucelabs Tunnel established');
@@ -28,30 +28,30 @@ module.exports = function(grunt){
 				}
 			}
 		});
-		
+
 		this.proc.stderr.on('data', function(data){
 			console.log(data.toString().replace(/[\n\r]/g, '').red);
 		});
-		
+
 		this.proc.on('exit', function(code){
 			console.log('=> Saucelabs Tunnel disconnected ', code);
 			if (!calledBack) {
 				calledBack = true;
 				callback(false);
 			}
-			
+
 		});
 	};
-	
+
 	SauceTunnel.prototype.getTunnels = function(callback){
 		request({
-			url: this.baseUrl + '/tunnels',
-			json: true
+			url : this.baseUrl + '/tunnels',
+			json : true
 		}, function(err, resp, body){
 			callback(body);
 		});
 	};
-	
+
 	SauceTunnel.prototype.killAllTunnels = function(callback){
 		var me = this;
 		console.log("Trying to kill all tunnels");
@@ -63,16 +63,16 @@ module.exports = function(grunt){
 				}
 				console.log("Killing tunnel %s".red, tunnels[i]);
 				request({
-					method: "DELETE",
-					url: me.baseUrl + "/tunnels/" + tunnels[i],
-					json: true
+					method : "DELETE",
+					url : me.baseUrl + "/tunnels/" + tunnels[i],
+					json : true
 				}, function(){
 					killTunnel(i + 1);
 				});
 			}(0));
 		});
 	};
-	
+
 	SauceTunnel.prototype.start = function(callback){
 		var me = this;
 		this.getTunnels(function(tunnels){
@@ -86,10 +86,11 @@ module.exports = function(grunt){
 							me.start(callback);
 						});
 					} else {
-						console.log("=> %s. Saucelabs tunnels already exist, will try to connect again %s seconds.".red, retryCount, me.tunnelTimeout / 5);
+						console.log("=> %s. Saucelabs tunnels already exist, will try to connect again %s milliseconds.".red, retryCount,
+							me.tunnelTimeout / 5);
 						setTimeout(function(){
 							waitForTunnelsToDie(retryCount + 1);
-						}, 1000 * me.tunnelTimeout / 5);
+						}, me.tunnelTimeout / 5);
 					}
 				}(0));
 			} else {
@@ -100,14 +101,14 @@ module.exports = function(grunt){
 			}
 		});
 	};
-	
+
 	SauceTunnel.prototype.stop = function(callback){
 		this.proc.kill();
 		this.killAllTunnels(function(){
 			callback();
 		});
 	};
-	
+
 	var TestRunner = function(user, key){
 		this.browser = wd.remote('ondemand.saucelabs.com', 80, user, key);
 		this.browser.on('status', function(info){
@@ -117,11 +118,11 @@ module.exports = function(grunt){
 			// console.log(' > \x1b[33m%s\x1b[0m: %s', meth, path);
 		});
 	};
-	
+
 	TestRunner.prototype.forEachBrowser = function(configs, onTestComplete){
 		var me = this;
 		return {
-			testPages: function(pages, callback){
+			testPages : function(pages, testTimeout, callback){
 				var success = true;
 				function onPageTested(status, page, config){
 					if (typeof onTestComplete === "function") {
@@ -157,7 +158,7 @@ module.exports = function(grunt){
 									testPage(j + 1);
 									return;
 								}
-								me.qunitRunner(function(status){
+								me.qunitRunner(testTimeout, function(status){
 									onPageTested(status, pages[j], configs[i]);
 									testPage(j + 1);
 								});
@@ -168,8 +169,8 @@ module.exports = function(grunt){
 			}
 		};
 	};
-	
-	TestRunner.prototype.qunitRunner = function(callback){
+
+	TestRunner.prototype.qunitRunner = function(testTimeout, callback){
 		var browser = this.browser;
 		var testResult = "qunit-testresult";
 		console.log("Starting qunit tests".cyan);
@@ -183,6 +184,7 @@ module.exports = function(grunt){
 				}
 				console.log("Fetched test result element, waiting for text inside it to change to complete");
 				var retryCount = 0;
+				var testInterval = 5000;
 				(function isCompleted(){
 					browser.text(el, function(err, text){
 						if (err) {
@@ -190,13 +192,13 @@ module.exports = function(grunt){
 							callback(false);
 							return;
 						}
-						if (!text.match(/completed/) && ++retryCount < 10) {
-							console.log("%s. Still running", retryCount);
-							setTimeout(isCompleted, 1000 * 5);
+						if (!text.match(/completed/) && ++retryCount < testTimeout / testInterval) {
+							console.log("%s. Still running, Time passed - %s of %s milliseconds", retryCount, testInterval * retryCount, testTimeout);
+							setTimeout(isCompleted, testInterval);
 							return;
 						}
 						if (retryCount >= 10) {
-							console.log("Failed, ran for more than 10 retries".red);
+							console.log("Failed, waited for more than %s milliseconds".red, testTimeout);
 							callback(false);
 							return;
 						}
@@ -213,31 +215,31 @@ module.exports = function(grunt){
 			});
 		});
 	};
-	
+
 	grunt.registerMultiTask('saucelabs-qunit', 'Run Qunit test cases using SauceLab browsers', function(){
 		var me = this, done = this.async();
 		this.data.url = this.data.url || this.data.urls;
 		if (grunt.utils._.isArray(this.data.url)) {
 			pages = this.data.url;
 		} else {
-			pages = [this.data.url];
+			pages = [ this.data.url ];
 		}
-		
+
 		grunt.utils._.map(this.data.browsers, function(d){
 			d.name = d.name || me.data.testname || "";
 			d.tags = d.tags || me.data.tags || [];
 		});
-		var configs = this.data.browsers || [{}];
-		
+		var configs = this.data.browsers || [ {} ];
+
 		var tunnel = new SauceTunnel(this.data.username, this.data.key, this.data.tunnelTimeout || 120);
 		console.log("=> Starting Tunnel to Saucelabs".inverse.bold);
-		
+
 		tunnel.start(function(isCreated){
 			if (!isCreated) {
 				done(false);
 			}
 			var test = new TestRunner(me.data.username, me.data.key);
-			test.forEachBrowser(configs, me.data.onTestComplete).testPages(pages, function(status){
+			test.forEachBrowser(configs, me.data.onTestComplete).testPages(pages, me.data.testTimeout || (1000 * 60 * 5), function(status){
 				console.log("All tests completed with status %s", status);
 				tunnel.stop(function(){
 					done(status);

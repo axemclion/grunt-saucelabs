@@ -32,7 +32,8 @@ In the `grunt.initConfig`, add the configuration that looks like the following
 		username: 'saucelabs-user-name',
 		key: 'saucelabs-key',
 		urls: ['array or URLs to to load for QUnit'],
-		tunnelTimeout: ['A numeric value indicating the time to wait before closing all tunnels '],
+		tunnelTimeout: 'A numeric value indicating the time to wait before closing all tunnels ',
+		testTimeout: 'Milliseconds to wait before timeout for qunit test per page'
 		testname: 'Name of the test',
 		tags: ['Array of tags']
 		browsers: [{
@@ -51,6 +52,7 @@ The parameters are
 * __testname__: The name of this test, displayed on the SauceLabs dashboard. _Optional_
 * __tags__: An array of tags displayed for this test on the SauceLabs dashboard. This can be the build number, commit number, etc, that can be obtained from grunt. 
 * __browsers__: An array of objects representing the [various browsers](https://saucelabs.com/docs/browsers) on which this test should run.  _Optional_
+* __testTimeout__ : Number of milliseconds to wait for qunit tests on each page before timeout and failing the test
 
 A typical `test` task running from Grunt could look like `grunt.registerTask('test', 'server qunit saucelabs-qunit');` This starts a server and then runs the Qunit tests first on PhantomJS and then using the Sauce Labs browsers. 
 
