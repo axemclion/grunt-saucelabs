@@ -1,7 +1,7 @@
 {
   "name": "grunt-saucelabs-qunit",
   "description": "Grunt task running Qunit tests using Saucelabs",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "homepage": "https://github.com/axemclion/grunt-saucelabs-qunit",
   "author": {
     "name": "Parashuram",

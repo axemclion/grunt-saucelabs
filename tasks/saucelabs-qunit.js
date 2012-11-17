@@ -197,7 +197,7 @@ module.exports = function(grunt){
 							setTimeout(isCompleted, testInterval);
 							return;
 						}
-						if (retryCount >= 10) {
+						if (retryCount >= testTimeout / testInterval) {
 							console.log("Failed, waited for more than %s milliseconds".red, testTimeout);
 							callback(false);
 							return;
