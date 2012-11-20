@@ -38,7 +38,19 @@ In the `grunt.initConfig`, add the configuration that looks like the following
 		tags: ['Array of tags']
 		browsers: [{
 			browserName: 'opera'
-		}]
+		}],
+		onTestComplete: function(){
+			// Called after a qunit unit is done, per page, per browser
+			// Return true or false, passes or fails the test
+			// Returning undefined does not alter the test result
+			
+			// For async return, call 
+			var done = this.async();
+			setTimeout(function(){
+				// Return to this test after 1000 milliseconds
+				done(/*true or false changes the test result, undefined does not alter the result*/);
+			}, 1000);
+		}
 	}
 }
 
@@ -53,6 +65,7 @@ The parameters are
 * __tags__: An array of tags displayed for this test on the SauceLabs dashboard. This can be the build number, commit number, etc, that can be obtained from grunt. 
 * __browsers__: An array of objects representing the [various browsers](https://saucelabs.com/docs/browsers) on which this test should run.  _Optional_
 * __testTimeout__ : Number of milliseconds to wait for qunit tests on each page before timeout and failing the test
+* __onTestComplete__ : A callback that is called everytime a qunit test for a page is complete. Runs per page, per browser configuration. A true or false return value passes or fails the test, undefined return value does not alter the result of the test. For async results, call `this.async()` in the function. The return of `this.async()` is a function that should be called once the async action is completed.
 
 A typical `test` task running from Grunt could look like `grunt.registerTask('test', 'server qunit saucelabs-qunit');` This starts a server and then runs the Qunit tests first on PhantomJS and then using the Sauce Labs browsers. 
 
