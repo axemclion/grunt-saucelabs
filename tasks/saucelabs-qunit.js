@@ -139,8 +139,8 @@ module.exports = function(grunt){
 						var ret = onTestComplete(status, page, config);
 						status = typeof ret === "undefined" ? status : ret;
 					}
-					success = success && status;
 					if (!waitForAsync){
+						success = success && status;
 						cb();	
 					}
 				}
