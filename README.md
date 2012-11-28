@@ -1,7 +1,7 @@
-grunt-saucelabs-qunit
+grunt-saucelabs
 ---------------------
 
-A Grunt task for running qunit tests using Sauce Labs' Cloudified Browsers. 
+A Grunt task for running qunit and jasmine tests using Sauce Labs' Cloudified Browsers. 
 
 [Grunt](http://gruntjs.com/) is a task-based command line build tool for JavaScript projects, based on nodejs. 
 [QUnit](http://qunitjs.com/) is a powerful, easy-to-use JavaScript unit test suite used by the jQuery, jQuery UI and jQuery Mobile projects and is capable of testing any generic JavaScript code, including itself! 
@@ -9,18 +9,20 @@ A Grunt task for running qunit tests using Sauce Labs' Cloudified Browsers.
 
 About the tool
 --------------
-The [Grunt Qunit](https://github.com/gruntjs/grunt/blob/master/docs/task_qunit.md) task runs qunit based test suites on [PhantomJS]. This Grunt-Saucelabs-Qunit task is very similar but runs the test suites on the cloudified browser environment provided by Sauce Labs. This ensures that subject of the test runs across different browser environment. 
+The [Grunt Qunit](https://github.com/gruntjs/grunt/blob/master/docs/task_qunit.md) task runs qunit based test suites on [PhantomJS]. 
+The `saucelabs-qunit` task is very similar but runs the test suites on the cloudified browser environment provided by Sauce Labs. This ensures that subject of the test runs across different browser environment. 
 The task also uses [Sauce Connect](https://saucelabs.com/docs/sauce-connect) to establish a tunnel between Sauce Labs browsers and the machine running Grunt to load local pages. This is typically useful for testing pages on localhost that are not publically accessible on the internet. 
+The `saucelabs-jasmine` runs jasmine tests in the saucelabs browser.
 
 Usage
 ------
-This task is available as a [node package](https://npmjs.org/package/grunt-saucelabs-qunit) and can be installed as `npm install grunt-saucelabs-qunit`. It can also be included as a devDependency in package.json in your node project. 
+This task is available as a [node package](https://npmjs.org/package/grunt-saucelabs) and can be installed as `npm install grunt-saucelabs`. It can also be included as a devDependency in package.json in your node project. 
 
 To use the task in `grunt.js`, load the npmTask. 
 
 
 ```javascript
-grunt.loadNpmTasks('grunt-saucelabs-qunit');
+grunt.loadNpmTasks('grunt-saucelabs');
 
 ``` 
 
@@ -55,6 +57,8 @@ In the `grunt.initConfig`, add the configuration that looks like the following
 }
 
 ```
+
+The configuration of `saucelabs-jasmine` are exactly the same.
 
 The parameters are 
 
