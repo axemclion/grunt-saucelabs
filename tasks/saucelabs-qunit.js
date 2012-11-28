@@ -119,7 +119,7 @@ module.exports = function(grunt){
 		});
 	};
 	
-	TestRunner.prototype.forEachBrowser = function(configs, onTestComplete){
+	TestRunner.prototype.forEachBrowser = function(configs, runner, onTestComplete){
 		var me = this;
 		return {
 			testPages: function(pages, testTimeout, callback){
@@ -139,9 +139,9 @@ module.exports = function(grunt){
 						var ret = onTestComplete(status, page, config);
 						status = typeof ret === "undefined" ? status : ret;
 					}
-					if (!waitForAsync){
+					if (!waitForAsync) {
 						success = success && status;
-						cb();	
+						cb();
 					}
 				}
 				(function initBrowser(i){
@@ -172,7 +172,7 @@ module.exports = function(grunt){
 									});
 									return;
 								}
-								me.qunitRunner(testTimeout, function(status){
+								runner.call(me, testTimeout, function(status){
 									onPageTested(status, pages[j], configs[i], function(){
 										testPage(j + 1);
 									});
@@ -183,6 +183,47 @@ module.exports = function(grunt){
 				}(0));
 			}
 		};
+	};
+	
+	TestRunner.prototype.jasmineRunner = function(testTimeout, callback){
+		var browser = this.browser;
+		console.log("Starting Jasmine tests".cyan);
+		browser.waitForElementByClassName('alert', 1000 * 5, function(err, el){
+			browser.elementsByClassName('alert', function(err, el){
+				if (err) {
+					console.log("Could not get element by id", err);
+					callback(false);
+					return;
+				}
+				console.log("Fetched test result element, waiting for text inside it to change to complete");
+				var retryCount = 0;
+				var testInterval = 5000;
+				(function isCompleted(){
+					browser.text(el, function(err, text){
+						if (err) {
+							console.log("Could not see test inside element", err);
+							callback(false);
+						}
+						else if (retryCount >= testTimeout / testInterval) {
+							console.log("Failed, waited for more than %s milliseconds".red, testTimeout);
+							callback(false);
+						}
+						else if (text.match(/Failing/)) {
+							console.log(" => Tests ran result %s".red, text);
+							callback(false);
+						}
+						else if (text.match(/Passing/)) {
+							console.log(" => Tests ran result %s".green, text);
+							callback(true);
+						}
+						else if (++retryCount < testTimeout / testInterval) {
+							console.log("%s. Still running, Time passed - %s of %s milliseconds".red, retryCount, testInterval * retryCount, testTimeout);
+							setTimeout(isCompleted, testInterval);
+						}
+					});
+				}());
+			})
+		})
 	};
 	
 	TestRunner.prototype.qunitRunner = function(testTimeout, callback){
@@ -232,31 +273,58 @@ module.exports = function(grunt){
 		});
 	};
 	
-	grunt.registerMultiTask('saucelabs-qunit', 'Run Qunit test cases using SauceLab browsers', function(){
-		var me = this, done = this.async();
-		this.data.url = this.data.url || this.data.urls;
-		if (grunt.utils._.isArray(this.data.url)) {
-			pages = this.data.url;
+	function defaults(data){
+		var result = {};
+		result.url = data.url || data.urls;
+		if (grunt.utils._.isArray(result.url)) {
+			result.pages = result.url;
 		}
 		else {
-			pages = [this.data.url];
+			result.pages = [result.url];
 		}
 		
-		grunt.utils._.map(this.data.browsers, function(d){
-			d.name = d.name || me.data.testname || "";
-			d.tags = d.tags || me.data.tags || [];
+		result.username = data.username;
+		result.key = data.key;
+		result.tunnelTimeout = data.tunnelTimeout || 120;
+		result.testTimeout = data.testTimeout || (1000 * 60 * 5);
+		result.onTestComplete = data.onTestComplete;
+		
+		grunt.utils._.map(data.browsers, function(d){
+			d.name = d.name || data.testname || "";
+			d.tags = d.tags || data.tags || [];
 		});
-		var configs = this.data.browsers || [{}];
-		
-		var tunnel = new SauceTunnel(this.data.username, this.data.key, this.data.tunnelTimeout || 120);
+		result.configs = data.browsers || [{}];
+		return result;
+	}
+	
+	grunt.registerMultiTask('saucelabs-jasmine', 'Run Jasmine test cases using SauceLab browsers', function(){
+		var done = this.async(), arg = defaults(this.data);
+		var tunnel = new SauceTunnel(arg.username, arg.key, arg.tunnelTimeout);
 		console.log("=> Starting Tunnel to Saucelabs".inverse.bold);
-		
 		tunnel.start(function(isCreated){
 			if (!isCreated) {
 				done(false);
 			}
-			var test = new TestRunner(me.data.username, me.data.key);
-			test.forEachBrowser(configs, me.data.onTestComplete).testPages(pages, me.data.testTimeout || (1000 * 60 * 5), function(status){
+			var test = new TestRunner(arg.username, arg.key);
+			test.forEachBrowser(arg.configs, test.jasmineRunner, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, function(status){
+				console.log("All tests completed with status %s", status);
+				tunnel.stop(function(){
+					done(status);
+				});
+			});
+		});
+	});
+	
+	grunt.registerMultiTask('saucelabs-qunit', 'Run Qunit test cases using SauceLab browsers', function(){
+		var done = this.async(), arg = defaults(this.data);
+		var tunnel = new SauceTunnel(arg.username, arg.key, arg.tunnelTimeout);
+		console.log("=> Starting Tunnel to Saucelabs".inverse.bold);
+		tunnel.start(function(isCreated){
+			if (!isCreated) {
+				done(false);
+			}
+			var test = new TestRunner(arg.username, arg.key);
+			test.forEachBrowser(arg.configs, test.qunitRunner, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, function(status){
 				console.log("All tests completed with status %s", status);
 				tunnel.stop(function(){
 					done(status);
