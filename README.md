@@ -12,7 +12,7 @@ About the tool
 The [Grunt Qunit](https://github.com/gruntjs/grunt/blob/master/docs/task_qunit.md) task runs qunit based test suites on [PhantomJS]. 
 The `saucelabs-qunit` task is very similar but runs the test suites on the cloudified browser environment provided by Sauce Labs. This ensures that subject of the test runs across different browser environment. 
 The task also uses [Sauce Connect](https://saucelabs.com/docs/sauce-connect) to establish a tunnel between Sauce Labs browsers and the machine running Grunt to load local pages. This is typically useful for testing pages on localhost that are not publically accessible on the internet. 
-The `saucelabs-jasmine` runs jasmine tests in the saucelabs browser.
+The `saucelabs-jasmine` runs jasmine tests in the saucelabs browser. The `saucelabs-jasmine` task requires `jasmine-1.3.0`.
 
 Usage
 ------
