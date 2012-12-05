@@ -189,39 +189,70 @@ module.exports = function(grunt){
 		var browser = this.browser;
 		console.log("Starting Jasmine tests".cyan);
 		browser.waitForElementByClassName('alert', 1000 * 5, function(err, el){
-			browser.elementsByClassName('alert', function(err, el){
+			browser.elementsByClassName('version', function(err, el){
 				if (err) {
 					console.log("Could not get element by id", err);
 					callback(false);
 					return;
 				}
-				console.log("Fetched test result element, waiting for text inside it to change to complete");
-				var retryCount = 0;
-				var testInterval = 5000;
-				(function isCompleted(){
-					browser.text(el, function(err, text){
+				browser.text(el, function(err, versionText){
+					if (err) {
+						console.log("Could not see test inside element", err);
+						callback(false);
+					}
+					
+					var versionMatch = versionText.match(/[0-9]+(\.[0-9]+)*/);
+					var version = versionMatch && versionMatch[0];
+					console.log("Detected jasmine version", version);
+					var resultParser = {
+						"1.2.0" : {
+							"resultClass": "description",
+							"success": /0 failures/,
+							"fail": /([1-9][0-9]*)\s*failure/
+						},
+						"1.3.0" : {
+							"resultClass": "alert",
+							"success": /Passing/,
+							"fail": /Failing/
+						}
+					};
+
+					browser.elementsByClassName(resultParser[version].resultClass, function(err, els){
 						if (err) {
-							console.log("Could not see test inside element", err);
+							console.log("Could not get element by id", err);
 							callback(false);
+							return;
 						}
-						else if (retryCount >= testTimeout / testInterval) {
-							console.log("Failed, waited for more than %s milliseconds".red, testTimeout);
-							callback(false);
-						}
-						else if (text.match(/Failing/)) {
-							console.log(" => Tests ran result %s".red, text);
-							callback(false);
-						}
-						else if (text.match(/Passing/)) {
-							console.log(" => Tests ran result %s".green, text);
-							callback(true);
-						}
-						else if (++retryCount < testTimeout / testInterval) {
-							console.log("%s. Still running, Time passed - %s of %s milliseconds".red, retryCount, testInterval * retryCount, testTimeout);
-							setTimeout(isCompleted, testInterval);
-						}
-					});
-				}());
+						console.log("Fetched test result element, waiting for text inside it to change to complete");
+						var el = els[0];
+						var retryCount = 0;
+						var testInterval = 5000;
+						(function isCompleted(){
+							browser.text(el, function(err, text){
+								if (err) {
+									console.log("Could not see test inside element", err);
+									callback(false);
+								}
+								else if (retryCount >= testTimeout / testInterval) {
+									console.log("Failed, waited for more than %s milliseconds".red, testTimeout);
+									callback(false);
+								}
+								else if (text.match(resultParser[version].fail)) {
+									console.log(" => Tests ran result %s".red, text);
+									callback(false);
+								}
+								else if (text.match(resultParser[version].success)) {
+									console.log(" => Tests ran result %s".green, text);
+									callback(true);
+								}
+								else if (++retryCount < testTimeout / testInterval) {
+									console.log("%s. Still running, Time passed - %s of %s milliseconds".red, retryCount, testInterval * retryCount, testTimeout);
+									setTimeout(isCompleted, testInterval);
+								}
+							});
+						}());
+					})
+				})
 			})
 		})
 	};
