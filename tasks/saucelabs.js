@@ -129,9 +129,7 @@ module.exports = function(grunt) {
 					this.async = function() {
 						waitForAsync = true;
 						return function(ret) {
-							if(typeof ret !== "undefined") {
-								success = success && ret;
-							}
+							success = success && (typeof ret === "undefined" ? status : ret);
 							cb();
 						};
 					};
