@@ -15,12 +15,10 @@
   "bugs": {
     "url": "https://github.com/axemclion/grunt-saucelabs/issues"
   },
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "https://github.com/axemclion/grunt-saucelabs/blob/master/LICENSE-MIT"
-    }
-  ],
+  "licenses": [{
+    "type": "MIT",
+    "url": "https://github.com/axemclion/grunt-saucelabs/blob/master/LICENSE-MIT"
+  }],
   "main": "grunt.js",
   "bin": {
     "grunt-saucelabs-qunit": "bin/grunt-saucelabs-qunit"
@@ -32,26 +30,20 @@
     "test": "grunt test"
   },
   "dependencies": {
-    "request":  "*",
-	"wd" : "*",
-	"saucelabs" : "*",
-	"request" : "*",
-	"wd" : "*",
-	"fs" : "*",
+    "request": "*",
+    "wd": "*",
+    "saucelabs": "*",
+    "request": "*",
+    "wd": "*",
+    "fs": "*",
     "grunt": "~0.3.12",
-	"colors" : "*"
+    "colors": "*"
   },
-  
+
   "devDependencies": {
     "grunt": "~0.3.12"
   },
-  "keywords": [
-    "gruntplugin",
-    "grunt",
-    "saucelabs",
-	"test",
-	"jasmine"
-  ],
+  "keywords": ["gruntplugin", "grunt", "saucelabs", "test", "jasmine"],
   "_id": "grunt-saucelabs@0.0.1",
   "optionalDependencies": {},
   "_engineSupported": true,
