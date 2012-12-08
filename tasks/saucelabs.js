@@ -121,7 +121,7 @@ module.exports = function(grunt) {
 	TestRunner.prototype.forEachBrowser = function(configs, runner, onTestComplete) {
 		var me = this;
 		return {
-			testPages: function(pages, testTimeout, callback) {
+			testPages: function(pages, testTimeout, testInterval, callback) {
 				var success = true;
 
 				function onPageTested(status, page, config, browser, cb) {
@@ -170,7 +170,7 @@ module.exports = function(grunt) {
 									});
 									return;
 								}
-								runner.call(me, testTimeout, function(status) {
+								runner.call(me, testTimeout, testInterval, function(status) {
 									onPageTested(status, pages[j], configs[i], me.browser, function() {
 										testPage(j + 1);
 									});
@@ -183,7 +183,7 @@ module.exports = function(grunt) {
 		};
 	};
 
-	TestRunner.prototype.jasmineRunner = function(testTimeout, callback) {
+	TestRunner.prototype.jasmineRunner = function(testTimeout, testInterval, callback) {
 		var browser = this.browser;
 		console.log("Starting Jasmine tests".cyan);
 		browser.waitForElementByClassName('alert', 1000 * 5, function(err, el) {
@@ -224,13 +224,12 @@ module.exports = function(grunt) {
 						console.log("Fetched test result element, waiting for text inside it to change to complete");
 						var el = els[0];
 						var retryCount = 0;
-						var testInterval = 5000;
 						(function isCompleted() {
 							browser.text(el, function(err, text) {
 								if(err) {
 									console.log("Could not see test inside element", err);
 									callback(false);
-								} else if(retryCount >= testTimeout / testInterval) {
+								} else if(retryCount * testInterval > testTimeout) {
 									console.log("Failed, waited for more than %s milliseconds".red, testTimeout);
 									callback(false);
 								} else if(text.match(resultParser[version].fail)) {
@@ -239,8 +238,8 @@ module.exports = function(grunt) {
 								} else if(text.match(resultParser[version].success)) {
 									console.log(" => Tests ran result %s".green, text);
 									callback(true);
-								} else if(++retryCount < testTimeout / testInterval) {
-									console.log("%s. Still running, Time passed - %s of %s milliseconds".red, retryCount, testInterval * retryCount, testTimeout);
+								} else if(++retryCount * testInterval <= testTimeout) {
+									console.log("%s. Still running, Time passed - %s of %s milliseconds".yellow, retryCount, testInterval * retryCount, testTimeout);
 									setTimeout(isCompleted, testInterval);
 								}
 							});
@@ -251,7 +250,7 @@ module.exports = function(grunt) {
 		})
 	};
 
-	TestRunner.prototype.qunitRunner = function(testTimeout, callback) {
+	TestRunner.prototype.qunitRunner = function(testTimeout, testInterval, callback) {
 		var browser = this.browser;
 		var testResult = "qunit-testresult";
 		console.log("Starting qunit tests".cyan);
@@ -265,7 +264,6 @@ module.exports = function(grunt) {
 				}
 				console.log("Fetched test result element, waiting for text inside it to change to complete");
 				var retryCount = 0;
-				var testInterval = 5000;
 				(function isCompleted() {
 					browser.text(el, function(err, text) {
 						if(err) {
@@ -273,12 +271,12 @@ module.exports = function(grunt) {
 							callback(false);
 							return;
 						}
-						if(!text.match(/completed/) && ++retryCount < testTimeout / testInterval) {
-							console.log("%s. Still running, Time passed - %s of %s milliseconds".red, retryCount, testInterval * retryCount, testTimeout);
+						if(!text.match(/completed/) && ++retryCount * testInterval <= testTimeout) {
+							console.log("%s. Still running, Time passed - %s of %s milliseconds".yellow, retryCount, testInterval * retryCount, testTimeout);
 							setTimeout(isCompleted, testInterval);
 							return;
 						}
-						if(retryCount >= testTimeout / testInterval) {
+						if(retryCount * testInterval > testTimeout) {
 							console.log("Failed, waited for more than %s milliseconds".red, testTimeout);
 							callback(false);
 							return;
@@ -310,6 +308,7 @@ module.exports = function(grunt) {
 		result.key = data.key;
 		result.tunnelTimeout = data.tunnelTimeout || 120;
 		result.testTimeout = data.testTimeout || (1000 * 60 * 5);
+		result.testInterval = data.testInterval || (1000 * 5);
 		result.onTestComplete = data.onTestComplete;
 
 		grunt.utils._.map(data.browsers, function(d) {
@@ -330,7 +329,7 @@ module.exports = function(grunt) {
 				done(false);
 			}
 			var test = new TestRunner(arg.username, arg.key);
-			test.forEachBrowser(arg.configs, test.jasmineRunner, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, function(status) {
+			test.forEachBrowser(arg.configs, test.jasmineRunner, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, function(status) {
 				console.log("All tests completed with status %s", status);
 				tunnel.stop(function() {
 					done(status);
@@ -349,7 +348,7 @@ module.exports = function(grunt) {
 				done(false);
 			}
 			var test = new TestRunner(arg.username, arg.key);
-			test.forEachBrowser(arg.configs, test.qunitRunner, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, function(status) {
+			test.forEachBrowser(arg.configs, test.qunitRunner, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, function(status) {
 				console.log("All tests completed with status %s", status);
 				tunnel.stop(function() {
 					done(status);
