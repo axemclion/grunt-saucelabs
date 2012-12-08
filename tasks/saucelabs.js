@@ -124,7 +124,7 @@ module.exports = function(grunt) {
 			testPages: function(pages, testTimeout, callback) {
 				var success = true;
 
-				function onPageTested(status, page, config, cb) {
+				function onPageTested(status, page, config, browser, cb) {
 					var waitForAsync = false;
 					this.async = function() {
 						waitForAsync = true;
@@ -136,7 +136,7 @@ module.exports = function(grunt) {
 						};
 					};
 					if(typeof onTestComplete === "function") {
-						var ret = onTestComplete(status, page, config);
+						var ret = onTestComplete(status, page, config, browser);
 						status = typeof ret === "undefined" ? status : ret;
 					}
 					if(!waitForAsync) {
@@ -167,13 +167,13 @@ module.exports = function(grunt) {
 							me.browser.get(pages[j], function(err) {
 								if(err) {
 									console.log("Could not fetch page (%s)%s".red, j, pages[j]);
-									onPageTested(false, pages[j], configs[i], function() {
+									onPageTested(false, pages[j], configs[i], me.browser, function() {
 										testPage(j + 1);
 									});
 									return;
 								}
 								runner.call(me, testTimeout, function(status) {
-									onPageTested(status, pages[j], configs[i], function() {
+									onPageTested(status, pages[j], configs[i], me.browser, function() {
 										testPage(j + 1);
 									});
 								});
