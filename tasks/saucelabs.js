@@ -202,17 +202,21 @@ module.exports = function(grunt) {
 					var versionMatch = versionText.match(/[0-9]+(\.[0-9]+)*/);
 					var version = versionMatch && versionMatch[0];
 					console.log("Detected jasmine version", version);
+					
+					var descriptionResultParser = {
+						"resultClass": "description",
+						"success": /0 failures/,
+						"fail": /([1-9][0-9]*)\s*failure/
+					};
+					var alertResultParser = {
+						"resultClass": "alert",
+						"success": /Passing/,
+						"fail": /Failing/
+					};
 					var resultParser = {
-						"1.2.0": {
-							"resultClass": "description",
-							"success": /0 failures/,
-							"fail": /([1-9][0-9]*)\s*failure/
-						},
-						"1.3.0": {
-							"resultClass": "alert",
-							"success": /Passing/,
-							"fail": /Failing/
-						}
+						"1.2.0": descriptionResultParser,
+						"1.3.0": alertResultParser,
+						"1.3.1": alertResultParser
 					};
 
 					browser.elementsByClassName(resultParser[version].resultClass, function(err, els) {
