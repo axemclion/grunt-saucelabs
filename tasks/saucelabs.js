@@ -76,7 +76,10 @@ module.exports = function(grunt) {
 	SauceTunnel.prototype.start = function(callback) {
 		var me = this;
 		this.getTunnels(function(tunnels) {
-			if(tunnels.length > 0) {
+			if (!tunnels){
+				console.log("=> Could not get tunnels for Saucelabs. Still continuing to try connecting to saucelabs".red.inverse);
+			}
+			if(tunnels && tunnels.length > 0) {
 				console.log("=> Looks like there are existing tunnels to saucelabs - %s".bold, tunnels);
 				var retryCount = 0;
 				(function waitForTunnelsToDie(retryCount) {
