@@ -5,6 +5,26 @@ module.exports = function(grunt) {
 	var wd = require('wd');
 	var fs = require('fs');
 
+	var SauceStatus = function(user, key) {
+		this.user = user;
+		this.key = key;
+		this.baseUrl = ["https://", this.user, ':', this.key, '@saucelabs.com', '/rest/v1/', this.user].join("");
+	};
+
+	SauceStatus.prototype.passed = function(jobid, status, callback) {
+		var _body = JSON.stringify({ "passed": status }),
+			_url = this.baseUrl + "/jobs/" + jobid;
+		request({
+			headers: { 'content-type' : 'application/x-www-form-urlencoded', 'cookie': '' },
+			method: "PUT",
+			url: _url,
+			body: _body,
+			json: true
+		}, function(error, response, body) {
+			callback();
+		});
+	};
+
 	var SauceTunnel = function(user, key, tunnelTimeout) {
 			this.user = user;
 			this.key = key;
@@ -119,6 +139,7 @@ module.exports = function(grunt) {
 			this.browser.on('command', function(meth, path) {
 				// console.log(' > \x1b[33m%s\x1b[0m: %s', meth, path);
 			});
+			this.report = new SauceStatus(user, key);
 		};
 
 	TestRunner.prototype.forEachBrowser = function(configs, runner, onTestComplete) {
@@ -139,6 +160,7 @@ module.exports = function(grunt) {
 					if(typeof onTestComplete === "function") {
 						var ret = onTestComplete(status, page, config, browser);
 						status = typeof ret === "undefined" ? status : ret;
+						me.report.passed(browser.sessionID, status, function() {});
 					}
 					if(!waitForAsync) {
 						success = success && status;
@@ -303,7 +325,7 @@ module.exports = function(grunt) {
 	};
 
 	function defaults(data) {
-		var result = {};
+		var result = {}, build = Math.floor((new Date).getTime() / 1000 - 1230768000).toString();
 		result.url = data.url || data.urls;
 		if(grunt.utils._.isArray(result.url)) {
 			result.pages = result.url;
@@ -321,6 +343,7 @@ module.exports = function(grunt) {
 		grunt.utils._.map(data.browsers, function(d) {
 			d.name = d.name || data.testname || "";
 			d.tags = d.tags || data.tags || [];
+			d.build = d.build || build;
 		});
 		result.configs = data.browsers || [{}];
 		return result;
