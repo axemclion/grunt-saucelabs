@@ -4,6 +4,7 @@ module.exports = function(grunt) {
 	var proc = require('child_process');
 	var wd = require('wd');
 	var fs = require('fs');
+	var request = request.defaults({jar: false});
 
 	var SauceStatus = function(user, key) {
 		this.user = user;
