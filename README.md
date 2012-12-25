@@ -31,8 +31,8 @@ In the `grunt.initConfig`, add the configuration that looks like the following
 ```javascript
 'saucelabs-qunit': {
 	all: {
-		username: 'saucelabs-user-name',
-		key: 'saucelabs-key',
+		username: 'saucelabs-user-name', // if not provided it'll default to ENV SAUCE_USERNAME (if applicable)
+		key: 'saucelabs-key', // if not provided it'll default to ENV SAUCE_ACCESS_KEY (if applicable)
 		urls: ['array or URLs to to load for QUnit'],
 		tunnelTimeout: 'A numeric value indicating the time to wait before closing all tunnels ',
 		testTimeout: 'Milliseconds to wait before timeout for qunit test per page',
