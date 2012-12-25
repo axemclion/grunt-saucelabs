@@ -1,6 +1,6 @@
 {
   "name": "grunt-saucelabs",
-  "description": "Grunt task running tests using Saucelabs. Supports Qunit and Jasmine tests",
+  "description": "Grunt task running tests using Sauce Labs. Supports Qunit and Jasmine tests",
   "version": "1.2.2",
   "homepage": "https://github.com/axemclion/grunt-saucelabs",
   "author": {
