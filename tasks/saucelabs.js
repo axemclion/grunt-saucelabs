@@ -16,7 +16,7 @@ module.exports = function(grunt) {
 		var _body = JSON.stringify({ "passed": status }),
 			_url = this.baseUrl + "/jobs/" + jobid;
 		request({
-			headers: { 'content-type' : 'application/x-www-form-urlencoded', 'cookie': '' },
+			headers: { 'content-type' : 'application/x-www-form-urlencoded' },
 			method: "PUT",
 			url: _url,
 			body: _body,
