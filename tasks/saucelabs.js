@@ -44,7 +44,7 @@ module.exports = function(grunt) {
 				console.log(data.toString().replace(/[\n\r]/g, ''));
 			}
 			if(data.toString().match(/Connected\! You may start your tests/)) {
-				// console.log('=> Saucelabs Tunnel established');
+				// console.log('=> Sauce Labs Tunnel established');
 				if(!calledBack) {
 					calledBack = true;
 					callback(true);
@@ -57,7 +57,7 @@ module.exports = function(grunt) {
 		});
 
 		this.proc.on('exit', function(code) {
-			console.log('=> Saucelabs Tunnel disconnected ', code);
+			console.log('=> Sauce Labs Tunnel disconnected ', code);
 			if(!calledBack) {
 				calledBack = true;
 				callback(false);
@@ -106,10 +106,10 @@ module.exports = function(grunt) {
 
 		this.getTunnels(function(tunnels) {
 			if (!tunnels){
-				console.log("=> Could not get tunnels for Saucelabs. Still continuing to try connecting to saucelabs".red.inverse);
+				console.log("=> Could not get tunnels for Sauce Labs. Still continuing to try connecting to Sauce Labs".red.inverse);
 			}
 			if(tunnels && tunnels.length > 0) {
-				console.log("=> Looks like there are existing tunnels to saucelabs - %s".bold, tunnels);
+				console.log("=> Looks like there are existing tunnels to Sauce Labs - %s".bold, tunnels);
 				var retryCount = 0;
 				(function waitForTunnelsToDie(retryCount) {
 					if(retryCount > 5) {
@@ -118,14 +118,14 @@ module.exports = function(grunt) {
 							me.start(callback);
 						});
 					} else {
-						console.log("=> %s. Saucelabs tunnels already exist, will try to connect again %s milliseconds.".red, retryCount, me.tunnelTimeout / 5);
+						console.log("=> %s. Sauce Labs tunnels already exist, will try to connect again %s milliseconds.".red, retryCount, me.tunnelTimeout / 5);
 						setTimeout(function() {
 							waitForTunnelsToDie(retryCount + 1);
 						}, me.tunnelTimeout / 5);
 					}
 				}(0));
 			} else {
-				console.log("=> SauceLabs trying to open tunnel".inverse);
+				console.log("=> Sauce Labs trying to open tunnel".inverse);
 				me.openTunnel(function(status) {
 					callback(status);
 				});
@@ -384,11 +384,11 @@ module.exports = function(grunt) {
 		return result;
 	}
 
-	grunt.registerMultiTask('saucelabs-jasmine', 'Run Jasmine test cases using SauceLab browsers', function() {
+	grunt.registerMultiTask('saucelabs-jasmine', 'Run Jasmine test cases using Sauce Labs browsers', function() {
 		var done = this.async(),
 			arg = defaults(this.data);
 		var tunnel = new SauceTunnel(arg.username, arg.key, arg.tunneled, arg.tunnelTimeout);
-		console.log("=> Starting Tunnel to Saucelabs".inverse.bold);
+		console.log("=> Starting Tunnel to Sauce Labs".inverse.bold);
 		tunnel.start(function(isCreated) {
 			if(!isCreated) {
 				done(false);
@@ -403,11 +403,11 @@ module.exports = function(grunt) {
 		});
 	});
 
-	grunt.registerMultiTask('saucelabs-qunit', 'Run Qunit test cases using SauceLab browsers', function() {
+	grunt.registerMultiTask('saucelabs-qunit', 'Run Qunit test cases using Sauce Labs browsers', function() {
 		var done = this.async(),
 			arg = defaults(this.data);
 		var tunnel = new SauceTunnel(arg.username, arg.key, arg.tunneled, arg.tunnelTimeout);
-		console.log("=> Starting Tunnel to Saucelabs".inverse.bold);
+		console.log("=> Starting Tunnel to Sauce Labs".inverse.bold);
 		tunnel.start(function(isCreated) {
 			if(!isCreated) {
 				done(false);
