@@ -191,8 +191,9 @@ module.exports = function(grunt) {
 							}
 							(function testPage(j) {
 								if(j >= pages.length) {
-									driver.quit();
-									done(success);
+									driver.quit(function() {
+										done(success);
+									});
 									return;
 								}
 								console.log("Starting test for page (%s) %s".cyan, j, pages[j]);
