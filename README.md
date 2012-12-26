@@ -67,6 +67,7 @@ The parameters are
 * __username__ : The Sauce Labs username that will be used to connect to the servers. _Required_
 * __key__ : The Sauce Labs secret key. Since this is a secret, this should not be checked into the source code and may be available as an environment variable. Grunt can access this using 	`process.env.saucekey`. _Required_
 * __urls__: An array or URLs that will be loaded in the browsers, one after another. Since SauceConnect is used, these URLs can also be localhost URLs that are available using the `server` task from grunt. _Required_
+* __tunneled__: Defaults to true; Won't launch a Sauce Connect tunnel if set to false. _Optional_
 * __testname__: The name of this test, displayed on the Sauce Labs dashboard. _Optional_
 * __tags__: An array of tags displayed for this test on the Sauce Labs dashboard. This can be the build number, commit number, etc, that can be obtained from grunt. 
 * __browsers__: An array of objects representing the [various browsers](https://saucelabs.com/docs/browsers) on which this test should run.  _Optional_
