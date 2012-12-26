@@ -26,9 +26,10 @@ module.exports = function(grunt) {
 		});
 	};
 
-	var SauceTunnel = function(user, key, tunnelTimeout) {
+	var SauceTunnel = function(user, key, tunneled, tunnelTimeout) {
 			this.user = user;
 			this.key = key;
+			this.tunneled = tunneled;
 			this.tunnelTimeout = tunnelTimeout;
 			this.baseUrl = ["https://", this.user, ':', this.key, '@saucelabs.com', '/rest/v1/', this.user].join("");
 		};
@@ -74,6 +75,9 @@ module.exports = function(grunt) {
 	};
 
 	SauceTunnel.prototype.killAllTunnels = function(callback) {
+		if (!this.tunneled) {
+			return callback();
+		}
 		var me = this;
 		console.log("Trying to kill all tunnels");
 		this.getTunnels(function(tunnels) {
@@ -96,6 +100,10 @@ module.exports = function(grunt) {
 
 	SauceTunnel.prototype.start = function(callback) {
 		var me = this;
+		if (!this.tunneled) {
+			return callback(true);
+		}
+
 		this.getTunnels(function(tunnels) {
 			if (!tunnels){
 				console.log("=> Could not get tunnels for Saucelabs. Still continuing to try connecting to saucelabs".red.inverse);
@@ -126,100 +134,125 @@ module.exports = function(grunt) {
 	};
 
 	SauceTunnel.prototype.stop = function(callback) {
-		this.proc.kill();
+		if (this.proc) {
+			this.proc.kill();
+		}
 		this.killAllTunnels(function() {
 			callback();
 		});
 	};
 
 	var TestRunner = function(user, key) {
-			this.browser = wd.remote('ondemand.saucelabs.com', 80, user, key);
-			this.browser.on('status', function(info) {
-				// console.log('> \x1b[36m%s\x1b[0m', info);
-			});
-			this.browser.on('command', function(meth, path) {
-				// console.log(' > \x1b[33m%s\x1b[0m: %s', meth, path);
-			});
-			this.report = new SauceStatus(user, key);
-		};
+		this.user = user;
+		this.key = key;
+		this.host = 'ondemand.saucelabs.com';
+		this.port = 80;
 
-	TestRunner.prototype.forEachBrowser = function(configs, runner, onTestComplete) {
+		this.report = new SauceStatus(user, key);
+	};
+
+	TestRunner.prototype.forEachBrowser = function(configs, runner, concurrency, onTestComplete) {
 		var me = this;
 		return {
 			testPages: function(pages, testTimeout, testInterval, callback) {
-				var success = true;
 
-				function onPageTested(status, page, config, browser, cb) {
-					var waitForAsync = false;
-					this.async = function() {
-						waitForAsync = true;
-						return function(ret) {
-							success = success && (typeof ret === "undefined" ? status : ret);
-							cb();
+				function initBrowser(cfg) {
+					var success = true;
+
+					function onPageTested(status, page, config, browser, cb) {
+						var waitForAsync = false;
+						this.async = function() {
+							waitForAsync = true;
+							return function(ret) {
+								success = success && (typeof ret === "undefined" ? status : ret);
+								cb();
+							};
 						};
-					};
-					if(typeof onTestComplete === "function") {
-						var ret = onTestComplete(status, page, config, browser);
-						status = typeof ret === "undefined" ? status : ret;
-						me.report.passed(browser.sessionID, status, function() {});
-					}
-					if(!waitForAsync) {
-						success = success && status;
-						cb();
-					}
-				}
-				(function initBrowser(i) {
-					if(i >= configs.length) {
-						callback(success);
-						return;
-					}
-					console.log("Starting tests on browser configuration".cyan, configs[i]);
-					me.browser.init(configs[i], function(err, sessionId) {
-						if(err) {
-							console.log("Could not initialize browser for session".red, sessionId, configs[i]);
-							success = false;
-							initBrowser(i + 1);
-							return;
+						if(typeof onTestComplete === "function") {
+							var ret = onTestComplete(status, page, config, browser);
+							status = typeof ret === "undefined" ? status : ret;
+							me.report.passed(browser.sessionID, status, function() {});
 						}
-						(function testPage(j) {
-							if(j >= pages.length) {
-								me.browser.quit();
-								initBrowser(i + 1);
+						if(!waitForAsync) {
+							success = success && status;
+							cb();
+						}
+					}
+
+					return function(done) {
+						var driver = wd.remote(me.host, me.port, me.user, me.key);
+						console.log("Starting tests on browser configuration".cyan, cfg);
+						driver.init(cfg, function(err, sessionId) {
+							if(err) {
+								console.log("Could not initialize browser for session".red, sessionId, cfg);
+								success = false;
+								done(success);
 								return;
 							}
-							console.log("Starting test for page (%s) %s".cyan, j, pages[j]);
-							me.browser.get(pages[j], function(err) {
-								if(err) {
-									console.log("Could not fetch page (%s)%s".red, j, pages[j]);
-									onPageTested(false, pages[j], configs[i], me.browser, function() {
-										testPage(j + 1);
-									});
+							(function testPage(j) {
+								if(j >= pages.length) {
+									driver.quit();
+									done(success);
 									return;
 								}
-								runner.call(me, testTimeout, testInterval, function(status) {
-									onPageTested(status, pages[j], configs[i], me.browser, function() {
-										testPage(j + 1);
+								console.log("Starting test for page (%s) %s".cyan, j, pages[j]);
+								driver.get(pages[j], function(err) {
+									if(err) {
+										console.log("Could not fetch page (%s)%s".red, j, pages[j]);
+										onPageTested(false, pages[j], cfg, driver, function() {
+											testPage(j + 1);
+										});
+										return;
+									}
+									runner.call(me, driver, testTimeout, testInterval, function(status) {
+										onPageTested(status, pages[j], cfg, driver, function() {
+                      						testPage(j + 1);
+                    					});
 									});
 								});
-							});
-						}(0));
-					});
-				}(0));
+							}(0));
+						});
+					};
+				};
+
+				var brwrs = [], curr = 0, running = 0, res = true;
+				grunt.utils._.each(configs, function(_c) {
+					brwrs.push(initBrowser(_c));
+				});
+
+				var next = function(success) {
+					if (typeof success !== 'undefined') {
+						res = res && success;
+						running--;
+					}
+
+					if (curr >= brwrs.length && running <= 0) {
+						return callback(res);
+					}
+
+					if (running < concurrency && curr < brwrs.length) {
+						brwrs[curr](next);
+						curr++;
+						running++;
+						next();
+					}
+				};
+
+				next();
 			}
 		};
 	};
 
-	TestRunner.prototype.jasmineRunner = function(testTimeout, testInterval, callback) {
-		var browser = this.browser;
+	TestRunner.prototype.jasmineRunner = function(driver, testTimeout, testInterval, callback) {
 		console.log("Starting Jasmine tests".cyan);
-		browser.waitForElementByClassName('alert', 1000 * 5, function(err, el) {
-			browser.elementsByClassName('version', function(err, el) {
+		driver.waitForElementByClassName('alert', 1000 * 5, function(err, el) {
+			driver.elementsByClassName('version', function(err, el) {
 				if(err) {
 					console.log("Could not get element by id", err);
 					callback(false);
 					return;
 				}
-				browser.text(el, function(err, versionText) {
+				driver.text(el, function(err, versionText) {
 					if(err) {
 						console.log("Could not see test inside element", err);
 						callback(false);
@@ -245,7 +278,7 @@ module.exports = function(grunt) {
 						"1.3.1": alertResultParser
 					};
 
-					browser.elementsByClassName(resultParser[version].resultClass, function(err, els) {
+					driver.elementsByClassName(resultParser[version].resultClass, function(err, els) {
 						if(err) {
 							console.log("Could not get element by id", err);
 							callback(false);
@@ -255,7 +288,7 @@ module.exports = function(grunt) {
 						var el = els[0];
 						var retryCount = 0;
 						(function isCompleted() {
-							browser.text(el, function(err, text) {
+							driver.text(el, function(err, text) {
 								if(err) {
 									console.log("Could not see test inside element", err);
 									callback(false);
@@ -280,13 +313,12 @@ module.exports = function(grunt) {
 		})
 	};
 
-	TestRunner.prototype.qunitRunner = function(testTimeout, testInterval, callback) {
-		var browser = this.browser;
+	TestRunner.prototype.qunitRunner = function(driver, testTimeout, testInterval, callback) {
 		var testResult = "qunit-testresult";
 		console.log("Starting qunit tests".cyan);
-		browser.waitForElementById(testResult, 1000 * 5, function() {
+		driver.waitForElementById(testResult, 1000 * 5, function() {
 			console.log("Test div found, fetching the test result element".cyan);
-			browser.elementById(testResult, function(err, el) {
+			driver.elementById(testResult, function(err, el) {
 				if(err) {
 					console.log("Could not get element by id", err);
 					callback(false);
@@ -295,7 +327,7 @@ module.exports = function(grunt) {
 				console.log("Fetched test result element, waiting for text inside it to change to complete");
 				var retryCount = 0;
 				(function isCompleted() {
-					browser.text(el, function(err, text) {
+					driver.text(el, function(err, text) {
 						if(err) {
 							console.log("Could not see test inside element", err);
 							callback(false);
@@ -336,6 +368,7 @@ module.exports = function(grunt) {
 
 		result.username = data.username || process.env.SAUCE_USERNAME;
 		result.key = data.key || process.env.SAUCE_ACCESS_KEY;
+		result.tunneled = data.tunneled !== null ? data.tunneled : true;
 		result.tunnelTimeout = data.tunnelTimeout || 120;
 		result.testTimeout = data.testTimeout || (1000 * 60 * 5);
 		result.testInterval = data.testInterval || (1000 * 5);
@@ -347,20 +380,21 @@ module.exports = function(grunt) {
 			d.build = data.build || build;
 		});
 		result.configs = data.browsers || [{}];
+		result.concurrency = data.concurrency || result.configs.length;
 		return result;
 	}
 
 	grunt.registerMultiTask('saucelabs-jasmine', 'Run Jasmine test cases using SauceLab browsers', function() {
 		var done = this.async(),
 			arg = defaults(this.data);
-		var tunnel = new SauceTunnel(arg.username, arg.key, arg.tunnelTimeout);
+		var tunnel = new SauceTunnel(arg.username, arg.key, arg.tunneled, arg.tunnelTimeout);
 		console.log("=> Starting Tunnel to Saucelabs".inverse.bold);
 		tunnel.start(function(isCreated) {
 			if(!isCreated) {
 				done(false);
 			}
 			var test = new TestRunner(arg.username, arg.key);
-			test.forEachBrowser(arg.configs, test.jasmineRunner, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, function(status) {
+			test.forEachBrowser(arg.configs, test.jasmineRunner, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, function(status) {
 				console.log("All tests completed with status %s", status);
 				tunnel.stop(function() {
 					done(status);
@@ -372,14 +406,14 @@ module.exports = function(grunt) {
 	grunt.registerMultiTask('saucelabs-qunit', 'Run Qunit test cases using SauceLab browsers', function() {
 		var done = this.async(),
 			arg = defaults(this.data);
-		var tunnel = new SauceTunnel(arg.username, arg.key, arg.tunnelTimeout);
+		var tunnel = new SauceTunnel(arg.username, arg.key, arg.tunneled, arg.tunnelTimeout);
 		console.log("=> Starting Tunnel to Saucelabs".inverse.bold);
 		tunnel.start(function(isCreated) {
 			if(!isCreated) {
 				done(false);
 			}
 			var test = new TestRunner(arg.username, arg.key);
-			test.forEachBrowser(arg.configs, test.qunitRunner, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, function(status) {
+			test.forEachBrowser(arg.configs, test.qunitRunner, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, function(status) {
 				console.log("All tests completed with status %s", status);
 				tunnel.stop(function() {
 					done(status);
