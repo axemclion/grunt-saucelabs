@@ -389,7 +389,9 @@ module.exports = function(grunt) {
 		var done = this.async(),
 			arg = defaults(this.data);
 		var tunnel = new SauceTunnel(arg.username, arg.key, arg.tunneled, arg.tunnelTimeout);
-		console.log("=> Starting Tunnel to Sauce Labs".inverse.bold);
+		if (this.tunneled) {
+			console.log("=> Starting Tunnel to Sauce Labs".inverse.bold);
+		}
 		tunnel.start(function(isCreated) {
 			if(!isCreated) {
 				done(false);
@@ -408,7 +410,9 @@ module.exports = function(grunt) {
 		var done = this.async(),
 			arg = defaults(this.data);
 		var tunnel = new SauceTunnel(arg.username, arg.key, arg.tunneled, arg.tunnelTimeout);
-		console.log("=> Starting Tunnel to Sauce Labs".inverse.bold);
+		if (this.tunneled) {
+			console.log("=> Starting Tunnel to Sauce Labs".inverse.bold);
+		}
 		tunnel.start(function(isCreated) {
 			if(!isCreated) {
 				done(false);
