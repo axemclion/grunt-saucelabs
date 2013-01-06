@@ -147,7 +147,7 @@ module.exports = function(grunt) {
 	TestRunner.prototype.forEachBrowser = function(configs, runner, onTestComplete) {
 		var me = this;
 		return {
-			testPages: function(pages, testTimeout, testInterval, callback) {
+			testPages: function(pages, testTimeout, testInterval, testReadyTimeout, callback) {
 				var success = true;
 
 				function onPageTested(status, page, config, browser, cb) {
@@ -197,7 +197,7 @@ module.exports = function(grunt) {
 									});
 									return;
 								}
-								runner.call(me, testTimeout, testInterval, function(status) {
+								runner.call(me, testTimeout, testInterval, testReadyTimeout, function(status) {
 									onPageTested(status, pages[j], configs[i], me.browser, function() {
 										testPage(j + 1);
 									});
