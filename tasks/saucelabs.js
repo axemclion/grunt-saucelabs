@@ -1,10 +1,11 @@
 module.exports = function(grunt) {
+	var _ = (grunt.utils || grunt.util)._;
 	var sauce = require('saucelabs');
 	var request = require('request');
 	var proc = require('child_process');
 	var wd = require('wd');
 	var fs = require('fs');
-	var request = request.defaults({jar: false});
+	var rqst = request.defaults({jar: false});
 
 	var SauceStatus = function(user, key) {
 		this.user = user;
@@ -15,7 +16,7 @@ module.exports = function(grunt) {
 	SauceStatus.prototype.passed = function(jobid, status, callback) {
 		var _body = JSON.stringify({ "passed": status }),
 			_url = this.baseUrl + "/jobs/" + jobid;
-		request({
+		rqst({
 			headers: { 'content-type' : 'application/x-www-form-urlencoded' },
 			method: "PUT",
 			url: _url,
@@ -66,7 +67,7 @@ module.exports = function(grunt) {
 	};
 
 	SauceTunnel.prototype.getTunnels = function(callback) {
-		request({
+		rqst({
 			url: this.baseUrl + '/tunnels',
 			json: true
 		}, function(err, resp, body) {
@@ -87,7 +88,7 @@ module.exports = function(grunt) {
 					return;
 				}
 				console.log("Killing tunnel %s".red, tunnels[i]);
-				request({
+				rqst({
 					method: "DELETE",
 					url: me.baseUrl + "/tunnels/" + tunnels[i],
 					json: true
@@ -154,7 +155,7 @@ module.exports = function(grunt) {
 	TestRunner.prototype.forEachBrowser = function(configs, runner, concurrency, onTestComplete) {
 		var me = this;
 		return {
-			testPages: function(pages, testTimeout, testInterval, callback) {
+			testPages: function(pages, testTimeout, testInterval, testReadyTimeout, callback) {
 
 				function initBrowser(cfg) {
 					var success = true;
@@ -205,16 +206,16 @@ module.exports = function(grunt) {
 										});
 										return;
 									}
-									runner.call(me, driver, testTimeout, testInterval, function(status) {
+									runner.call(me, driver, testTimeout, testInterval, testReadyTimeout, function(status) {
 										onPageTested(status, pages[j], cfg, driver, function() {
-                      						testPage(j + 1);
-                    					});
+											testPage(j + 1);
+										});
 									});
 								});
 							}(0));
 						});
 					};
-				};
+				}
 
 				var brwrs = [], curr = 0, running = 0, res = true;
 				grunt.utils._.each(configs, function(_c) {
@@ -244,9 +245,9 @@ module.exports = function(grunt) {
 		};
 	};
 
-	TestRunner.prototype.jasmineRunner = function(driver, testTimeout, testInterval, callback) {
+	TestRunner.prototype.jasmineRunner = function(driver, testTimeout, testInterval, testReadyTimeout, callback) {
 		console.log("Starting Jasmine tests".cyan);
-		driver.waitForElementByClassName('alert', 1000 * 5, function(err, el) {
+		driver.waitForElementByClassName('alert', testReadyTimeout, function(err, el) {
 			driver.elementsByClassName('version', function(err, el) {
 				if(err) {
 					console.log("Could not get element by id", err);
@@ -308,16 +309,16 @@ module.exports = function(grunt) {
 								}
 							});
 						}());
-					})
-				})
-			})
-		})
+					});
+				});
+			});
+		});
 	};
 
-	TestRunner.prototype.qunitRunner = function(driver, testTimeout, testInterval, callback) {
+	TestRunner.prototype.qunitRunner = function(driver, testTimeout, testInterval, testReadyTimeout, callback) {
 		var testResult = "qunit-testresult";
 		console.log("Starting qunit tests".cyan);
-		driver.waitForElementById(testResult, 1000 * 5, function() {
+		driver.waitForElementById(testResult, testReadyTimeout, function() {
 			console.log("Test div found, fetching the test result element".cyan);
 			driver.elementById(testResult, function(err, el) {
 				if(err) {
@@ -359,9 +360,9 @@ module.exports = function(grunt) {
 	};
 
 	function defaults(data) {
-		var result = {}, build = Math.floor((new Date).getTime() / 1000 - 1230768000).toString();
+		var result = {}, build = Math.floor((new Date()).getTime() / 1000 - 1230768000).toString();
 		result.url = data.url || data.urls;
-		if(grunt.utils._.isArray(result.url)) {
+		if(_.isArray(result.url)) {
 			result.pages = result.url;
 		} else {
 			result.pages = [result.url];
@@ -373,9 +374,10 @@ module.exports = function(grunt) {
 		result.tunnelTimeout = data.tunnelTimeout || 120;
 		result.testTimeout = data.testTimeout || (1000 * 60 * 5);
 		result.testInterval = data.testInterval || (1000 * 5);
+		result.testReadyTimeout = data.testReadyTimeout || (1000 * 5);
 		result.onTestComplete = data.onTestComplete;
 
-		grunt.utils._.map(data.browsers, function(d) {
+		_.map(data.browsers, function(d) {
 			d.name = d.name || data.testname || "";
 			d.tags = d.tags || data.tags || [];
 			d.build = data.build || build;
@@ -397,7 +399,7 @@ module.exports = function(grunt) {
 				done(false);
 			}
 			var test = new TestRunner(arg.username, arg.key);
-			test.forEachBrowser(arg.configs, test.jasmineRunner, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, function(status) {
+			test.forEachBrowser(arg.configs, test.jasmineRunner, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, function(status) {
 				console.log("All tests completed with status %s", status);
 				tunnel.stop(function() {
 					done(status);
@@ -418,7 +420,7 @@ module.exports = function(grunt) {
 				done(false);
 			}
 			var test = new TestRunner(arg.username, arg.key);
-			test.forEachBrowser(arg.configs, test.qunitRunner, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, function(status) {
+			test.forEachBrowser(arg.configs, test.qunitRunner, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, function(status) {
 				console.log("All tests completed with status %s", status);
 				tunnel.stop(function() {
 					done(status);

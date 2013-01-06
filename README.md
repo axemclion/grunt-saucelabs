@@ -35,9 +35,10 @@ In the `grunt.initConfig`, add the configuration that looks like the following
 		key: 'saucelabs-key', // if not provided it'll default to ENV SAUCE_ACCESS_KEY (if applicable)
 		urls: ['array or URLs to to load for QUnit'],
 		tunneled: 'true (default) / false; false if you choose to skip creating a Sauce connect tunnel.'
-		tunnelTimeout: 'A numeric value indicating the time to wait before closing all tunnels ',
+		tunnelTimeout: 'A numeric value indicating the time to wait before closing all tunnels',
 		testTimeout: 'Milliseconds to wait before timeout for qunit test per page',
 		testInterval: 'Milliseconds between retries to check if the tests are completed',
+		testReadyTimeout: 'Milliseconds to wait until the test-page is ready to be read',
 		testname: 'Name of the test',
 		tags: ['Array of tags']
 		browsers: [{
@@ -69,11 +70,13 @@ The parameters are
 * __urls__: An array or URLs that will be loaded in the browsers, one after another. Since SauceConnect is used, these URLs can also be localhost URLs that are available using the `server` task from grunt. _Required_
 * __tunneled__: Defaults to true; Won't launch a Sauce Connect tunnel if set to false. _Optional_
 * __testname__: The name of this test, displayed on the Sauce Labs dashboard. _Optional_
-* __tags__: An array of tags displayed for this test on the Sauce Labs dashboard. This can be the build number, commit number, etc, that can be obtained from grunt. 
+* __tags__: An array of tags displayed for this test on the Sauce Labs dashboard. This can be the build number, commit number, etc, that can be obtained from grunt. _Optional_
 * __browsers__: An array of objects representing the [various browsers](https://saucelabs.com/docs/browsers) on which this test should run.  _Optional_
-* __testTimeout__ : Number of milliseconds to wait for qunit tests on each page before timeout and failing the test
-* __testInterval__ : Number of milliseconds between each retry to see if a test is completed or not.
-* __onTestComplete__ : A callback that is called everytime a qunit test for a page is complete. Runs per page, per browser configuration. A true or false return value passes or fails the test, undefined return value does not alter the result of the test. For async results, call `this.async()` in the function. The return of `this.async()` is a function that should be called once the async action is completed.
+* __tunnelTimeout__: A numeric value indicating the time to wait before closing all tunnels (default: 120). _Optional_
+* __testTimeout__ : Number of milliseconds to wait for qunit tests on each page before timeout and failing the test (default: 300000). _Optional_
+* __testInterval__ : Number of milliseconds between each retry to see if a test is completed or not (default: 5000). _Optional_
+* __testReadyTimeout__: Number of milliseconds to wait until the test-page is ready to be read (default: 5000). _Optional_
+* __onTestComplete__ : A callback that is called everytime a qunit test for a page is complete. Runs per page, per browser configuration. A true or false return value passes or fails the test, undefined return value does not alter the result of the test. For async results, call `this.async()` in the function. The return of `this.async()` is a function that should be called once the async action is completed. _Optional_
 
 A typical `test` task running from Grunt could look like `grunt.registerTask('test', 'server qunit saucelabs-qunit');` This starts a server and then runs the Qunit tests first on PhantomJS and then using the Sauce Labs browsers. 
 
