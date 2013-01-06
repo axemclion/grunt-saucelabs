@@ -381,7 +381,7 @@ module.exports = function(grunt) {
 				done(false);
 			}
 			var test = new TestRunner(arg.username, arg.key);
-			test.forEachBrowser(arg.configs, test.qunitRunner, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, function(status) {
+			test.forEachBrowser(arg.configs, test.qunitRunner, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, function(status) {
 				console.log("All tests completed with status %s", status);
 				tunnel.stop(function() {
 					done(status);
