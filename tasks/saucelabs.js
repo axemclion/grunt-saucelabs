@@ -210,10 +210,10 @@ module.exports = function(grunt) {
 		};
 	};
 
-	TestRunner.prototype.jasmineRunner = function(testTimeout, testInterval, callback) {
+	TestRunner.prototype.jasmineRunner = function(testTimeout, testInterval, testReadyTimeout, callback) {
 		var browser = this.browser;
 		console.log("Starting Jasmine tests".cyan);
-		browser.waitForElementByClassName('alert', 1000 * 5, function(err, el) {
+		browser.waitForElementByClassName('alert', testReadyTimeout, function(err, el) {
 			browser.elementsByClassName('version', function(err, el) {
 				if(err) {
 					console.log("Could not get element by id", err);
@@ -281,11 +281,11 @@ module.exports = function(grunt) {
 		})
 	};
 
-	TestRunner.prototype.qunitRunner = function(testTimeout, testInterval, callback) {
+	TestRunner.prototype.qunitRunner = function(testTimeout, testInterval, testReadyTimeout, callback) {
 		var browser = this.browser;
 		var testResult = "qunit-testresult";
 		console.log("Starting qunit tests".cyan);
-		browser.waitForElementById(testResult, 1000 * 5, function() {
+		browser.waitForElementById(testResult, testReadyTimeout, function() {
 			console.log("Test div found, fetching the test result element".cyan);
 			browser.elementById(testResult, function(err, el) {
 				if(err) {
@@ -340,6 +340,7 @@ module.exports = function(grunt) {
 		result.tunnelTimeout = data.tunnelTimeout || 120;
 		result.testTimeout = data.testTimeout || (1000 * 60 * 5);
 		result.testInterval = data.testInterval || (1000 * 5);
+		result.testReadyTimeout = data.testReadyTimeout || (1000 * 5);
 		result.onTestComplete = data.onTestComplete;
 
 		_.map(data.browsers, function(d) {
@@ -361,7 +362,7 @@ module.exports = function(grunt) {
 				done(false);
 			}
 			var test = new TestRunner(arg.username, arg.key);
-			test.forEachBrowser(arg.configs, test.jasmineRunner, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, function(status) {
+			test.forEachBrowser(arg.configs, test.jasmineRunner, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, function(status) {
 				console.log("All tests completed with status %s", status);
 				tunnel.stop(function() {
 					done(status);
