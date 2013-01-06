@@ -1,4 +1,5 @@
 module.exports = function(grunt) {
+	var _ = (grunt.utils || grunt.util)._;
 	var sauce = require('saucelabs');
 	var request = require('request');
 	var proc = require('child_process');
@@ -328,7 +329,7 @@ module.exports = function(grunt) {
 	function defaults(data) {
 		var result = {}, build = Math.floor((new Date).getTime() / 1000 - 1230768000).toString();
 		result.url = data.url || data.urls;
-		if(grunt.utils._.isArray(result.url)) {
+		if(_.isArray(result.url)) {
 			result.pages = result.url;
 		} else {
 			result.pages = [result.url];
@@ -341,7 +342,7 @@ module.exports = function(grunt) {
 		result.testInterval = data.testInterval || (1000 * 5);
 		result.onTestComplete = data.onTestComplete;
 
-		grunt.utils._.map(data.browsers, function(d) {
+		_.map(data.browsers, function(d) {
 			d.name = d.name || data.testname || "";
 			d.tags = d.tags || data.tags || [];
 			d.build = data.build || build;
