@@ -71,9 +71,31 @@ module.exports = function(grunt) {
                 }, 1000);
             }
         }
+    },
+    'saucelabs-jasmine': {
+        all: {
+            urls: ['http://127.0.0.1:9999/jasmine/SpecRunner.html', 'http://127.0.0.1:9999/jasmine/SpecRunnerDos.html'],
+            tunnelTimeout: 5,
+            testname: 'Sauce Labs Grunt Task with Jasmine',
+            build: process.env.TRAVIS_JOB_ID,
+            concurrency: 3,
+            browsers: _browsers,
+            onTestComplete: function(){
+                // Called after a jasmine unit is done, per page, per browser
+                // Return true or false, passes or fails the test
+                // Returning undefined does not alter the test result
+
+                // For async return, call 
+                var done = this.async();
+                setTimeout(function(){
+                    // Return to this test after 1000 milliseconds
+                    done(/*true or false changes the test result, undefined does not alter the result*/);
+                }, 1000);
+            }
+        }
     }
 	});
 	grunt.loadTasks('tasks');
-	grunt.registerTask('test', 'server saucelabs-qunit');
+	grunt.registerTask('test', 'server saucelabs-qunit saucelabs-jasmine');
 	grunt.registerTask('default', 'lint test');
 };
