@@ -373,7 +373,7 @@ module.exports = function(grunt) {
 
 		result.username = data.username || process.env.SAUCE_USERNAME;
 		result.key = data.key || process.env.SAUCE_ACCESS_KEY;
-		result.tunneled = data.tunneled !== null ? data.tunneled : true;
+		result.tunneled = typeof data.tunneled !== 'undefined' ? data.tunneled : true;
 		result.tunnelTimeout = data.tunnelTimeout || 120;
 		result.testTimeout = data.testTimeout || (1000 * 60 * 5);
 		result.testInterval = data.testInterval || (1000 * 5);
