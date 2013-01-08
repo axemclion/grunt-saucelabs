@@ -172,7 +172,6 @@ module.exports = function(grunt) {
 						if(typeof onTestComplete === "function") {
 							var ret = onTestComplete(status, page, config, browser);
 							status = typeof ret === "undefined" ? status : ret;
-							me.report.passed(browser.sessionID, status, function() {});
 						}
 						if(!waitForAsync) {
 							success = success && status;
@@ -187,13 +186,17 @@ module.exports = function(grunt) {
 							if(err) {
 								console.log("Could not initialize browser for session".red, sessionId, cfg);
 								success = false;
-								done(success);
+								me.report.passed(driver.sessionID, success, function() {
+									done(success);
+								});
 								return;
 							}
 							(function testPage(j) {
 								if(j >= pages.length) {
 									driver.quit(function() {
-										done(success);
+										me.report.passed(driver.sessionID, success, function() {
+											done(success);
+										});
 									});
 									return;
 								}
