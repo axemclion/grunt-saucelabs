@@ -1,6 +1,9 @@
 grunt-saucelabs
 ---------------------
 
+[![Build Status](https://api.travis-ci.org/sourishkrout/grunt-saucelabs.png?branch=master)](https://travis-ci.org/sourishkrout/grunt-saucelabs)
+[![Selenium Test Status](https://saucelabs.com/buildstatus/grunt-sauce)](https://saucelabs.com/u/grunt-sauce)
+
 A Grunt task for running qunit and jasmine tests using Sauce Labs' Cloudified Browsers. 
 
 [Grunt](http://gruntjs.com/) is a task-based command line build tool for JavaScript projects, based on nodejs. 
