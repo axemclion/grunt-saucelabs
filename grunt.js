@@ -53,9 +53,8 @@ module.exports = function(grunt) {
     'saucelabs-qunit': {
         all: {
             urls: ['http://127.0.0.1:9999/qunit/lists-plugin.html', 'http://127.0.0.1:9999/qunit/twitter-plugin.html'],
-            tunneled: false,
             tunnelTimeout: 5,
-            testname: 'QUnit w/ Grunt',
+            testname: 'Sauce Labs Grunt Task with QUnit',
             concurrency: 3,
             browsers: _browsers,
             onTestComplete: function(){
