@@ -1,6 +1,9 @@
 grunt-saucelabs
 ---------------------
 
+[![Build Status](https://api.travis-ci.org/sourishkrout/grunt-saucelabs.png?branch=master)](https://travis-ci.org/sourishkrout/grunt-saucelabs)
+[![Selenium Test Status](https://saucelabs.com/buildstatus/grunt-sauce)](https://saucelabs.com/u/grunt-sauce)
+
 A Grunt task for running qunit and jasmine tests using Sauce Labs' Cloudified Browsers. 
 
 [Grunt](http://gruntjs.com/) is a task-based command line build tool for JavaScript projects, based on nodejs. 
@@ -34,6 +37,7 @@ In the `grunt.initConfig`, add the configuration that looks like the following
 		username: 'saucelabs-user-name', // if not provided it'll default to ENV SAUCE_USERNAME (if applicable)
 		key: 'saucelabs-key', // if not provided it'll default to ENV SAUCE_ACCESS_KEY (if applicable)
 		urls: ['array or URLs to to load for QUnit'],
+		tunneled: 'true (default) / false; false if you choose to skip creating a Sauce connect tunnel.'
 		tunnelTimeout: 'A numeric value indicating the time to wait before closing all tunnels',
 		testTimeout: 'Milliseconds to wait before timeout for qunit test per page',
 		testInterval: 'Milliseconds between retries to check if the tests are completed',
@@ -67,6 +71,7 @@ The parameters are
 * __username__ : The Sauce Labs username that will be used to connect to the servers. _Required_
 * __key__ : The Sauce Labs secret key. Since this is a secret, this should not be checked into the source code and may be available as an environment variable. Grunt can access this using 	`process.env.saucekey`. _Required_
 * __urls__: An array or URLs that will be loaded in the browsers, one after another. Since SauceConnect is used, these URLs can also be localhost URLs that are available using the `server` task from grunt. _Required_
+* __tunneled__: Defaults to true; Won't launch a Sauce Connect tunnel if set to false. _Optional_
 * __testname__: The name of this test, displayed on the Sauce Labs dashboard. _Optional_
 * __tags__: An array of tags displayed for this test on the Sauce Labs dashboard. This can be the build number, commit number, etc, that can be obtained from grunt. _Optional_
 * __browsers__: An array of objects representing the [various browsers](https://saucelabs.com/docs/browsers) on which this test should run.  _Optional_

@@ -1,0 +1,8 @@
+language: node_js
+node_js:
+  - 0.8
+env:
+  - [
+      {secure: "kRdJJwsk0WvWjN7QsppavzGUFgAWLLCMc3wcoc8fpWogbiXfiviIGPgqVOJN\nM9C5gBiW1IaD5BpTaanWbd9+icDqcN4kWqRJPI9V4hjS2EOZhP8pzVatxpIj\nTm4DvwxCqPYjkmM8YVbqXmtulUJ8tf4d/735OicSgoPptpNcvH4="},
+      {secure: "h0bEiZUvJnjywIeTbF+RHQT0IgI7gIgdvXY++qX0YfV7xDdgxfmrO5ugEHDJ\nVtdLUdhY+tfs6uord0cjB/go+o+jb7xwTNRUuBbkjCox3sVdQ82sTzUQ29tP\nwxWPz3+18JC00wRzmV9ooPYTpRz/hhFJPrrOaNzQAvYi0jT4VPA="}
+    ]
