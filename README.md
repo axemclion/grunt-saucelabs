@@ -1,7 +1,7 @@
 grunt-saucelabs
 ---------------------
 
-[![Build Status](https://api.travis-ci.org/axemclion/grunt-saucelabs?branch=master)](https://travis-ci.org/sourishkrout/grunt-saucelabs)
+[![Build Status](https://api.travis-ci.org/axemclion/grunt-saucelabs.png?branch=master)](https://travis-ci.org/sourishkrout/grunt-saucelabs)
 [![Selenium Test Status](https://saucelabs.com/buildstatus/grunt-sauce)](https://saucelabs.com/u/grunt-sauce)
 
 A Grunt task for running qunit and jasmine tests using Sauce Labs' Cloudified Browsers. 
