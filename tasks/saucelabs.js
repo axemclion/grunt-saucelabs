@@ -221,7 +221,7 @@ module.exports = function(grunt) {
 				}
 
 				var brwrs = [], curr = 0, running = 0, res = true;
-				grunt.utils._.each(configs, function(_c) {
+				_.each(configs, function(_c) {
 					brwrs.push(initBrowser(_c));
 				});
 
