@@ -45,7 +45,7 @@ module.exports = function(grunt) {
 				console.log(data.toString().replace(/[\n\r]/g, ''));
 			}
 			if(data.toString().match(/Connected\! You may start your tests/)) {
-				// console.log('=> Sauce Labs Tunnel established');
+				console.log('=> Sauce Labs Tunnel established'.cyan);
 				if(!calledBack) {
 					calledBack = true;
 					callback(true);
@@ -80,7 +80,7 @@ module.exports = function(grunt) {
 			return callback();
 		}
 		var me = this;
-		console.log("Trying to kill all tunnels");
+		console.log("Trying to kill all tunnels".cyan);
 		this.getTunnels(function(tunnels) {
 			(function killTunnel(i) {
 				if(i >= tunnels.length) {
@@ -158,6 +158,7 @@ module.exports = function(grunt) {
 			testPages: function(pages, testTimeout, testInterval, testReadyTimeout, callback) {
 
 				function initBrowser(cfg) {
+					cfg.name = cfg.name || [cfg.browserName, cfg.platform || "", cfg.version || ""].join("/");
 					var success = true;
 
 					function onPageTested(status, page, config, browser, cb) {
@@ -184,7 +185,7 @@ module.exports = function(grunt) {
 						console.log("Starting tests on browser configuration".cyan, cfg);
 						driver.init(cfg, function(err, sessionId) {
 							if(err) {
-								console.log("Could not initialize browser for session".red, sessionId, cfg);
+								console.log("[%s] Could not initialize browser for session".red, cfg.name, sessionId, cfg);
 								success = false;
 								me.report.passed(driver.sessionID, success, function() {
 									done(success);
@@ -200,16 +201,16 @@ module.exports = function(grunt) {
 									});
 									return;
 								}
-								console.log("Starting test for page (%s) %s".cyan, j, pages[j]);
+								console.log("[%s] Starting test for page (%s) %s".cyan, cfg.name, j, pages[j]);
 								driver.get(pages[j], function(err) {
 									if(err) {
-										console.log("Could not fetch page (%s)%s".red, j, pages[j]);
+										console.log("[%s] Could not fetch page (%s)%s".red, cfg.name,  j, pages[j]);
 										onPageTested(false, pages[j], cfg, driver, function() {
 											testPage(j + 1);
 										});
 										return;
 									}
-									runner.call(me, driver, testTimeout, testInterval, testReadyTimeout, function(status) {
+									runner.call(me, driver, cfg, testTimeout, testInterval, testReadyTimeout, function(status) {
 										onPageTested(status, pages[j], cfg, driver, function() {
 											testPage(j + 1);
 										});
@@ -225,7 +226,7 @@ module.exports = function(grunt) {
 					brwrs.push(initBrowser(_c));
 				});
 
-				var next = function(success) {
+				(function next(success) {
 					if (typeof success !== 'undefined') {
 						res = res && success;
 						running--;
@@ -241,31 +242,29 @@ module.exports = function(grunt) {
 						running++;
 						next();
 					}
-				};
-
-				next();
+				}());
 			}
 		};
 	};
 
-	TestRunner.prototype.jasmineRunner = function(driver, testTimeout, testInterval, testReadyTimeout, callback) {
+	TestRunner.prototype.jasmineRunner = function(driver, cfg,testTimeout, testInterval, testReadyTimeout, callback) {
 		console.log("Starting Jasmine tests".cyan);
 		driver.waitForElementByClassName('alert', testReadyTimeout, function(err, el) {
 			driver.elementsByClassName('version', function(err, el) {
 				if(err) {
-					console.log("Could not get element by id", err);
+					console.log("[%s] Could not get element by id".red, cfg.name, err);
 					callback(false);
 					return;
 				}
 				driver.text(el, function(err, versionText) {
 					if(err) {
-						console.log("Could not see test inside element", err);
+						console.log("[%s] Could not see test inside element".red, cfg.name,err);
 						callback(false);
 					}
 
 					var versionMatch = versionText.match(/[0-9]+(\.[0-9]+)*/);
 					var version = versionMatch && versionMatch[0];
-					console.log("Detected jasmine version", version);
+					console.log("[%s] Detected jasmine version %s".cyan, cfg.name, version);
 					
 					var descriptionResultParser = {
 						"resultClass": "description",
@@ -285,29 +284,29 @@ module.exports = function(grunt) {
 
 					driver.elementsByClassName(resultParser[version].resultClass, function(err, els) {
 						if(err) {
-							console.log("Could not get element by id", err);
+							console.log("[%s] Could not get element by id".red, cfg.name, err);
 							callback(false);
 							return;
 						}
-						console.log("Fetched test result element, waiting for text inside it to change to complete");
+						console.log("Fetched test result element, waiting for text inside it to change to complete".cyan);
 						var el = els[0];
 						var retryCount = 0;
 						(function isCompleted() {
 							driver.text(el, function(err, text) {
 								if(err) {
-									console.log("Could not see test inside element", err);
+									console.log("[%s] Could not see test inside element".red, cfg.name,err);
 									callback(false);
 								} else if(retryCount * testInterval > testTimeout) {
-									console.log("Failed, waited for more than %s milliseconds".red, testTimeout);
+									console.log("[%s] Failed, waited for more than %s milliseconds".red, cfg.name,testTimeout);
 									callback(false);
 								} else if(text.match(resultParser[version].fail)) {
-									console.log(" => Tests ran result %s".red, text);
+									console.log("[%s] => Tests ran result %s".red, cfg.name,text);
 									callback(false);
 								} else if(text.match(resultParser[version].success)) {
-									console.log(" => Tests ran result %s".green, text);
+									console.log("[%s] => Tests ran result %s".green, cfg.name,text);
 									callback(true);
 								} else if(++retryCount * testInterval <= testTimeout) {
-									console.log("%s. Still running, Time passed - %s of %s milliseconds".yellow, retryCount, testInterval * retryCount, testTimeout);
+									console.log("[%s] %s. Still running, Time passed - %s of %s milliseconds".yellow, cfg.name, retryCount, testInterval * retryCount, testTimeout);
 									setTimeout(isCompleted, testInterval);
 								}
 							});
@@ -318,42 +317,42 @@ module.exports = function(grunt) {
 		});
 	};
 
-	TestRunner.prototype.qunitRunner = function(driver, testTimeout, testInterval, testReadyTimeout, callback) {
+	TestRunner.prototype.qunitRunner = function(driver, cfg, testTimeout, testInterval, testReadyTimeout, callback) {
 		var testResult = "qunit-testresult";
-		console.log("Starting qunit tests".cyan);
+		console.log("[%s] Starting qunit tests".cyan, cfg.name);
 		driver.waitForElementById(testResult, testReadyTimeout, function() {
-			console.log("Test div found, fetching the test result element".cyan);
+			console.log("[%s] Test div found, fetching the test result element".cyan, cfg.name);
 			driver.elementById(testResult, function(err, el) {
 				if(err) {
-					console.log("Could not get element by id", err);
+					console.log("[%s] Could not get element by id".red, cfg.name, err);
 					callback(false);
 					return;
 				}
-				console.log("Fetched test result element, waiting for text inside it to change to complete");
+				console.log("[%s] Fetched test result element, waiting for text inside it to change to complete".cyan, cfg.name);
 				var retryCount = 0;
 				(function isCompleted() {
 					driver.text(el, function(err, text) {
 						if(err) {
-							console.log("Could not see test inside element", err);
+							console.log("[%s] Could not see test inside element".red, cfg.name, err);
 							callback(false);
 							return;
 						}
 						if(!text.match(/completed/) && ++retryCount * testInterval <= testTimeout) {
-							console.log("%s. Still running, Time passed - %s of %s milliseconds".yellow, retryCount, testInterval * retryCount, testTimeout);
+							console.log("[%s] %s. Still running, Time passed - %s of %s milliseconds".yellow, cfg.name, retryCount, testInterval * retryCount, testTimeout);
 							setTimeout(isCompleted, testInterval);
 							return;
 						}
 						if(retryCount * testInterval > testTimeout) {
-							console.log("Failed, waited for more than %s milliseconds".red, testTimeout);
+							console.log("[%s] Failed, waited for more than %s milliseconds".red, cfg.name, testTimeout);
 							callback(false);
 							return;
 						}
 						x = text.split(/\n|of|,/);
 						if(parseInt(x[1], 10) !== parseInt(x[2], 10)) {
-							console.log(" => Tests ran result %s".red, text);
+							console.log("[%s] => Tests ran result %s".red, cfg.name, text);
 							callback(false);
 						} else {
-							console.log(" => Tests ran result %s".green, text);
+							console.log("[%s] => Tests ran result %s".green, cfg.name, text);
 							callback(true);
 						}
 					});
@@ -403,7 +402,7 @@ module.exports = function(grunt) {
 			}
 			var test = new TestRunner(arg.username, arg.key);
 			test.forEachBrowser(arg.configs, test.jasmineRunner, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, function(status) {
-				console.log("All tests completed with status %s", status);
+				console.log("All tests completed with status %s".blue, status);
 				tunnel.stop(function() {
 					done(status);
 				});
