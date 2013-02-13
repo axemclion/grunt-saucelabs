@@ -54,7 +54,6 @@ module.exports = function(grunt) {
         all: {
             urls: ['http://127.0.0.1:9999/qunit/lists-plugin.html', 'http://127.0.0.1:9999/qunit/twitter-plugin.html'],
             tunnelTimeout: 5,
-            testname: 'Sauce Labs Grunt Task with QUnit',
             build: process.env.TRAVIS_JOB_ID,
             concurrency: 3,
             browsers: _browsers
@@ -64,7 +63,6 @@ module.exports = function(grunt) {
         all: {
             urls: ['http://127.0.0.1:9999/jasmine/SpecRunner.html', 'http://127.0.0.1:9999/jasmine/SpecRunnerDos.html'],
             tunnelTimeout: 5,
-            testname: 'Sauce Labs Grunt Task with Jasmine',
             build: process.env.TRAVIS_JOB_ID,
             concurrency: 3,
             browsers: _browsers
