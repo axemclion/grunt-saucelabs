@@ -212,6 +212,7 @@ module.exports = function(grunt) {
                   }
                   runner.call(me, driver, cfg, testTimeout, testInterval, testReadyTimeout, detailedError, function(status) {
                     onPageTested(status, pages[j], cfg, driver, function() {
+                      console.log("[%s] Test Results: http://saucelabs.com/tests/%s  ".yellow, cfg.name, driver.sessionID);
                       testPage(j + 1);
                     });
                   });
