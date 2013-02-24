@@ -39,13 +39,17 @@ module.exports = function(grunt) {
 		},
 		connect: {
 			server: {
-				base: 'test',
-				port: 9999
+				options: {
+					base: 'test',
+					port: 9999
+				}
 			}
 		},
 
 		'saucelabs-qunit': {
 			all: {
+				//username: 'parashu',
+				//key: '',
 				urls: ['http://127.0.0.1:9999/qunit/lists-plugin.html', 'http://127.0.0.1:9999/qunit/twitter-plugin.html'],
 				tunnelTimeout: 5,
 				build: process.env.TRAVIS_JOB_ID,
@@ -55,18 +59,24 @@ module.exports = function(grunt) {
 		},
 		'saucelabs-jasmine': {
 			all: {
+				//username: 'parashu',
+				//key: '',
 				urls: ['http://127.0.0.1:9999/jasmine/SpecRunner.html', 'http://127.0.0.1:9999/jasmine/SpecRunnerDos.html'],
 				tunnelTimeout: 5,
 				build: process.env.TRAVIS_JOB_ID,
 				concurrency: 3,
 				browsers: _browsers
 			}
+		},
+		watch: {
+
 		}
 	});
 	grunt.loadTasks('tasks');
 
 	grunt.loadNpmTasks('grunt-contrib-jshint');
 	grunt.loadNpmTasks('grunt-contrib-connect');
+	grunt.loadNpmTasks('grunt-contrib-watch');
 
 	grunt.registerTask('test', ['connect', 'saucelabs-qunit', 'saucelabs-jasmine']);
 	grunt.registerTask('default', ['jshint', 'test']);
