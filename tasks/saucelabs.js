@@ -1,10 +1,8 @@
 module.exports = function(grunt) {
   var _ = (grunt.utils || grunt.util)._;
-  var sauce = require('saucelabs');
   var request = require('request');
   var proc = require('child_process');
   var wd = require('wd');
-  var fs = require('fs');
   var rqst = request.defaults({jar: false});
 
   var SauceStatus = function(user, key) {
@@ -22,7 +20,7 @@ module.exports = function(grunt) {
       url: _url,
       body: _body,
       json: true
-    }, function(error, response, body) {
+    }, function() {
       callback();
     });
   };
@@ -36,7 +34,7 @@ module.exports = function(grunt) {
     };
 
   SauceTunnel.prototype.openTunnel = function(callback) {
-    var args = ["-jar", grunt.file.expand("**/Sauce-Connect.jar")[0], this.user, this.key];
+    var args = ["-jar", __dirname + "/Sauce-Connect.jar", this.user, this.key];
     this.proc = proc.spawn('java', args);
     var calledBack = false;
 
@@ -111,7 +109,6 @@ module.exports = function(grunt) {
       }
       if(tunnels && tunnels.length > 0) {
         console.log("=> Looks like there are existing tunnels to Sauce Labs - %s".bold, tunnels);
-        var retryCount = 0;
         (function waitForTunnelsToDie(retryCount) {
           if(retryCount > 5) {
             console.log("=> Waited for %s retries, now trying to shut down all tunnels and try again".bold, retryCount);
@@ -250,7 +247,7 @@ module.exports = function(grunt) {
 
   TestRunner.prototype.jasmineRunner = function(driver, cfg,testTimeout, testInterval, testReadyTimeout, detailedError, callback) {
     console.log("Starting Jasmine tests".cyan);
-    driver.waitForElementByClassName('alert', testReadyTimeout, function(err, el) {
+    driver.waitForElementByClassName('alert', testReadyTimeout, function() {
       driver.elementsByClassName('version', function(err, el) {
         if(err) {
           console.log("[%s] Could not get element by id".red, cfg.name, err);
@@ -373,7 +370,7 @@ module.exports = function(grunt) {
               callback(false);
               return;
             }
-            x = text.split(/\n|of|,/);
+            var x = text.split(/\n|of|,/);
             if(parseInt(x[1], 10) !== parseInt(x[2], 10)) {
               console.log("[%s] => Tests ran result %s".red, cfg.name, text);
               if (detailedError) {
