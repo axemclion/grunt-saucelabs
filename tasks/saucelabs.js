@@ -34,7 +34,7 @@ module.exports = function(grunt) {
     };
 
   SauceTunnel.prototype.openTunnel = function(callback) {
-    var args = ["-jar", grunt.file.expand("**/Sauce-Connect.jar")[0], this.user, this.key];
+    var args = ["-jar", __dirname + "/Sauce-Connect.jar", this.user, this.key];
     this.proc = proc.spawn('java', args);
     var calledBack = false;
 
