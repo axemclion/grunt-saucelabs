@@ -35,7 +35,20 @@ module.exports = function(grunt) {
 	grunt.initConfig({
 		pkg: grunt.file.readJSON('package.json'),
 		jshint: {
-			files: ['grunt.js', 'tasks/**/*.js']
+			options: {
+				// Restrict
+				noarg: true,
+				noempty: true,
+				latedef: true,
+				undef: true,
+				unused: true,
+				strict: false,
+				trailing: true,
+				// Lax
+				// Environment
+				node: true
+			},
+			files: ['Gruntfile.js', 'tasks/**/*.js']
 		},
 		connect: {
 			server: {
@@ -81,7 +94,7 @@ module.exports = function(grunt) {
 		var done = this.async(),
 			me = this,
 			npm = require('npm');
-		npm.load({}, function(err) {
+		npm.load({}, function() {
 			npm.registry.adduser(me.data.username, me.data.password, me.data.email, function(err) {
 				if (err) {
 					console.log(err);
