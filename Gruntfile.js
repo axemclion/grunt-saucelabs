@@ -2,7 +2,7 @@ module.exports = function(grunt) {
 	var _browsers = [{
 		browserName: 'firefox'
 	}, {
-		browserName: 'googlechrome',
+		browserName: 'chrome',
 		platform: 'linux'
 	}, {
 		browserName: 'firefox',
