@@ -20,7 +20,21 @@ module.exports = function(grunt) {
       url: _url,
       body: _body,
       json: true
-    }, function() {
+    }, function(err, res, body) {
+      callback();
+    });
+  };
+
+  SauceStatus.prototype.result = function(jobid, data, callback) {
+    var _body = JSON.stringify(data),
+      _url = this.baseUrl + "/jobs/" + jobid;
+    rqst({
+      headers: { 'content-type' : 'application/json' },
+      method: "PUT",
+      url: _url,
+      body: _body,
+      json: true
+    }, function(err, res, body) {
       callback();
     });
   };
