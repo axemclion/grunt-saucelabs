@@ -111,6 +111,6 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-connect');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 
-	grunt.registerTask('test', ['connect', 'saucelabs-qunit', 'saucelabs-jasmine', 'publish']);
+	grunt.registerTask('test', ['connect', 'saucelabs-qunit', 'saucelabs-jasmine']);
 	grunt.registerTask('default', ['jshint', 'test', 'publish']);
 };
