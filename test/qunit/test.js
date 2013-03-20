@@ -804,5 +804,6 @@ if (typeof setTimeout !== 'undefined') {
 }
 
 QUnit.done = function(res) {
-  console.log(res);
+  // older IE versions don't like this. lame.
+  // console.log(res);
 };

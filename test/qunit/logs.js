@@ -155,7 +155,6 @@ test( "test2", 8, function() {
 
 	equal( log, 42, "QUnit.log calls" );
 });
-
 var testAutorun = true;
 
 QUnit.done(function() {
@@ -184,5 +183,6 @@ QUnit.done(function() {
 });
 
 QUnit.done = function(res) {
-  console.log(res);
+  // older IE versions don't like this test. lame.
+  // console.log(res);
 };
