@@ -63,7 +63,7 @@ module.exports = function(grunt) {
 			all: {
 				//username: 'parashu',
 				//key: '',
-				urls: ['http://127.0.0.1:9999/qunit/lists-plugin.html', 'http://127.0.0.1:9999/qunit/twitter-plugin.html'],
+				urls: ['http://127.0.0.1:9999/qunit/index.html', 'http://127.0.0.1:9999/qunit/logs.html'],
 				tunnelTimeout: 5,
 				build: process.env.TRAVIS_JOB_ID,
 				concurrency: 3,
