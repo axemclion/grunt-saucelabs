@@ -25,16 +25,17 @@ module.exports = function(grunt) {
     });
   };
 
-  var SauceTunnel = function(user, key, tunneled, tunnelTimeout) {
+  var SauceTunnel = function(user, key, identifier, tunneled, tunnelTimeout) {
       this.user = user;
       this.key = key;
+      this.identifier = identifier;
       this.tunneled = tunneled;
       this.tunnelTimeout = tunnelTimeout;
       this.baseUrl = ["https://", this.user, ':', this.key, '@saucelabs.com', '/rest/v1/', this.user].join("");
     };
 
   SauceTunnel.prototype.openTunnel = function(callback) {
-    var args = ["-jar", __dirname + "/Sauce-Connect.jar", this.user, this.key];
+    var args = ["-jar", __dirname + "/Sauce-Connect.jar", this.user, this.key, "-i", this.identifier];
     this.proc = proc.spawn('java', args);
     var calledBack = false;
 
@@ -400,6 +401,7 @@ module.exports = function(grunt) {
 
     result.username = data.username || process.env.SAUCE_USERNAME;
     result.key = data.key || process.env.SAUCE_ACCESS_KEY;
+    result.identifier = build;
     result.tunneled = typeof data.tunneled !== 'undefined' ? data.tunneled : true;
     result.tunnelTimeout = data.tunnelTimeout || 120;
     result.testTimeout = data.testTimeout || (1000 * 60 * 5);
@@ -412,6 +414,9 @@ module.exports = function(grunt) {
       d.name = d.name || data.testname || "";
       d.tags = d.tags || data.tags || [];
       d.build = data.build || build;
+      if (result.tunneled) {
+        d['tunnel-identifier'] = data.build || build;
+      }
     });
     result.configs = data.browsers || [{}];
     result.concurrency = data.concurrency || result.configs.length;
@@ -421,7 +426,7 @@ module.exports = function(grunt) {
   grunt.registerMultiTask('saucelabs-jasmine', 'Run Jasmine test cases using Sauce Labs browsers', function() {
     var done = this.async(),
       arg = defaults(this.data);
-    var tunnel = new SauceTunnel(arg.username, arg.key, arg.tunneled, arg.tunnelTimeout);
+    var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, arg.tunnelTimeout);
     if (this.tunneled) {
       console.log("=> Starting Tunnel to Sauce Labs".inverse.bold);
     }
@@ -442,7 +447,7 @@ module.exports = function(grunt) {
   grunt.registerMultiTask('saucelabs-qunit', 'Run Qunit test cases using Sauce Labs browsers', function() {
     var done = this.async(),
       arg = defaults(this.data);
-    var tunnel = new SauceTunnel(arg.username, arg.key, arg.tunneled, arg.tunnelTimeout);
+    var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, arg.tunnelTimeout);
     if (this.tunneled) {
       console.log("=> Starting Tunnel to Sauce Labs".inverse.bold);
     }
