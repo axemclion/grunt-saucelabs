@@ -172,6 +172,7 @@ module.exports = function(grunt) {
         function initBrowser(cfg) {
           cfg.name = cfg.name || [cfg.browserName, cfg.platform || "", cfg.version || ""].join("/");
           var success = true;
+          var results = [];
 
           function onPageTested(status, page, config, browser, cb) {
             var waitForAsync = false;
@@ -204,11 +205,30 @@ module.exports = function(grunt) {
                 });
                 return;
               }
+              var finished = function(cb) {
+                if (results.length > 0) {
+                  var _data = _.reduce(results, function(a, b) {
+                    if (a === null) {
+                      return b;
+                    } else {
+                      _.each(b, function(value, key, lst) {
+                        a[key] += lst[key];
+                      });
+                      return a;
+                    }
+                  }, null);
+                  me.report.result(driver.sessionID, { 'custom-data': {qunit: _data} }, function() {
+                    cb(success);
+                  });
+                } else {
+                  cb(success);
+                }
+              };
               (function testPage(j) {
                 if(j >= pages.length) {
                   driver.quit(function() {
                     me.report.passed(driver.sessionID, success, function() {
-                      done(success);
+                      finished(done);
                     });
                   });
                   return;
@@ -222,7 +242,8 @@ module.exports = function(grunt) {
                     });
                     return;
                   }
-                  runner.call(me, driver, cfg, testTimeout, testInterval, testReadyTimeout, detailedError, function(status) {
+                  runner.call(me, driver, cfg, testTimeout, testInterval, testReadyTimeout, detailedError, function(status, obj) {
+                    results.push(obj);
                     onPageTested(status, pages[j], cfg, driver, function() {
                       console.log("[%s] Test Results: http://saucelabs.com/tests/%s  ".yellow, cfg.name, driver.sessionID);
                       testPage(j + 1);
@@ -368,11 +389,17 @@ module.exports = function(grunt) {
           });
         };
 
+        var fetchResults = function(cb, status) {
+          driver.eval("window.global_test_results", function(err, obj) {
+            cb(status, obj);
+          });
+        };
+
         (function isCompleted() {
           driver.text(el, function(err, text) {
             if(err) {
               console.log("[%s] Could not see test inside element".red, cfg.name, err);
-              callback(false);
+              fetchResults(callback, false);
               return;
             }
             if(!text.match(/completed/) && ++retryCount * testInterval <= testTimeout) {
@@ -382,7 +409,7 @@ module.exports = function(grunt) {
             }
             if(retryCount * testInterval > testTimeout) {
               console.log("[%s] Failed, waited for more than %s milliseconds".red, cfg.name, testTimeout);
-              callback(false);
+              fetchResults(callback, false);
               return;
             }
             var x = text.split(/\n|of|,/);
@@ -390,13 +417,13 @@ module.exports = function(grunt) {
               console.log("[%s] => Tests ran result %s".red, cfg.name, text);
               if (detailedError) {
                 return showDetailedError(function () {
-                  callback(false);
+                  fetchResults(callback, false);
                 });
               }
-              callback(false);
+              fetchResults(callback, false);
             } else {
               console.log("[%s] => Tests ran result %s".green, cfg.name, text);
-              callback(true);
+              fetchResults(callback, true);
             }
           });
         }());
