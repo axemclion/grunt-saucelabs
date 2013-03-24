@@ -20,7 +20,7 @@ module.exports = function(grunt) {
       url: _url,
       body: _body,
       json: true
-    }, function(err, res, body) {
+    }, function() {
       callback();
     });
   };
@@ -34,7 +34,7 @@ module.exports = function(grunt) {
       url: _url,
       body: _body,
       json: true
-    }, function(err, res, body) {
+    }, function() {
       callback();
     });
   };
@@ -164,7 +164,7 @@ module.exports = function(grunt) {
     this.report = new SauceStatus(user, key);
   };
 
-  TestRunner.prototype.forEachBrowser = function(configs, runner, concurrency, onTestComplete) {
+  TestRunner.prototype.forEachBrowser = function(configs, runner, saucify, concurrency, onTestComplete) {
     var me = this;
     return {
       testPages: function(pages, testTimeout, testInterval, testReadyTimeout, detailedError, callback) {
@@ -206,18 +206,8 @@ module.exports = function(grunt) {
                 return;
               }
               var finished = function(cb) {
-                if (results.length > 0) {
-                  var _data = _.reduce(results, function(a, b) {
-                    if (a === null) {
-                      return b;
-                    } else {
-                      _.each(b, function(value, key, lst) {
-                        a[key] += lst[key];
-                      });
-                      return a;
-                    }
-                  }, null);
-                  me.report.result(driver.sessionID, { 'custom-data': {qunit: _data} }, function() {
+                if (results.length > 0 && typeof saucify === 'function') {
+                  me.report.result(driver.sessionID, saucify(results), function() {
                     cb(success);
                   });
                 } else {
@@ -366,6 +356,20 @@ module.exports = function(grunt) {
     });
   };
 
+  TestRunner.prototype.qunitSaucify = function(results) {
+    var _data = _.reduce(results, function(a, b) {
+      if (a === null) {
+        return b;
+      } else {
+        _.each(b, function(value, key, lst) {
+          a[key] += lst[key];
+        });
+        return a;
+      }
+    }, null);
+    return { 'custom-data': {qunit: _data} };
+  };
+
   TestRunner.prototype.qunitRunner = function(driver, cfg, testTimeout, testInterval, testReadyTimeout, detailedError, callback) {
     var testResult = "qunit-testresult";
     console.log("[%s] Starting qunit tests".cyan, cfg.name);
@@ -390,7 +394,7 @@ module.exports = function(grunt) {
         };
 
         var fetchResults = function(cb, status) {
-          driver.eval("window.global_test_results", function(err, obj) {
+          driver.safeEval("window.global_test_results", function(err, obj) {
             cb(status, obj);
           });
         };
@@ -476,7 +480,7 @@ module.exports = function(grunt) {
         done(false);
       }
       var test = new TestRunner(arg.username, arg.key);
-      test.forEachBrowser(arg.configs, test.jasmineRunner, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, arg.detailedError, function(status) {
+      test.forEachBrowser(arg.configs, test.jasmineRunner, null, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, arg.detailedError, function(status) {
         console.log("All tests completed with status %s".blue, status);
         tunnel.stop(function() {
           done(status);
@@ -497,7 +501,7 @@ module.exports = function(grunt) {
         done(false);
       }
       var test = new TestRunner(arg.username, arg.key);
-      test.forEachBrowser(arg.configs, test.qunitRunner, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, arg.detailedError, function(status) {
+      test.forEachBrowser(arg.configs, test.qunitRunner, test.qunitSaucify, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, arg.detailedError, function(status) {
         console.log("All tests completed with status %s", status);
         tunnel.stop(function() {
           done(status);
