@@ -115,8 +115,16 @@ Test.prototype = {
 		}
 	},
 	setup: function() {
-		if ( this.module !== config.previousModule ) {
-			if ( config.previousModule ) {
+		if (
+			// Emit moduleStart when we're switching from one module to another
+			this.module !== config.previousModule ||
+				// They could be equal (both undefined) but if the previousModule property doesn't
+				// yet exist it means this is the first test in a suite that isn't wrapped in a
+				// module, in which case we'll just emit a moduleStart event for 'undefined'.
+				// Without this, reporters can get testStart before moduleStart  which is a problem.
+				!hasOwn.call( config, 'previousModule' )
+		) {
+			if ( hasOwn.call( config, 'previousModule' ) ) {
 				runLoggingCallbacks( "moduleDone", QUnit, {
 					name: config.previousModule,
 					failed: config.moduleStats.bad,
@@ -126,10 +134,6 @@ Test.prototype = {
 			}
 			config.previousModule = this.module;
 			config.moduleStats = { all: 0, bad: 0 };
-			runLoggingCallbacks( "moduleStart", QUnit, {
-				name: this.module
-			});
-		} else if ( config.autorun ) {
 			runLoggingCallbacks( "moduleStart", QUnit, {
 				name: this.module
 			});
@@ -419,7 +423,7 @@ QUnit = {
 		test.queue();
 	},
 
-	// Specify the number of expected assertions to gurantee that failed test (no assertions are run at all) don't slip through.
+	// Specify the number of expected assertions to guarantee that failed test (no assertions are run at all) don't slip through.
 	expect: function( asserts ) {
 		if (arguments.length === 1) {
 			config.current.expected = asserts;
@@ -487,7 +491,7 @@ QUnit = {
 };
 
 // `assert` initialized at top of scope
-// Asssert helpers
+// Assert helpers
 // All of these must either call QUnit.push() or manually do:
 // - runLoggingCallbacks( "log", .. );
 // - config.current.assertions.push({ .. });
@@ -648,7 +652,7 @@ assert = {
 };
 
 /**
- * @deprecate since 1.8.0
+ * @deprecated since 1.8.0
  * Kept assertion helpers in root for backwards compatibility.
  */
 extend( QUnit, assert );
@@ -997,7 +1001,10 @@ extend( QUnit, {
 
 	extend: extend,
 	id: id,
-	addEvent: addEvent
+	addEvent: addEvent,
+	addClass: addClass,
+	hasClass: hasClass,
+	removeClass: removeClass
 	// load, equiv, jsDump, diff: Attached later
 });
 
@@ -1144,7 +1151,7 @@ QUnit.load = function() {
 		// `label` initialized at top of scope
 		label = document.createElement( "label" );
 		label.setAttribute( "for", "qunit-filter-pass" );
-		label.setAttribute( "title", "Only show tests and assertons that fail. Stored in sessionStorage." );
+		label.setAttribute( "title", "Only show tests and assertions that fail. Stored in sessionStorage." );
 		label.innerHTML = "Hide passed tests";
 		toolbar.appendChild( label );
 
@@ -1195,7 +1202,7 @@ addEvent( window, "load", QUnit.load );
 onErrorFnPrev = window.onerror;
 
 // Cover uncaught exceptions
-// Returning true will surpress the default browser handler,
+// Returning true will suppress the default browser handler,
 // returning false will let it run.
 window.onerror = function ( error, filePath, linerNr ) {
 	var ret = false;
@@ -1204,7 +1211,7 @@ window.onerror = function ( error, filePath, linerNr ) {
 	}
 
 	// Treat return value as window.onerror itself does,
-	// Only do our handling if not surpressed.
+	// Only do our handling if not suppressed.
 	if ( ret !== true ) {
 		if ( QUnit.config.current ) {
 			if ( QUnit.config.current.ignoreGlobalErrors ) {
@@ -1542,7 +1549,7 @@ function removeClass( elem, name ) {
 	while ( set.indexOf(" " + name + " ") > -1 ) {
 		set = set.replace(" " + name + " " , " ");
 	}
-	// If possible, trim it for prettiness, but not neccecarily
+	// If possible, trim it for prettiness, but not necessarily
 	elem.className = window.jQuery ? jQuery.trim( set ) : ( set.trim ? set.trim() : set );
 }
 
@@ -1603,7 +1610,7 @@ QUnit.equiv = (function() {
 			function useStrictEquality( b, a ) {
 				/*jshint eqeqeq:false */
 				if ( b instanceof a.constructor || a instanceof b.constructor ) {
-					// to catch short annotaion VS 'new' annotation of a
+					// to catch short annotation VS 'new' annotation of a
 					// declaration
 					// e.g. var i = 1;
 					// var j = new Number(1);
@@ -1632,7 +1639,7 @@ QUnit.equiv = (function() {
 					return QUnit.objectType( b ) === "regexp" &&
 						// the regex itself
 						a.source === b.source &&
-						// and its modifers
+						// and its modifiers
 						a.global === b.global &&
 						// (gmi) ...
 						a.ignoreCase === b.ignoreCase &&
@@ -2170,7 +2177,7 @@ QUnit.diff = (function() {
 	};
 }());
 
-// for CommonJS enviroments, export everything
+// for CommonJS environments, export everything
 if ( typeof exports !== "undefined" ) {
 	extend( exports, QUnit );
 }

@@ -1,8 +1,8 @@
 module.exports = function(grunt) {
-	var _browsers = [{
+	var browsers = [{
 		browserName: 'firefox',
-    version: '19',
-    platform: 'XP'
+		version: '19',
+		platform: 'XP'
 	}, {
 		browserName: 'chrome',
 		platform: 'XP'
@@ -23,7 +23,7 @@ module.exports = function(grunt) {
 		version: '8'
 	}, {
 		browserName: 'opera',
-    platform: 'Windows 2008',
+		platform: 'Windows 2008',
 		version: '12'
 	}];
 
@@ -31,19 +31,14 @@ module.exports = function(grunt) {
 		pkg: grunt.file.readJSON('package.json'),
 		jshint: {
 			options: {
-				// Restrict
-				noarg: true,
-				noempty: true,
-				latedef: true,
-				undef: true,
-				unused: true,
-				strict: false,
-				trailing: true,
-				// Lax
-				// Environment
-				node: true
+				jshintrc: __dirname + '/.jshintrc'
 			},
-			files: ['Gruntfile.js', 'tasks/**/*.js']
+			files: [
+				'bin/grunt-saucelabs-qunit',
+				'tasks/**/*.js',
+				'test/qunit/grunt-saucelabs-inject.js',
+				'Gruntfile.js'
+			]
 		},
 		connect: {
 			server: {
@@ -56,24 +51,23 @@ module.exports = function(grunt) {
 
 		'saucelabs-qunit': {
 			all: {
-				//username: 'parashu',
+				//username: '',
 				//key: '',
-				urls: ['http://127.0.0.1:9999/qunit/index.html', 'http://127.0.0.1:9999/qunit/logs.html'],
-				tunnelTimeout: 5,
+				urls: ['http://127.0.0.1:9999/qunit/index.html', 'http://127.0.0.1:9999/qunit/async.html'],
 				build: process.env.TRAVIS_JOB_ID,
 				concurrency: 3,
-				browsers: _browsers
+				browsers: browsers,
+				detailedError: true
 			}
 		},
 		'saucelabs-jasmine': {
 			all: {
-				//username: 'parashu',
+				//username: '',
 				//key: '',
 				urls: ['http://127.0.0.1:9999/jasmine/SpecRunner.html', 'http://127.0.0.1:9999/jasmine/SpecRunnerDos.html'],
-				tunnelTimeout: 5,
 				build: process.env.TRAVIS_JOB_ID,
 				concurrency: 3,
-				browsers: _browsers
+				browsers: browsers
 			}
 		},
 		publish: {
@@ -111,6 +105,8 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-connect');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 
-	grunt.registerTask('test', ['connect', 'saucelabs-qunit', 'saucelabs-jasmine']);
-	grunt.registerTask('default', ['jshint', 'test', 'publish']);
+	grunt.registerTask('test', ['jshint', 'connect', 'saucelabs-qunit', 'saucelabs-jasmine']);
+	grunt.registerTask('release', ['test', 'publish']);
+
+	grunt.registerTask('default', 'test');
 };
