@@ -6,7 +6,9 @@
 	<link rel="stylesheet" href="qunit.css">
 	<script src="qunit.js"></script>
 	<script src="logs.js"></script>
-	<script src="grunt-saucelabs-inject.js"></script>
+	<script>
+	QUnit.config.autostart = false;
+	</script>
 </head>
 <body>
 	<div id="qunit"></div>

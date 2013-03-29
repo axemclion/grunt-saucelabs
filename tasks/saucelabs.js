@@ -3,6 +3,7 @@ module.exports = function(grunt) {
   var request = require('request');
   var proc = require('child_process');
   var wd = require('wd');
+  var fs = require('fs');
   var rqst = request.defaults({jar: false});
   require('colors');
 
@@ -94,7 +95,7 @@ module.exports = function(grunt) {
       return callback();
     }
     var me = this;
-    grunt.log.writeln("[Sauce Labs Tunnel] Killling all tunnels");
+    grunt.log.writeln("[Sauce Labs Tunnel] Killing all tunnels");
     this.getTunnels(function(tunnels) {
       (function killTunnel(i) {
         if(i >= tunnels.length) {
@@ -360,7 +361,9 @@ module.exports = function(grunt) {
     });
   };
 
+  var script = fs.readFileSync(__dirname + '/../test/qunit/grunt-saucelabs-inject.js').toString();
   TestRunner.prototype.qunitRunner = function(driver, cfg, testTimeout, testInterval, testReadyTimeout, detailedError, pageurl, callback) {
+    driver.execute(script);
     var testResult = "qunit-testresult";
     grunt.log.writeln("[%s] Starting QUnit tests", cfg.name);
     driver.waitForElementById(testResult, testReadyTimeout, function() {
@@ -382,7 +385,8 @@ module.exports = function(grunt) {
           var prevTest,
             errorReport = [];
           if (report && report.results) {
-            errorReport.push('= Page: ' + report.name);
+            errorReport.push('= Page title: ' + report.name);
+            errorReport.push('Detailed report contains ' + report.results.length + ' failure(s).');
             report.results.forEach(function (assertion) {
               if (prevTest !== assertion.test) {
                 errorReport.push('== Test: ' + assertion.test);
@@ -402,10 +406,9 @@ module.exports = function(grunt) {
               }
               prevTest = assertion.test;
             });
-            delete report.results;
             grunt.log.error(errorReport.join('\n'));
           } else {
-            grunt.log.error("Unable to generate detailed error report", report);
+            grunt.log.error("Unable to generate detailed error report:\n< ", report);
           }
         };
 
@@ -427,7 +430,7 @@ module.exports = function(grunt) {
             }
             if(!text.match(/completed/) ) {
               if(++retryCount * testInterval <= testTimeout) {
-                grunt.verbose.writeln("[%s] Still waiting (attempt %s), Time passed - %s of %s milliseconds. %s", cfg.name, retryCount, testInterval * retryCount, testTimeout, text);
+                grunt.verbose.writeln("[%s] Still waiting (attempt %s), Time passed - %s of %s milliseconds.\n%s", cfg.name, retryCount, testInterval * retryCount, testTimeout, text.magenta);
                 setTimeout(isCompleted, testInterval);
               } else {
                 grunt.log.error("[%s] Timed out, waited for more than %s milliseconds", cfg.name, testTimeout);
