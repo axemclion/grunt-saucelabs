@@ -93,12 +93,12 @@ module.exports = function(grunt) {
 			npm.registry.adduser(me.data.username, me.data.password, me.data.email, function(err) {
 				if (err) {
 					console.log(err);
-					done(false);
+					done(true);
 				} else {
 					npm.config.set("email", me.data.email, "user");
 					npm.commands.publish([], function(err) {
 						console.log(err || "Published to registry");
-						done(!err);
+						done(true);
 					});
 				}
 			});
