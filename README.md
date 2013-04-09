@@ -38,14 +38,14 @@ In the `grunt.initConfig`, add the configuration that looks like the following
     key: 'saucelabs-key', // if not provided it'll default to ENV SAUCE_ACCESS_KEY (if applicable)
     urls: ['array or URLs to to load for QUnit'],
     concurrency: 'Number of concurrent browsers to test against. Will default to the number of overall browsers specified. Check your plan (free: 2, OSS: 3) and make sure you have got sufficient Sauce Labs concurrency.',
-    tunneled: 'true (default) / false; false if you choose to skip creating a Sauce connect tunnel.'
+    tunneled: 'true (default) / false; false if you choose to skip creating a Sauce connect tunnel.',
     tunnelTimeout: 'A numeric value indicating the time to wait before closing all tunnels',
     testTimeout: 'Milliseconds to wait before timeout for qunit test per page',
     testInterval: 'Milliseconds between retries to check if the tests are completed',
     testReadyTimeout: 'Milliseconds to wait until the test-page is ready to be read',
     detailedError: 'false (default) / true; if true log detailed test results when a test error occurs',
     testname: 'Name of the test',
-    tags: ['Array of tags']
+    tags: ['Array of tags'],
     browsers: [{
       browserName: 'opera'
     }],
