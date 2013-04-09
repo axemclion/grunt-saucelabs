@@ -45,7 +45,7 @@ In the `grunt.initConfig`, add the configuration that looks like the following
     testReadyTimeout: 'Milliseconds to wait until the test-page is ready to be read',
     detailedError: 'false (default) / true; if true log detailed test results when a test error occurs',
     testname: 'Name of the test',
-    tags: ['Array of tags']
+    tags: ['Array of tags'],
     browsers: [{
       browserName: 'opera'
     }],
