@@ -1,5 +1,9 @@
 module.exports = function(grunt) {
   var _ = (grunt.utils || grunt.util)._;
+  var os = require('os');
+  var tmpdir = os.tmpdir || os.tmpDir; // 0.10 or < 0.10
+  var path = require('path');
+  var fs = require('fs');
   var request = require('request');
   var proc = require('child_process');
   var wd = require('wd');
@@ -46,37 +50,47 @@ module.exports = function(grunt) {
       this.tunneled = tunneled;
       this.tunnelTimeout = tunnelTimeout;
       this.baseUrl = ["https://", this.user, ':', this.key, '@saucelabs.com', '/rest/v1/', this.user].join("");
+      this.readyFile = path.join(tmpdir(), 'sauce_labs_tunnel_' + process.pid + '.readyfile');
     };
 
   SauceTunnel.prototype.openTunnel = function(callback) {
-    var args = ["-jar", __dirname + "/Sauce-Connect.jar", this.user, this.key, "-i", this.identifier];
+    var args = ["-jar", __dirname + "/Sauce-Connect.jar", this.user, this.key, "-i", this.identifier, '-f', this.readyFile];
     this.proc = proc.spawn('java', args);
     var calledBack = false;
+    var readyFile = this.readyFile;
 
     this.proc.stdout.on('data', function(data) {
-      if(!data.toString().match(/^\[-u,/g)) {
-        console.log(data.toString().replace(/[\n\r]/g, ''));
-      }
-      if(data.toString().match(/Connected\! You may start your tests/)) {
-        console.log('=> Sauce Labs Tunnel established'.cyan);
-        if(!calledBack) {
-          calledBack = true;
-          callback(true);
-        }
-      }
+      console.log(data.toString().replace(/[\n\r]/g, ''));
     });
 
     this.proc.stderr.on('data', function(data) {
-      console.log(data.toString().replace(/[\n\r]/g, '').red);
+       console.log(data.toString().replace(/[\n\r]/g, '').red);
+     });
+
+    this.pollReadyFile(function() {
+      console.log('=> Sauce Labs Tunnel established'.cyan);
+      calledBack = true;
+      callback(true);
     });
 
     this.proc.on('exit', function(code) {
       console.log('=> Sauce Labs Tunnel disconnected ', code);
+      if (fs.existsSync(readyFile)) fs.unlinkSync(readyFile);
       if(!calledBack) {
         calledBack = true;
         callback(false);
       }
     });
+  };
+
+  SauceTunnel.prototype.pollReadyFile = function(callback) {
+    var readyFile = this.readyFile;
+    var readyFilePollInterval = setInterval(function() {
+      if (fs.existsSync(readyFile)) {
+        clearInterval(readyFilePollInterval);
+        callback();
+      }
+    }, 50);
   };
 
   SauceTunnel.prototype.getTunnels = function(callback) {
