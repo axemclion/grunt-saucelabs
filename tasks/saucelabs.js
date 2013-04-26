@@ -1,9 +1,11 @@
 module.exports = function(grunt) {
-  var _ = (grunt.utils || grunt.util)._;
-  var request = require('request');
-  var proc = require('child_process');
-  var wd = require('wd');
-  var rqst = request.defaults({jar: false});
+  var _ = (grunt.utils || grunt.util)._,
+    request = require('request'),
+    proc = require('child_process'),
+    wd = require('wd'),
+    rqst = request.defaults({
+      jar: false
+    });
 
   var SauceStatus = function(user, key) {
     this.user = user;
@@ -12,10 +14,14 @@ module.exports = function(grunt) {
   };
 
   SauceStatus.prototype.passed = function(jobid, status, callback) {
-    var _body = JSON.stringify({ "passed": status }),
+    var _body = JSON.stringify({
+      "passed": status
+    }),
       _url = this.baseUrl + "/jobs/" + jobid;
     rqst({
-      headers: { 'content-type' : 'application/x-www-form-urlencoded' },
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded'
+      },
       method: "PUT",
       url: _url,
       body: _body,
@@ -29,7 +35,9 @@ module.exports = function(grunt) {
     var _body = JSON.stringify(data),
       _url = this.baseUrl + "/jobs/" + jobid;
     rqst({
-      headers: { 'content-type' : 'application/json' },
+      headers: {
+        'content-type': 'application/json'
+      },
       method: "PUT",
       url: _url,
       body: _body,
@@ -40,13 +48,13 @@ module.exports = function(grunt) {
   };
 
   var SauceTunnel = function(user, key, identifier, tunneled, tunnelTimeout) {
-      this.user = user;
-      this.key = key;
-      this.identifier = identifier;
-      this.tunneled = tunneled;
-      this.tunnelTimeout = tunnelTimeout;
-      this.baseUrl = ["https://", this.user, ':', this.key, '@saucelabs.com', '/rest/v1/', this.user].join("");
-    };
+    this.user = user;
+    this.key = key;
+    this.identifier = identifier;
+    this.tunneled = tunneled;
+    this.tunnelTimeout = tunnelTimeout;
+    this.baseUrl = ["https://", this.user, ':', this.key, '@saucelabs.com', '/rest/v1/', this.user].join("");
+  };
 
   SauceTunnel.prototype.openTunnel = function(callback) {
     var args = ["-jar", __dirname + "/Sauce-Connect.jar", this.user, this.key, "-i", this.identifier];
@@ -54,12 +62,12 @@ module.exports = function(grunt) {
     var calledBack = false;
 
     this.proc.stdout.on('data', function(data) {
-      if(!data.toString().match(/^\[-u,/g)) {
-        console.log(data.toString().replace(/[\n\r]/g, ''));
+      if (!data.toString().match(/^\[-u,/g)) {
+        grunt.verbose.debug(data.toString().replace(/[\n\r]/g, ''));
       }
-      if(data.toString().match(/Connected\! You may start your tests/)) {
-        console.log('=> Sauce Labs Tunnel established'.cyan);
-        if(!calledBack) {
+      if (data.toString().match(/Connected\! You may start your tests/)) {
+        grunt.verbose.ok('=> Sauce Labs Tunnel established');
+        if (!calledBack) {
           calledBack = true;
           callback(true);
         }
@@ -67,12 +75,12 @@ module.exports = function(grunt) {
     });
 
     this.proc.stderr.on('data', function(data) {
-      console.log(data.toString().replace(/[\n\r]/g, '').red);
+      grunt.log.error(data.toString().replace(/[\n\r]/g, ''));
     });
 
     this.proc.on('exit', function(code) {
-      console.log('=> Sauce Labs Tunnel disconnected ', code);
-      if(!calledBack) {
+      grunt.verbose.ok('Sauce Labs Tunnel disconnected ', code);
+      if (!calledBack) {
         calledBack = true;
         callback(false);
       }
@@ -93,14 +101,14 @@ module.exports = function(grunt) {
       return callback();
     }
     var me = this;
-    console.log("Trying to kill all tunnels".cyan);
+    grunt.verbose.debug("Trying to kill all tunnels");
     this.getTunnels(function(tunnels) {
       (function killTunnel(i) {
-        if(i >= tunnels.length) {
+        if (i >= tunnels.length) {
           setTimeout(callback, 1000 * 5);
           return;
         }
-        console.log("Killing tunnel %s".red, tunnels[i]);
+        grunt.log.writeln("=> Killing tunnel %s", tunnels[i]);
         rqst({
           method: "DELETE",
           url: me.baseUrl + "/tunnels/" + tunnels[i],
@@ -117,28 +125,27 @@ module.exports = function(grunt) {
     if (!this.tunneled) {
       return callback(true);
     }
-
     this.getTunnels(function(tunnels) {
-      if (!tunnels){
-        console.log("=> Could not get tunnels for Sauce Labs. Still continuing to try connecting to Sauce Labs".red.inverse);
+      if (!tunnels) {
+        grunt.verbose.error("=> Could not get tunnels for Sauce Labs. Still continuing to try connecting to Sauce Labs".inverse);
       }
-      if(tunnels && tunnels.length > 0) {
-        console.log("=> Looks like there are existing tunnels to Sauce Labs - %s".bold, tunnels);
+      if (tunnels && tunnels.length > 0) {
+        grunt.log.writeln("=> Looks like there are existing tunnels to Sauce Labs, need to kill them. TunnelID:%s", tunnels);
         (function waitForTunnelsToDie(retryCount) {
-          if(retryCount > 5) {
-            console.log("=> Waited for %s retries, now trying to shut down all tunnels and try again".bold, retryCount);
+          if (retryCount > 5) {
+            grunt.verbose.writeln("=> Waited for %s retries, now trying to shut down all tunnels and try again", retryCount);
             me.killAllTunnels(function() {
               me.start(callback);
             });
           } else {
-            console.log("=> %s. Sauce Labs tunnels already exist, will try to connect again %s milliseconds.".red, retryCount, me.tunnelTimeout / 5);
+            grunt.verbose.debug("=> %s. Sauce Labs tunnels already exist, will try to connect again %s milliseconds.", retryCount, me.tunnelTimeout / 5);
             setTimeout(function() {
               waitForTunnelsToDie(retryCount + 1);
             }, me.tunnelTimeout / 5);
           }
         }(0));
       } else {
-        console.log("=> Sauce Labs trying to open tunnel".inverse);
+        grunt.verbose.writeln("=> Sauce Labs trying to open tunnel".inverse);
         me.openTunnel(function(status) {
           callback(status);
         });
@@ -160,7 +167,6 @@ module.exports = function(grunt) {
     this.key = key;
     this.host = 'ondemand.saucelabs.com';
     this.port = 80;
-
     this.report = new SauceStatus(user, key);
   };
 
@@ -168,9 +174,7 @@ module.exports = function(grunt) {
     var me = this;
     return {
       testPages: function(pages, testTimeout, testInterval, testReadyTimeout, detailedError, callback) {
-
         function initBrowser(cfg) {
-          cfg.name = cfg.name || [cfg.browserName, cfg.platform || "", cfg.version || ""].join("/");
           var success = true;
           var results = [];
 
@@ -183,11 +187,11 @@ module.exports = function(grunt) {
                 cb();
               };
             };
-            if(typeof onTestComplete === "function") {
+            if (typeof onTestComplete === "function") {
               var ret = onTestComplete(status, page, config, browser);
               status = typeof ret === "undefined" ? status : ret;
             }
-            if(!waitForAsync) {
+            if (!waitForAsync) {
               success = success && status;
               cb();
             }
@@ -195,10 +199,10 @@ module.exports = function(grunt) {
 
           return function(done) {
             var driver = wd.remote(me.host, me.port, me.user, me.key);
-            console.log("Starting tests on browser configuration".cyan, cfg);
+            grunt.verbose.writeln("Starting tests on browser configuration", cfg);
             driver.init(cfg, function(err, sessionId) {
-              if(err) {
-                console.log("[%s] Could not initialize browser for session".red, cfg.name, sessionId, cfg);
+              if (err) {
+                grunt.log.error("[%s] Could not initialize browser for session", cfg.prefix, sessionId, cfg);
                 success = false;
                 me.report.passed(driver.sessionID, success, function() {
                   done(success);
@@ -215,7 +219,7 @@ module.exports = function(grunt) {
                 }
               };
               (function testPage(j) {
-                if(j >= pages.length) {
+                if (j >= pages.length) {
                   driver.quit(function() {
                     me.report.passed(driver.sessionID, success, function() {
                       finished(done);
@@ -223,19 +227,19 @@ module.exports = function(grunt) {
                   });
                   return;
                 }
-                console.log("[%s] Starting test for page (%s) %s".cyan, cfg.name, j, pages[j]);
+                grunt.verbose.writeln("[%s] Testing page#%s %s at http://saucelabs.com/tests/%s", cfg.prefix, j, pages[j], driver.sessionID);
                 driver.get(pages[j], function(err) {
-                  if(err) {
-                    console.log("[%s] Could not fetch page (%s)%s".red, cfg.name,  j, pages[j]);
+                  if (err) {
+                    grunt.log.error("[%s] Could not fetch page (%s)%s", cfg.prefix, j, pages[j]);
                     onPageTested(false, pages[j], cfg, driver, function() {
                       testPage(j + 1);
                     });
                     return;
                   }
+                  driver.page = pages[j];
                   runner.call(me, driver, cfg, testTimeout, testInterval, testReadyTimeout, detailedError, function(status, obj) {
                     results.push(obj);
                     onPageTested(status, pages[j], cfg, driver, function() {
-                      console.log("[%s] Test Results: http://saucelabs.com/tests/%s  ".yellow, cfg.name, driver.sessionID);
                       testPage(j + 1);
                     });
                   });
@@ -245,8 +249,14 @@ module.exports = function(grunt) {
           };
         }
 
-        var brwrs = [], curr = 0, running = 0, res = true;
-        _.each(configs, function(_c) {
+        var brwrs = [],
+          colors = ['yellow', 'cyan', 'magenta', 'blue', 'green', 'red'],
+          curr = 0,
+          running = 0,
+          res = true;
+        _.each(configs, function(_c, i) {
+          _c.prefix = _c.name || (_c.platform ? _c.platform + '::' : '') + _c.browserName + (_c.version ? '(' + _c.version + ')' : '');
+          _c.prefix = _c.prefix[colors[i % colors.length]];
           brwrs.push(initBrowser(_c));
         });
 
@@ -271,24 +281,27 @@ module.exports = function(grunt) {
     };
   };
 
-  TestRunner.prototype.jasmineRunner = function(driver, cfg,testTimeout, testInterval, testReadyTimeout, detailedError, callback) {
-    console.log("Starting Jasmine tests".cyan);
+  TestRunner.prototype.jasmineRunner = function(driver, cfg, testTimeout, testInterval, testReadyTimeout, detailedError, callback) {
+    grunt.verbose.writeln("Starting Jasmine tests");
     driver.waitForElementByClassName('alert', testReadyTimeout, function() {
       driver.elementsByClassName('version', function(err, el) {
-        if(err) {
-          console.log("[%s] Could not get element by id".red, cfg.name, err);
+        if (err) {
+          grunt.log.error("[%s] Could not read test result", cfg.prefix, err);
+          grunt.log.error("[%s] More details about error at http://saucelabs.com/tests/%s", cfg.prefix, driver.sessionID);
           callback(false);
           return;
         }
         driver.text(el, function(err, versionText) {
-          if(err) {
-            console.log("[%s] Could not see test inside element".red, cfg.name,err);
+          if (err) {
+            grunt.log.error("[%s] Could not see test inside element", cfg.prefix, err);
+            grunt.log.error("[%s] More details about error at http://saucelabs.com/tests/%s", cfg.prefix, driver.sessionID);
+
             callback(false);
           }
 
           var versionMatch = versionText.match(/[0-9]+(\.[0-9]+)*/);
           var version = versionMatch && versionMatch[0];
-          console.log("[%s] Detected jasmine version %s".cyan, cfg.name, version);
+          grunt.verbose.writeln("[%s] Detected jasmine version %s", cfg.prefix, version);
 
           var descriptionResultParser = {
             "resultClass": "description",
@@ -307,47 +320,52 @@ module.exports = function(grunt) {
           };
 
 
-          var showDetailedError = function (callback) {
+          var showDetailedError = function(callback) {
             driver.elementById('details', function(err, detailEl) {
-              driver.text(detailEl, function (err, detailText) {
-                console.log("\n%s", detailText.red);
+              driver.text(detailEl, function(err, detailText) {
+                grunt.log.error("[%s] Error: %s", detailText, cfg.prefix);
                 callback();
               });
             });
           };
 
           driver.elementsByClassName(resultParser[version].resultClass, function(err, els) {
-            if(err) {
-              console.log("[%s] Could not get element by id".red, cfg.name, err);
+            if (err) {
+              grunt.log.error("[%s] Could not get element by id", cfg.prefix, err);
+              grunt.log.error("[%s] More details about error at http://saucelabs.com/tests/%s", cfg.prefix, driver.sessionID);
+
               callback(false);
               return;
             }
-            console.log("Fetched test result element, waiting for text inside it to change to complete".cyan);
+            grunt.verbose.writeln("Fetched test result element, waiting for text inside it to change to complete");
             var el = els[0];
             var retryCount = 0;
             (function isCompleted() {
               driver.text(el, function(err, text) {
-                if(err) {
-                  console.log("[%s] Could not see test inside element".red, cfg.name,err);
+                grunt.log.subhead("\nTested %s", driver.page);
+                grunt.log.writeln("Environment: %s", cfg.prefix);
+                if (err) {
+                  grunt.log.error("Could not see test inside element", err);
                   callback(false);
-                } else if(retryCount * testInterval > testTimeout) {
-                  console.log("[%s] Failed, waited for more than %s milliseconds".red, cfg.name,testTimeout);
+                } else if (retryCount * testInterval > testTimeout) {
+                  grunt.log.error("Failed, waited for more than %s milliseconds", testTimeout);
                   callback(false);
-                } else if(text.match(resultParser[version].fail)) {
-                  console.log("[%s] => Tests ran result %s".red, cfg.name,text);
+                } else if (text.match(resultParser[version].fail)) {
+                  grunt.log.error("Result:  %s", text);
                   if (detailedError) {
-                    return showDetailedError(function () {
+                    return showDetailedError(function() {
                       callback(false);
                     });
                   }
                   callback(false);
-                } else if(text.match(resultParser[version].success)) {
-                  console.log("[%s] => Tests ran result %s".green, cfg.name,text);
+                } else if (text.match(resultParser[version].success)) {
+                  grunt.log.writeln("Result: %s", text.replace(/\n/g, ' '));
                   callback(true);
-                } else if(++retryCount * testInterval <= testTimeout) {
-                  console.log("[%s] %s. Still running, Time passed - %s of %s milliseconds".yellow, cfg.name, retryCount, testInterval * retryCount, testTimeout);
+                } else if (++retryCount * testInterval <= testTimeout) {
+                  grunt.verbose.writeln("[%s] %s. Still running, Time passed - %s of %s milliseconds", cfg.prefix, retryCount, testInterval * retryCount, testTimeout);
                   setTimeout(isCompleted, testInterval);
                 }
+                grunt.log.writeln("Test Video: http://saucelabs.com/tests/%s",driver.sessionID);
               });
             }());
           });
@@ -367,27 +385,32 @@ module.exports = function(grunt) {
         return a;
       }
     }, null);
-    return { 'custom-data': {qunit: _data} };
+    return {
+      'custom-data': {
+        qunit: _data
+      }
+    };
   };
 
   TestRunner.prototype.qunitRunner = function(driver, cfg, testTimeout, testInterval, testReadyTimeout, detailedError, callback) {
     var testResult = "qunit-testresult";
-    console.log("[%s] Starting qunit tests".cyan, cfg.name);
+    grunt.verbose.writeln("[%s] Starting qunit tests for page", cfg.prefix);
     driver.waitForElementById(testResult, testReadyTimeout, function() {
-      console.log("[%s] Test div found, fetching the test result element".cyan, cfg.name);
+      grunt.verbose.writeln("[%s] Test div found, fetching the test result element", cfg.prefix);
       driver.elementById(testResult, function(err, el) {
-        if(err) {
-          console.log("[%s] Could not get element by id".red, cfg.name, err);
+        if (err) {
+          grunt.log.error("[%s] Could not read test result for %s", cfg.prefix, err, driver.page);
+          grunt.log.error("[%s] More details at http://saucelabs.com/tests/%s", cfg.prefix, driver.page);
           callback(false);
           return;
         }
-        console.log("[%s] Fetched test result element, waiting for text inside it to change to complete".cyan, cfg.name);
+        grunt.verbose.writeln("[%s] Fetched test result element, waiting for text inside it to change to complete", cfg.prefix);
         var retryCount = 0;
 
-        var showDetailedError = function (cb) {
+        var showDetailedError = function(cb) {
           driver.elementById('qunit-tests', function(err, detailEl) {
-            driver.text(detailEl, function (err, detailText) {
-              console.log("\n%s", detailText.red);
+            driver.text(detailEl, function(err, detailText) {
+              grunt.log.error("\n%s", detailText);
               cb();
             });
           });
@@ -401,34 +424,38 @@ module.exports = function(grunt) {
 
         (function isCompleted() {
           driver.text(el, function(err, text) {
-            if(err) {
-              console.log("[%s] Could not see test inside element".red, cfg.name, err);
-              fetchResults(callback, false);
-              return;
-            }
-            if(!text.match(/completed/) && ++retryCount * testInterval <= testTimeout) {
-              console.log("[%s] %s. Still running, Time passed - %s of %s milliseconds".yellow, cfg.name, retryCount, testInterval * retryCount, testTimeout);
+            if (!text.match(/completed/) && ++retryCount * testInterval <= testTimeout) {
+              grunt.verbose.writeln("[%s] %s. Still running, Time passed - %s of %s milliseconds", cfg.prefix, retryCount, testInterval * retryCount, testTimeout);
               setTimeout(isCompleted, testInterval);
               return;
             }
-            if(retryCount * testInterval > testTimeout) {
-              console.log("[%s] Failed, waited for more than %s milliseconds".red, cfg.name, testTimeout);
+
+            // Test is now completed, so parse the results
+            grunt.log.subhead('\nTested %s', driver.page);
+            grunt.log.writeln('Environment: %s', cfg.prefix);
+            if (err) {
+              grunt.log.error("Could not see test results: %s", err.replace(/\n/g, ' '));
+              fetchResults(callback, false);
+              return;
+            }
+            if (retryCount * testInterval > testTimeout) {
+              grunt.log.error("Timeout, waited for more than %s milliseconds", testTimeout);
               fetchResults(callback, false);
               return;
             }
             var x = text.split(/\n|of|,/);
-            if(parseInt(x[1], 10) !== parseInt(x[2], 10)) {
-              console.log("[%s] => Tests ran result %s".red, cfg.name, text);
+            if (parseInt(x[1], 10) !== parseInt(x[2], 10)) {
               if (detailedError) {
-                return showDetailedError(function () {
+                return showDetailedError(function() {
                   fetchResults(callback, false);
                 });
               }
               fetchResults(callback, false);
             } else {
-              console.log("[%s] => Tests ran result %s".green, cfg.name, text);
+              grunt.log.ok("Result: %s", text.replace(/\n/g, '  '));
               fetchResults(callback, true);
             }
+            grunt.log.writeln("Test Video: http://saucelabs.com/tests/%s", driver.sessionID);
           });
         }());
       });
@@ -438,7 +465,7 @@ module.exports = function(grunt) {
   function defaults(data) {
     var result = {}, build = Math.floor((new Date()).getTime() / 1000 - 1230768000).toString();
     result.url = data.url || data.urls;
-    if(_.isArray(result.url)) {
+    if (_.isArray(result.url)) {
       result.pages = result.url;
     } else {
       result.pages = [result.url];
@@ -472,16 +499,19 @@ module.exports = function(grunt) {
     var done = this.async(),
       arg = defaults(this.data);
     var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, arg.tunnelTimeout);
+    grunt.log.writeln("=> Connecting to Saucelabs ...");
     if (this.tunneled) {
-      console.log("=> Starting Tunnel to Sauce Labs".inverse.bold);
+      grunt.verbose.writeln("=> Starting Tunnel to Sauce Labs".inverse.bold);
     }
     tunnel.start(function(isCreated) {
-      if(!isCreated) {
+      if (!isCreated) {
         done(false);
+        return;
       }
+      grunt.log.ok("Connected to Saucelabs");
       var test = new TestRunner(arg.username, arg.key);
       test.forEachBrowser(arg.configs, test.jasmineRunner, null, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, arg.detailedError, function(status) {
-        console.log("All tests completed with status %s".blue, status);
+        grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
         tunnel.stop(function() {
           done(status);
         });
@@ -493,16 +523,19 @@ module.exports = function(grunt) {
     var done = this.async(),
       arg = defaults(this.data);
     var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, arg.tunnelTimeout);
+    grunt.log.writeln("=> Connecting to Saucelabs ...");
     if (this.tunneled) {
-      console.log("=> Starting Tunnel to Sauce Labs".inverse.bold);
+      grunt.verbose.writeln("=> Starting Tunnel to Sauce Labs".inverse.bold);
     }
     tunnel.start(function(isCreated) {
-      if(!isCreated) {
+      if (!isCreated) {
         done(false);
+        return;
       }
+      grunt.log.ok("Connected to Saucelabs");
       var test = new TestRunner(arg.username, arg.key);
       test.forEachBrowser(arg.configs, test.qunitRunner, test.qunitSaucify, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, arg.detailedError, function(status) {
-        console.log("All tests completed with status %s", status);
+        grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
         tunnel.stop(function() {
           done(status);
         });

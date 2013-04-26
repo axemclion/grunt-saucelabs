@@ -75,7 +75,8 @@ module.exports = function(grunt) {
 				password: process.env.NPM_PASSWORD,
 				email: process.env.NPM_EMAIL
 			}
-		}
+		},
+		watch: {}
 	});
 
 	grunt.registerMultiTask('publish', 'Publish the latest version of this plugin', function() {
