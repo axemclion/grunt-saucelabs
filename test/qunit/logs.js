@@ -181,9 +181,3 @@ QUnit.done(function() {
 		equal(moduleDone, 1, "test in progress");
 	});
 });
-
-QUnit.done = function(res) {
-  global_test_results = res;
-  // older IE versions don't like this test. lame.
-  // console.log(res);
-};

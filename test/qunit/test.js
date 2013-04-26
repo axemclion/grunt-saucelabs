@@ -802,9 +802,3 @@ function testAfterDone() {
 if (typeof setTimeout !== 'undefined') {
 	QUnit.done(testAfterDone);
 }
-
-QUnit.done = function(res) {
-  global_test_results = res;
-  // older IE versions don't like this. lame.
-  // console.log(res);
-};
