@@ -85,7 +85,15 @@ The parameters are
 
 A typical `test` task running from Grunt could look like `grunt.registerTask('test', ['server', 'qunit', 'saucelabs-qunit']);` This starts a server and then runs the Qunit tests first on PhantomJS and then using the Sauce Labs browsers.
 
-Here is an __example__ `grunt.js` file - [https://gist.github.com/4061787](https://gist.github.com/4061787).
+Examples
+--------
+Some projects that use this task are as follows. You can take a look at their GruntFile.js for sample code
+
+* [This project](https://github.com/axemclion/grunt-saucelabs/blob/master/Gruntfile.js)
+* [Jquery-IndexedDB](https://github.com/axemclion/jquery-indexeddb/blob/master/GruntFile.js)
+* [IndexedDBShim](https://github.com/axemclion/IndexedDBShim/blob/master/Gruntfile.js)
+
+If you have a project that uses this plugin, please add it to this list and send a pull request. 
 
 Integration with a CI system
 --------------------------
