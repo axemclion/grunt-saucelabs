@@ -51,22 +51,26 @@ module.exports = function(grunt) {
 			all: {
 				//username: '',
 				//key: '',
-				urls: ['http://127.0.0.1:9999/qunit/index.html', 'http://127.0.0.1:9999/qunit/logs.html'],
-				tunnelTimeout: 5,
-				build: process.env.TRAVIS_JOB_ID,
-				concurrency: 3,
-				browsers: browsers
+				options: {
+					urls: ['http://127.0.0.1:9999/qunit/index.html', 'http://127.0.0.1:9999/qunit/logs.html'],
+					tunnelTimeout: 5,
+					build: process.env.TRAVIS_JOB_ID,
+					concurrency: 3,
+					browsers: browsers
+				}
 			}
 		},
 		'saucelabs-jasmine': {
 			all: {
 				//username: 'parashu',
 				//key: '',
-				urls: ['http://127.0.0.1:9999/jasmine/SpecRunner.html', 'http://127.0.0.1:9999/jasmine/SpecRunnerDos.html'],
-				tunnelTimeout: 5,
-				build: process.env.TRAVIS_JOB_ID,
-				concurrency: 3,
-				browsers: browsers
+				options: {
+					urls: ['http://127.0.0.1:9999/jasmine/SpecRunner.html', 'http://127.0.0.1:9999/jasmine/SpecRunnerDos.html'],
+					tunnelTimeout: 5,
+					build: process.env.TRAVIS_JOB_ID,
+					concurrency: 3,
+					browsers: browsers
+				}
 			}
 		},
 		publish: {

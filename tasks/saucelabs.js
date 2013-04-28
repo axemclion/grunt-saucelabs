@@ -365,7 +365,7 @@ module.exports = function(grunt) {
                   grunt.verbose.writeln("[%s] %s. Still running, Time passed - %s of %s milliseconds", cfg.prefix, retryCount, testInterval * retryCount, testTimeout);
                   setTimeout(isCompleted, testInterval);
                 }
-                grunt.log.writeln("Test Video: http://saucelabs.com/tests/%s",driver.sessionID);
+                grunt.log.writeln("Test Video: http://saucelabs.com/tests/%s", driver.sessionID);
               });
             }());
           });
@@ -462,42 +462,46 @@ module.exports = function(grunt) {
     });
   };
 
+  var defaultsObj = {
+    username: process.env.SAUCE_USERNAME,
+    key: process.env.SAUCE_ACCESS_KEY,
+    identifier: Math.floor((new Date()).getTime() / 1000 - 1230768000).toString(),
+    tunneled: true,
+    testTimeout: (1000 * 60 * 5),
+    tunnelTimeout: 120,
+    testInterval: 1000 * 5,
+    testReadyTimeout: 1000 * 5,
+    onTestComplete: function() {
+
+    },
+    detailedError: false,
+    testname: "",
+    tags: [],
+    browsers: [{}]
+  };
+
   function defaults(data) {
-    var result = {}, build = Math.floor((new Date()).getTime() / 1000 - 1230768000).toString();
-    result.url = data.url || data.urls;
-    if (_.isArray(result.url)) {
-      result.pages = result.url;
-    } else {
-      result.pages = [result.url];
+    var result = data;
+    result.pages = result.url || result.urls;
+    if (!_.isArray(result.pages)) {
+      result.pages = [result.pages];
     }
 
-    result.username = data.username || process.env.SAUCE_USERNAME;
-    result.key = data.key || process.env.SAUCE_ACCESS_KEY;
-    result.identifier = data.build || build;
-    result.tunneled = typeof data.tunneled !== 'undefined' ? data.tunneled : true;
-    result.tunnelTimeout = data.tunnelTimeout || 120;
-    result.testTimeout = data.testTimeout || (1000 * 60 * 5);
-    result.testInterval = data.testInterval || (1000 * 5);
-    result.testReadyTimeout = data.testReadyTimeout || (1000 * 5);
-    result.onTestComplete = data.onTestComplete;
-    result.detailedError = data.detailedError || false;
-
-    _.map(data.browsers, function(d) {
-      d.name = d.name || data.testname || "";
-      d.tags = d.tags || data.tags || [];
-      d.build = data.build || build;
-      if (result.tunneled) {
-        d['tunnel-identifier'] = data.build || build;
-      }
+    _.map(result.browsers, function(d) {
+      return _.extend(d, {
+        'name': result.testname,
+        'tags': result.tags,
+        'build': result.build,
+        'tunnel-identifier': result.identifier
+      });
     });
-    result.configs = data.browsers || [{}];
-    result.concurrency = data.concurrency || result.configs.length;
+    result.concurrency = result.concurrency || result.browsers.length;
     return result;
   }
 
   grunt.registerMultiTask('saucelabs-jasmine', 'Run Jasmine test cases using Sauce Labs browsers', function() {
     var done = this.async(),
-      arg = defaults(this.data);
+      arg = defaults(this.options(defaultsObj), this.data.browsers);
     var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, arg.tunnelTimeout);
     grunt.log.writeln("=> Connecting to Saucelabs ...");
     if (this.tunneled) {
@@ -510,7 +514,7 @@ module.exports = function(grunt) {
       }
       grunt.log.ok("Connected to Saucelabs");
       var test = new TestRunner(arg.username, arg.key);
-      test.forEachBrowser(arg.configs, test.jasmineRunner, null, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, arg.detailedError, function(status) {
+      test.forEachBrowser(arg.browsers, test.jasmineRunner, null, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, arg.detailedError, function(status) {
         grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
         tunnel.stop(function() {
           done(status);
@@ -521,7 +525,7 @@ module.exports = function(grunt) {
 
   grunt.registerMultiTask('saucelabs-qunit', 'Run Qunit test cases using Sauce Labs browsers', function() {
     var done = this.async(),
-      arg = defaults(this.data);
+      arg = defaults(this.options(defaultsObj));
     var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, arg.tunnelTimeout);
     grunt.log.writeln("=> Connecting to Saucelabs ...");
     if (this.tunneled) {
@@ -534,7 +538,7 @@ module.exports = function(grunt) {
       }
       grunt.log.ok("Connected to Saucelabs");
       var test = new TestRunner(arg.username, arg.key);
-      test.forEachBrowser(arg.configs, test.qunitRunner, test.qunitSaucify, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, arg.detailedError, function(status) {
+      test.forEachBrowser(arg.browsers, test.qunitRunner, test.qunitSaucify, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, arg.detailedError, function(status) {
         grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
         tunnel.stop(function() {
           done(status);
