@@ -340,27 +340,34 @@ module.exports = function(grunt) {
             grunt.verbose.writeln("Fetched test result element, waiting for text inside it to change to complete");
             var el = els[0];
             var retryCount = 0;
+
+            var fetchResults = function(cb, status) {
+              driver.safeEval("jasmine.getJSReport ? jasmine.getJSReport() : null;", function(err, obj) {
+                cb(status, obj);
+              });
+            };
+
             (function isCompleted() {
               driver.text(el, function(err, text) {
                 grunt.log.subhead("\nTested %s", driver.page);
                 grunt.log.writeln("Environment: %s", cfg.prefix);
                 if (err) {
                   grunt.log.error("Could not see test inside element", err);
-                  callback(false);
+                  fetchResults(callback, false);
                 } else if (retryCount * testInterval > testTimeout) {
                   grunt.log.error("Failed, waited for more than %s milliseconds", testTimeout);
-                  callback(false);
+                  fetchResults(callback, false);
                 } else if (text.match(resultParser[version].fail)) {
                   grunt.log.error("Result:  %s", text);
                   if (detailedError) {
                     return showDetailedError(function() {
-                      callback(false);
+                      fetchResults(callback, false);
                     });
                   }
-                  callback(false);
+                  fetchResults(callback, false);
                 } else if (text.match(resultParser[version].success)) {
                   grunt.log.writeln("Result: %s", text.replace(/\n/g, ' '));
-                  callback(true);
+                  fetchResults(callback, true);
                 } else if (++retryCount * testInterval <= testTimeout) {
                   grunt.verbose.writeln("[%s] %s. Still running, Time passed - %s of %s milliseconds", cfg.prefix, retryCount, testInterval * retryCount, testTimeout);
                   setTimeout(isCompleted, testInterval);
@@ -372,6 +379,17 @@ module.exports = function(grunt) {
         });
       });
     });
+  };
+
+  TestRunner.prototype.jasmineSaucify = function(results) {
+    var out = {'custom-data': {}};
+    var tests = _.each(results, function (result, i) {
+      if ( result !== null) {
+        var keyName = i === 0 ? 'jasmine' : 'jasmine' + i;
+        out['custom-data'][keyName] = result;
+      }
+    });
+    return out;
   };
 
   TestRunner.prototype.qunitSaucify = function(results) {
@@ -514,7 +532,7 @@ module.exports = function(grunt) {
       }
       grunt.log.ok("Connected to Saucelabs");
       var test = new TestRunner(arg.username, arg.key);
-      test.forEachBrowser(arg.browsers, test.jasmineRunner, null, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, arg.detailedError, function(status) {
+      test.forEachBrowser(arg.browsers, test.jasmineRunner, test.jasmineSaucify, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, arg.detailedError, function(status) {
         grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
         tunnel.stop(function() {
           done(status);
