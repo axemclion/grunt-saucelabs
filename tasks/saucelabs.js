@@ -501,7 +501,7 @@ module.exports = function(grunt) {
         'name': result.testname,
         'tags': result.tags,
         'build': result.build,
-        'tunnel-identifier': result.identifier
+        'tunnel-identifier': 'tunnel-identifier': result.tunneled ? result.identifier : ''
       });
     });
     result.concurrency = result.concurrency || result.browsers.length;
