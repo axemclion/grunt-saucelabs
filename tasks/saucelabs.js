@@ -387,7 +387,7 @@ module.exports = function(grunt) {
 
   TestRunner.prototype.jasmineSaucify = function(results) {
     var out = {'custom-data': {}};
-    var tests = _.each(results, function (result, i) {
+    _.each(results, function (result, i) {
       if ( result !== null) {
         var keyName = i === 0 ? 'jasmine' : 'jasmine' + i;
         out['custom-data'][keyName] = result;
