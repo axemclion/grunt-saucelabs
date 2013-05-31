@@ -511,6 +511,7 @@ module.exports = function(grunt) {
   grunt.registerMultiTask('saucelabs-jasmine', 'Run Jasmine test cases using Sauce Labs browsers', function() {
     var done = this.async(),
       arg = defaults(this.options(defaultsObj), this.data.browsers);
+    console.log(JSON.stringify(arg));
     var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, arg.tunnelTimeout);
     grunt.log.writeln("=> Connecting to Saucelabs ...");
     if (this.tunneled) {
@@ -535,6 +536,7 @@ module.exports = function(grunt) {
   grunt.registerMultiTask('saucelabs-qunit', 'Run Qunit test cases using Sauce Labs browsers', function() {
     var done = this.async(),
       arg = defaults(this.options(defaultsObj));
+    console.log(JSON.stringify(arg));
     var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, arg.tunnelTimeout);
     grunt.log.writeln("=> Connecting to Saucelabs ...");
     if (this.tunneled) {
