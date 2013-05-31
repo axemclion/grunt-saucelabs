@@ -61,11 +61,12 @@ module.exports = function(grunt) {
     this.proc = proc.spawn('java', args);
     var calledBack = false;
 
-    this.proc.stdout.on('data', function(data) {
-      if (!data.toString().match(/^\[-u,/g)) {
-        grunt.verbose.debug(data.toString().replace(/[\n\r]/g, ''));
+    this.proc.stdout.on('data', function(d) {
+      var data = typeof d !== 'undefined' ? d.toString() : '';
+      if (typeof data === 'string' && !data.match(/^\[-u,/g)) {
+        grunt.verbose.debug(data.replace(/[\n\r]/g, ''));
       }
-      if (data.toString().match(/Connected\! You may start your tests/)) {
+      if (typeof data === 'string' && data.match(/Connected\! You may start your tests/)) {
         grunt.verbose.ok('=> Sauce Labs Tunnel established');
         if (!calledBack) {
           calledBack = true;
@@ -357,6 +358,9 @@ module.exports = function(grunt) {
                 } else if (retryCount * testInterval > testTimeout) {
                   grunt.log.error("Failed, waited for more than %s milliseconds", testTimeout);
                   fetchResults(callback, false);
+                } else if (typeof text !== 'string') {
+                  grunt.log.error('Result : Error. Text not defined when trying to fetch results %s', typeof text);
+                  fetchResults(callback, false);
                 } else if (text.match(resultParser[version].fail)) {
                   grunt.log.error("Result:  %s", text);
                   if (detailedError) {
@@ -436,12 +440,17 @@ module.exports = function(grunt) {
 
         var fetchResults = function(cb, status) {
           driver.safeEval("window.global_test_results", function(err, obj) {
-            cb(status, obj);
+            cb(status, err || obj);
           });
         };
 
         (function isCompleted() {
           driver.text(el, function(err, text) {
+            if (typeof text !== 'string'){
+              grunt.log.error('Error - Could not read text to check if this was completed %s', typeof text);
+              callback(false);
+              return;
+            }
             if (!text.match(/completed/) && ++retryCount * testInterval <= testTimeout) {
               grunt.verbose.writeln("[%s] %s. Still running, Time passed - %s of %s milliseconds", cfg.prefix, retryCount, testInterval * retryCount, testTimeout);
               setTimeout(isCompleted, testInterval);
@@ -510,7 +519,7 @@ module.exports = function(grunt) {
         'name': result.testname,
         'tags': result.tags,
         'build': result.build,
-        'tunnel-identifier': result.identifier
+        'tunnel-identifier': result.tunneled ? result.identifier : ''
       });
     });
     result.concurrency = result.concurrency || result.browsers.length;
