@@ -512,6 +512,7 @@ module.exports = function(grunt) {
     var done = this.async(),
       arg = defaults(this.options(defaultsObj), this.data.browsers);
     console.log(JSON.stringify(arg));
+    console.log(JSON.stringify(process.env));
     var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, arg.tunnelTimeout);
     grunt.log.writeln("=> Connecting to Saucelabs ...");
     if (this.tunneled) {
@@ -537,6 +538,7 @@ module.exports = function(grunt) {
     var done = this.async(),
       arg = defaults(this.options(defaultsObj));
     console.log(JSON.stringify(arg));
+    console.log(JSON.stringify(process.env));
     var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, arg.tunnelTimeout);
     grunt.log.writeln("=> Connecting to Saucelabs ...");
     if (this.tunneled) {
