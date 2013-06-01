@@ -414,6 +414,19 @@ module.exports = function(grunt) {
     };
   };
 
+  TestRunner.prototype.yuiSaucify = function(results) {
+    return {
+      'custom-data': {
+        yui: {
+          failed: results[0].failed,
+          passed: results[0].passed,
+          total: results[0].total,
+          runtime: results[0].duration
+        }
+      }
+    };
+  };
+
   TestRunner.prototype.qunitRunner = function(driver, cfg, testTimeout, testInterval, testReadyTimeout, detailedError, callback) {
     var testResult = "qunit-testresult";
     grunt.verbose.writeln("[%s] Starting qunit tests for page", cfg.prefix);
@@ -485,6 +498,61 @@ module.exports = function(grunt) {
             grunt.log.writeln("Test Video: http://saucelabs.com/tests/%s", driver.sessionID);
           });
         }());
+      });
+    });
+  };
+
+  TestRunner.prototype.yuiRunner = function(driver, cfg, testTimeout, testInterval, testReadyTimeout, detailedError, callback) {
+    grunt.verbose.writeln("[%s] Starting YUI tests for page", cfg.prefix);
+    driver.waitForConditionInBrowser("YUI.YUITest.Runner.getResults() !=== null", testReadyTimeout, function() {
+    // driver.waitForElementById(testResult, testReadyTimeout, function() {
+      grunt.verbose.writeln("[%s] Test results ready, fetching", cfg.prefix);
+      driver.eval("YUI.YUITest.Runner.getResults()", function(err, json) {
+        if (err) {
+          grunt.log.error("[%s] Could not read test result for %s", cfg.prefix, err, driver.page);
+          grunt.log.error("[%s] More details at http://saucelabs.com/tests/%s", cfg.prefix, driver.page);
+          callback(false);
+          return;
+        }
+        grunt.verbose.writeln("[%s] Fetched test results", cfg.prefix);
+
+        var showDetailedError = function(cb) {
+          var outputFailures = function(obj) {
+            _.forOwn(obj, function (val, key, iobj) {
+              if (_.isObject(val)) {
+                return outputFailures(val);
+              }
+              if (val === 'fail' && key === 'result') {
+                grunt.log.error("\n%s", iobj.message.replace(/\n/g, ' '));
+              }
+            });
+          };
+          outputFailures(json);
+          cb();
+        };
+
+        if (typeof json !== 'object'){
+          grunt.log.error('Error - Could not read test run results %s', typeof text);
+          callback(false);
+          return;
+        }
+
+        // Test is now completed, so parse the results
+        grunt.log.subhead('\nTested %s', driver.page);
+        grunt.log.writeln('Environment: %s', cfg.prefix);
+        if (err) {
+          grunt.log.error("Could not see test results: %s", err.replace(/\n/g, ' '));
+          callback(false);
+          return;
+        }
+
+        if (json.failed !== 0) {
+          return showDetailedError(function () { callback(false, json); });
+        }
+
+        grunt.log.ok("Result: total: %s passed: %s failed: %s", json.total, json.passed, json.failed);
+        grunt.log.writeln("Test Video: http://saucelabs.com/tests/%s", driver.sessionID);
+        callback(true, json);
       });
     });
   };
@@ -566,6 +634,30 @@ module.exports = function(grunt) {
       grunt.log.ok("Connected to Saucelabs");
       var test = new TestRunner(arg.username, arg.key);
       test.forEachBrowser(arg.browsers, test.qunitRunner, test.qunitSaucify, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, arg.detailedError, function(status) {
+        grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
+        tunnel.stop(function() {
+          done(status);
+        });
+      });
+    });
+  });
+
+  grunt.registerMultiTask('saucelabs-yui', 'Run YUI test cases using Sauce Labs browsers', function() {
+    var done = this.async(),
+      arg = defaults(this.options(defaultsObj));
+    var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, arg.tunnelTimeout);
+    grunt.log.writeln("=> Connecting to Saucelabs ...");
+    if (this.tunneled) {
+      grunt.verbose.writeln("=> Starting Tunnel to Sauce Labs".inverse.bold);
+    }
+    tunnel.start(function(isCreated) {
+      if (!isCreated) {
+        done(false);
+        return;
+      }
+      grunt.log.ok("Connected to Saucelabs");
+      var test = new TestRunner(arg.username, arg.key);
+      test.forEachBrowser(arg.browsers, test.yuiRunner, test.yuiSaucify, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, arg.detailedError, function(status) {
         grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
         tunnel.stop(function() {
           done(status);
