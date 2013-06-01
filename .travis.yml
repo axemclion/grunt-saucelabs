@@ -11,6 +11,9 @@ env:
       {secure: "F0EXoCWmCupHW2Zlto46v57Ex2em5T1eerNbegrdn91jMSaiBGF6ktCyeNPI\nrIXa8aTGRq7Bw4v8qXVPTaL6X1DBHbNyqGBLxQofN6Szgzii8Fcb93NCZ/xq\nZNYDWM0eZ8LHiVt+w6/Hh5lni0aEmSmD+ZOsGPG9l8x8vQjuupc="},
       {secure: "gbCd30bu/Z8dxGV1hvalBxL5zMsCwWOlpDtPm0Pd4B3HW0+J5+YWhj47nYSG\nb8FbXYe2Sv7qFf5snPMvzV39hFMLfWZ2Pek/u52YRPQKnjs29Kj7SKsHygTw\nA1mqFOI9FQsjqOfXg3SdcF3gf07ThO1x++UCj2LDYTUxZLLfSgE="}
     ]
+script:
+  - grunt jshint
+  - if [ "$TRAVIS_SECURE_ENV_VARS" == "true" ] ; then grunt test ; fi
 notifications:
   email:
     on_success: never
