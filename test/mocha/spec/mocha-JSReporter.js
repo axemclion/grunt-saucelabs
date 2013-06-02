@@ -1,5 +1,11 @@
 // usage:
+//
 // mocha.setup({"ui":"qunit", "reporter":JSReporter});
+//
+//
+// after test:
+// 
+// mocha.getJSReport()
 
 function JSReporter(runner) {
 
@@ -71,10 +77,8 @@ function JSReporter(runner) {
 
 
   runner.on('end', function(){
-    var stats =self.stats;
 
     mocha.getJSReport = function() {
-      var suites =[];
       return rootSuite;
     };
   });
