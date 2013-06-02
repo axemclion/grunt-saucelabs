@@ -415,16 +415,19 @@ module.exports = function(grunt) {
   };
 
   TestRunner.prototype.yuiSaucify = function(results) {
-    return {
-      'custom-data': {
-        yui: {
-          failed: results[0].failed,
-          passed: results[0].passed,
-          total: results[0].total,
-          runtime: results[0].duration
-        }
+    var out = {'custom-data': {}};
+    _.each(results, function (result, i) {
+      if ( result !== null) {
+        var keyName = i === 0 ? 'yui' : 'yui' + i;
+        out['custom-data'][keyName] = {
+          failed: result.failed,
+          passed: result.passed,
+          total: result.total,
+          runtime: result.duration
+        };
       }
-    };
+    });
+    return out;
   };
 
   TestRunner.prototype.qunitRunner = function(driver, cfg, testTimeout, testInterval, testReadyTimeout, detailedError, callback) {
