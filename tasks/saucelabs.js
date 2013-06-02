@@ -414,6 +414,17 @@ module.exports = function(grunt) {
     };
   };
 
+  TestRunner.prototype.mochaSaucify = function(results) {
+    var out = {'custom-data': {}};
+    _.each(results, function (result, i) {
+      if ( result !== null) {
+        var keyName = i === 0 ? 'jasmine' : 'jasmine' + i;
+        out['custom-data'][keyName] = result;
+      }
+    });
+    return out;
+  };
+
   TestRunner.prototype.qunitRunner = function(driver, cfg, testTimeout, testInterval, testReadyTimeout, detailedError, callback) {
     var testResult = "qunit-testresult";
     grunt.verbose.writeln("[%s] Starting qunit tests for page", cfg.prefix);
@@ -489,6 +500,37 @@ module.exports = function(grunt) {
     });
   };
 
+  TestRunner.prototype.mochaRunner = function(driver, cfg, testTimeout, testInterval, testReadyTimeout, detailedError, callback) {
+    var testResult = "report";
+    grunt.verbose.writeln("[%s] Starting mocha tests for page", cfg.prefix);
+    driver.waitForElementById(testResult, testReadyTimeout, function() {
+      grunt.verbose.writeln("[%s] Test div found, fetching the test result element", cfg.prefix);
+      var retryCount = 0;
+      (function isCompleted() {
+        driver.safeEval("mocha.getJSReport()", function(err, results) {
+          if (!results && ++retryCount * testInterval <= testTimeout) {
+            grunt.verbose.writeln("[%s] %s. Still running, Time passed - %s of %s milliseconds", cfg.prefix, retryCount, testInterval * retryCount, testTimeout);
+            setTimeout(isCompleted, testInterval);
+            return;
+          }
+
+          
+          if (retryCount * testInterval > testTimeout) {
+            grunt.log.error("Timeout, waited for more than %s milliseconds", testTimeout);
+            grunt.log.error("Make sure that you are using Mocha-JSReporter: https://gist.github.com/darvin/5692488");
+
+            callback(false);
+            return;
+          }
+          callback(true, results)
+          grunt.log.writeln("Test Video: http://saucelabs.com/tests/%s", driver.sessionID);
+        });
+      })();
+    });
+  };
+
+
+
   var defaultsObj = {
     username: process.env.SAUCE_USERNAME,
     key: process.env.SAUCE_ACCESS_KEY,
@@ -542,6 +584,30 @@ module.exports = function(grunt) {
       grunt.log.ok("Connected to Saucelabs");
       var test = new TestRunner(arg.username, arg.key);
       test.forEachBrowser(arg.browsers, test.jasmineRunner, test.jasmineSaucify, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, arg.detailedError, function(status) {
+        grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
+        tunnel.stop(function() {
+          done(status);
+        });
+      });
+    });
+  });
+
+  grunt.registerMultiTask('saucelabs-mocha', 'Run Mocha test cases using Sauce Labs browsers', function() {
+    var done = this.async(),
+      arg = defaults(this.options(defaultsObj), this.data.browsers);
+    var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, arg.tunnelTimeout);
+    grunt.log.writeln("=> Connecting to Saucelabs ...");
+    if (this.tunneled) {
+      grunt.verbose.writeln("=> Starting Tunnel to Sauce Labs".inverse.bold);
+    }
+    tunnel.start(function(isCreated) {
+      if (!isCreated) {
+        done(false);
+        return;
+      }
+      grunt.log.ok("Connected to Saucelabs");
+      var test = new TestRunner(arg.username, arg.key);
+      test.forEachBrowser(arg.browsers, test.mochaRunner, test.mochaSaucify, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, arg.detailedError, function(status) {
         grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
         tunnel.stop(function() {
           done(status);
