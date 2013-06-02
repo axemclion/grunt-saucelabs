@@ -1,15 +1,15 @@
 module.exports = function(grunt) {
-	var browsers = [/*{
+	var browsers = [{
 		browserName: 'firefox',
 		version: '19',
 		platform: 'XP'
 	}, {
 		browserName: 'chrome',
 		platform: 'XP'
-	}, */{
+	}, {
 		browserName: 'chrome',
 		platform: 'linux'
-	}/*, {
+	}, {
 		browserName: 'internet explorer',
 		platform: 'WIN8',
 		version: '10'
@@ -25,7 +25,7 @@ module.exports = function(grunt) {
 		browserName: 'opera',
 		platform: 'Windows 2008',
 		version: '12'
-	}*/];
+	}];
 
 	grunt.initConfig({
 		pkg: grunt.file.readJSON('package.json'),
