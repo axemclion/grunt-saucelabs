@@ -75,6 +75,20 @@ module.exports = function(grunt) {
 				}
 			}
 		},
+		'saucelabs-mocha': {
+			all: {
+				//username: 'parashu',
+				//key: '',
+				options: {
+					urls: ['http://127.0.0.1:9999/mocha/spec/runner.html'],
+					tunnelTimeout: 5,
+					build: process.env.TRAVIS_JOB_ID,
+					concurrency: 3,
+					browsers: browsers,
+					testname: "mocha tests"
+				}
+			}
+		},
 		publish: {
 			npm: {
 				username: process.env.NPM_USERNAME,
@@ -111,6 +125,6 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-connect');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 
-	grunt.registerTask('test', ['connect', 'saucelabs-qunit', 'saucelabs-jasmine']);
+	grunt.registerTask('test', ['connect', 'saucelabs-jasmine', 'saucelabs-mocha', 'saucelabs-qunit']);
 	grunt.registerTask('default', ['jshint', 'test', 'publish']);
 };
