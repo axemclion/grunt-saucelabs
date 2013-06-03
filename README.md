@@ -4,10 +4,14 @@ grunt-saucelabs
 [![Build Status](https://api.travis-ci.org/axemclion/grunt-saucelabs.png?branch=master)](https://travis-ci.org/axemclion/grunt-saucelabs)
 [![Selenium Test Status](https://saucelabs.com/buildstatus/grunt-sauce)](https://saucelabs.com/u/grunt-sauce)
 
-A Grunt task for running qunit and jasmine tests using Sauce Labs' Cloudified Browsers.
+[![Selenium Test Status](https://saucelabs.com/browser-matrix/grunt-sauce.svg)](https://saucelabs.com/u/grunt-sauce)
+
+A Grunt task for running QUnit, Jasmine, Mocha and YUI tests using Sauce Labs' Cloudified Browsers.
 
 [Grunt](http://gruntjs.com/) is a task-based command line build tool for JavaScript projects, based on nodejs.
 [QUnit](http://qunitjs.com/) is a powerful, easy-to-use JavaScript unit test suite used by the jQuery, jQuery UI and jQuery Mobile projects and is capable of testing any generic JavaScript code, including itself!
+[Mocha](http://visionmedia.github.io/mocha/) is a JavaScript test framework for running serial asynchronous tests.
+[YUI Test](http://developer.yahoo.com/yui/yuitest/) is a browser-based testing framework from Yahoo!.
 [Sauce Labs](https://saucelabs.com/) offers browser environments on the cloud for testing code.
 
 About the tool
@@ -15,7 +19,7 @@ About the tool
 The [grunt-contrib-qunit](https://github.com/gruntjs/grunt-contrib-qunit) task runs qunit based test suites on [PhantomJS](http://phantomjs.org/).
 The `saucelabs-qunit` task is very similar but runs the test suites on the cloudified browser environment provided by Sauce Labs. This ensures that subject of the test runs across different browser environment.
 The task also uses [Sauce Connect](https://saucelabs.com/docs/connect) to establish a tunnel between Sauce Labs browsers and the machine running Grunt to load local pages. This is typically useful for testing pages on localhost that are not publically accessible on the internet.
-The `saucelabs-jasmine` runs jasmine tests in the Sauce Labs browser. The `saucelabs-jasmine` task requires `jasmine-1.3.0`.
+The `saucelabs-jasmine` runs [Jasmine](http://pivotal.github.io/jasmine/) tests in the Sauce Labs browser. The `saucelabs-jasmine` task requires `jasmine-1.3.0`. There are also `saucelabs-mocha` and `saucelabs-yui` tasks that let you run your Mocha and YUI tests on Sauce Labs cloudified browser environment.
 
 Usage
 ------
@@ -68,7 +72,7 @@ In the `grunt.initConfig`, add the configuration that looks like the following
 
 ```
 
-The configuration of `saucelabs-jasmine` are exactly the same.
+The configuration of `saucelabs-jasmine`, `saucelabs-mocha`, `saucelabs-yui` are exactly the same.
 Note the options object inside a grunt target. This was introduced in grunt-saucelabs-* version 4.0.0 to be compatiable with grunt@0.4.0
 
 
