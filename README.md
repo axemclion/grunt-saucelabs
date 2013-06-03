@@ -93,6 +93,23 @@ The parameters are
 
 A typical `test` task running from Grunt could look like `grunt.registerTask('test', ['server', 'qunit', 'saucelabs-qunit']);` This starts a server and then runs the Qunit tests first on PhantomJS and then using the Sauce Labs browsers.
 
+Test results details with Jasmine
+---------------------------------
+You can make Job Details pages more infromative on Sauce by providing more data with each test. You will get info about each test run inside your suite directly on Sauce pages.
+
+[![Jasmine detailed results](https://saucelabs.com/images/front-tests/jasmine.png)](https://saucelabs.com/docs/javascript-unit-tests-integration)
+
+You can do that by using [Jasmine JS Reporter](https://github.com/detro/jasmine-jsreporter) that will let `saucelabs-jasmine` task provide in-depth data about each test as a JSON object.
+
+All you need to do is to include the new jasmine-jsreporter reporter to the page running Jasmine tests by adding new script in header:
+```html
+<script src="path/to/jasmine-jsreporter.js" type="text/javascript"></script>
+```
+and telling Jasmine to use it:
+```javascript
+jasmineEnv.addReporter(new jasmine.JSReporter());
+````
+
 Examples
 --------
 Some projects that use this task are as follows. You can take a look at their GruntFile.js for sample code
