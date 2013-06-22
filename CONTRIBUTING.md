@@ -15,3 +15,14 @@ Thank you for submitting a patch to this project, we really appretiate it. Here 
 	* If the saucelabs tests fail, `incoming-pr` is reverted to its original state.
 	* Your changes are preserved in a separate branch. Please take a look at this branch and fix any failing tests
 5. Once travis on the `incoming-pr` branch succeeds, your commits are automatically merged into `master`. 
+
+
+Filing Issues
+-------------
+
+If this plugin is not working for you, please read the documentation, and the examples. You can also look at the [Gruntfile.js](https://github.com/axemclion/grunt-saucelabs/blob/master/Gruntfile.js#L49) in this directory to see a sample of the task used, with all the parameters. 
+If you are looking for a feature, it would be best to open a bug and send in a pull request. 
+
+Discussions
+------------
+This project is maintained by [Sebastian Tiedtke](https://github.com/sourishkrout) and [Parashuram](http://github.com/axemcion). It would be easy to send them a tweet and ask them questions. 

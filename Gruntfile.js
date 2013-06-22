@@ -112,11 +112,11 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-connect');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 
-	var testjobs = ['connect'];
+	var testjobs = ['jshint', 'connect'];
 	if (typeof process.env.SAUCE_ACCESS_KEY !== 'undefined'){
-		testjobs.concat(['saucelabs-qunit', 'saucelabs-jasmine', 'saucelabs-yui', 'saucelabs-mocha']);
+		testjobs = testjobs.concat(['saucelabs-qunit', 'saucelabs-jasmine', 'saucelabs-yui', 'saucelabs-mocha']);
 	}
 
 	grunt.registerTask('test', testjobs);
-	grunt.registerTask('default', ['jshint', 'test']);
+	grunt.registerTask('default', ['test']);
 };
