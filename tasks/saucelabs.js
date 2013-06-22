@@ -298,6 +298,7 @@ module.exports = function(grunt) {
             grunt.log.error("[%s] More details about error at http://saucelabs.com/tests/%s", cfg.prefix, driver.sessionID);
 
             callback(false);
+            return;
           }
 
           var versionMatch = versionText.match(/[0-9]+(\.[0-9]+)*/);
