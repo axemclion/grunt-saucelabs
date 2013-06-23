@@ -1,20 +1,29 @@
-language: node_js
-node_js:
-  - 0.10
-before_script:
-  - npm install -g grunt-cli
-  - git submodule update --init --recursive
-  - ./travis.sh before
-env:
-  - [
-      {secure: "RtkktGYx5Diounj1rD8EbWZICRtN1/LiAkhK49A2eS0dtkfPEEByPWkynC9f\n4FYLDEoNXhRHFNL/j87QNeagpowuG7hRSt0Ftk9g+Qzg7acpiQeQXMuZFgsj\nTGrWvD/yT7VBaoYkAYOTFR5/T0mbUdFZcNUFsohJma8GZ6zug5s="},
-      {secure: "IYuxUdwc9Xe+UOWoNvD/TS4yNaM3LEtiM3NIYtOaC4AIqUYl6f1pPVOG6kPh\nrAQ4HdtE4XX5m1vdSmeeH8iL6jMQrjeQEK59HEDHU7Pyp1V9tpOVO8CjZ6/j\n5A1GkbdFX4nbIttln83SvUps+ShVbCkiOJDtzUUx6Y7D0n2mqtg="},
-      {secure: "kunMD9WucBc+nmEACM1j9vHQEZlBcQ46Fn7gXh8hSkyLDuUBoCnA8in+Kq1J\nzYtWSEc36D7WcSw7U6omOqax5yD0Je6iKoaR6SQcrBWaIGMM6m66edIUHB28\nkB6ecjwZWuXzjhKvRkxJzLULhgRlbje9LjKHUtJH1WcHrQQ+XCI="},
-    ]
-notifications:
-  email:
+--- 
+notifications: 
+  email: 
     on_success: never
-after_success:
-  - ./travis.sh merge
-after_failure:
-  - ./travis.sh revert
+node_js: 
+- 0.1
+after_failure: 
+- ./travis.sh revert
+env: 
+  global: 
+  - secure: |-
+      RtkktGYx5Diounj1rD8EbWZICRtN1/LiAkhK49A2eS0dtkfPEEByPWkynC9f
+      4FYLDEoNXhRHFNL/j87QNeagpowuG7hRSt0Ftk9g+Qzg7acpiQeQXMuZFgsj
+      TGrWvD/yT7VBaoYkAYOTFR5/T0mbUdFZcNUFsohJma8GZ6zug5s=
+  - secure: |-
+      IYuxUdwc9Xe+UOWoNvD/TS4yNaM3LEtiM3NIYtOaC4AIqUYl6f1pPVOG6kPh
+      rAQ4HdtE4XX5m1vdSmeeH8iL6jMQrjeQEK59HEDHU7Pyp1V9tpOVO8CjZ6/j
+      5A1GkbdFX4nbIttln83SvUps+ShVbCkiOJDtzUUx6Y7D0n2mqtg=
+  - secure: |-
+      fZXuDKZBDY8anYaoZE3M6f+5U9oOxsYu6cR+h7zXP5P+I5djwO9/bIduJ638
+      Q3uHy4jRu/PjNbMW/Eq9LFbdI7odNiOtZqikE0dvQvrlFS3Z+XqXES4I1ef8
+      zkP183w3LESZo2MA/iWtADxSY8e4ws1UJ7gwNH4P2sw+Qcxr+Q4=
+language: node_js
+after_success: 
+- ./travis.sh merge
+before_script: 
+- npm install -g grunt-cli
+- git submodule update --init --recursive
+- ./travis.sh before
