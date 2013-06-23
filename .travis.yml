@@ -9,6 +9,7 @@ env:
   - [
       {secure: "RtkktGYx5Diounj1rD8EbWZICRtN1/LiAkhK49A2eS0dtkfPEEByPWkynC9f\n4FYLDEoNXhRHFNL/j87QNeagpowuG7hRSt0Ftk9g+Qzg7acpiQeQXMuZFgsj\nTGrWvD/yT7VBaoYkAYOTFR5/T0mbUdFZcNUFsohJma8GZ6zug5s="},
       {secure: "IYuxUdwc9Xe+UOWoNvD/TS4yNaM3LEtiM3NIYtOaC4AIqUYl6f1pPVOG6kPh\nrAQ4HdtE4XX5m1vdSmeeH8iL6jMQrjeQEK59HEDHU7Pyp1V9tpOVO8CjZ6/j\n5A1GkbdFX4nbIttln83SvUps+ShVbCkiOJDtzUUx6Y7D0n2mqtg="},
+      {secure: "kunMD9WucBc+nmEACM1j9vHQEZlBcQ46Fn7gXh8hSkyLDuUBoCnA8in+Kq1J\nzYtWSEc36D7WcSw7U6omOqax5yD0Je6iKoaR6SQcrBWaIGMM6m66edIUHB28\nkB6ecjwZWuXzjhKvRkxJzLULhgRlbje9LjKHUtJH1WcHrQQ+XCI="},
     ]
 notifications:
   email:
