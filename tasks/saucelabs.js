@@ -503,6 +503,7 @@ module.exports = function(grunt) {
                   text,
                   parseInt(text.match(/passes: (\d+)/)[1], 10),    // number of tests that pass
                   parseInt(text.match(/failures: (\d+)/)[1], 10),  // number of tests that fail
+                  parseInt(text.match(/pending: (\d+)/)[1], 10),   // number of pending tests
                   text.match(/duration: ([\d,.]*)/)[1]             // duration, just the number
                 ];
                 currentState.push(totalResults);
@@ -512,7 +513,7 @@ module.exports = function(grunt) {
                 return;
               }
               
-              if ((!currentState || currentState[1] + currentState[2] < totalResults) && ++retryCount * testInterval <= testTimeout) {
+              if ((!currentState || currentState[1] + currentState[2] + currentState[3] < totalResults) && ++retryCount * testInterval <= testTimeout) {
                 grunt.verbose.writeln("[%s] %s. Still running, Time passed - %s of %s milliseconds", cfg.prefix, retryCount, testInterval * retryCount, testTimeout);
                 setTimeout(isCompleted, testInterval);
                 return;
