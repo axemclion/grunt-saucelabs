@@ -462,7 +462,6 @@ module.exports = function(grunt) {
 
   TestRunner.prototype.mochaRunner = function(driver, cfg, testTimeout, testInterval, testReadyTimeout, detailedError, callback) {
     var testResult = "mocha-stats",
-        resultRegexp = /passes: (\d*)failures: (\d*)duration: ([\d,.]*)s/,
         currentState = null,
         retryCount = 0;
     grunt.verbose.writeln("[%s] Starting mocha tests for page", cfg.prefix);
@@ -498,11 +497,21 @@ module.exports = function(grunt) {
                 return;
               }
 
-              currentState = text.match(resultRegexp);
-              currentState[1] = parseInt(currentState[1], 10);
-              currentState[2] = parseInt(currentState[2], 10);
-              currentState.push(totalResults);
-
+              // extract values from text, ex: "passes: 5pending: 0failures: 0duration: 0.01s"
+              try {
+                currentState = [
+                  text,
+                  parseInt(text.match(/passes: (\d+)/)[1], 10),    // number of tests that pass
+                  parseInt(text.match(/failures: (\d+)/)[1], 10),  // number of tests that fail
+                  text.match(/duration: ([\d,.]*)/)[1]             // duration, just the number
+                ];
+                currentState.push(totalResults);
+              } catch(err) {
+                grunt.log.error('Error - Could not extract passes, failures, or duration from text %s', err );
+                callback(false);
+                return;
+              }
+              
               if ((!currentState || currentState[1] + currentState[2] < totalResults) && ++retryCount * testInterval <= testTimeout) {
                 grunt.verbose.writeln("[%s] %s. Still running, Time passed - %s of %s milliseconds", cfg.prefix, retryCount, testInterval * retryCount, testTimeout);
                 setTimeout(isCompleted, testInterval);
