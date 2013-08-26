@@ -6,6 +6,8 @@ grunt-saucelabs
 
 [![Selenium Test Status](https://saucelabs.com/browser-matrix/grunt-sauce.svg)](https://saucelabs.com/u/grunt-sauce)
 
+[![Dependency Status](https://david-dm.org/axemclion/grunt-saucelabs.png)](https://david-dm.org/axemclion/grunt-saucelabs) [![devDependency Status](https://david-dm.org/axemclion/grunt-saucelabs/dev-status.png)](https://david-dm.org/axemclion/grunt-saucelabs#info=devDependencies)
+
 A Grunt task for running QUnit, Jasmine, Mocha and YUI tests using Sauce Labs' Cloudified Browsers.
 
 [Grunt](http://gruntjs.com/) is a task-based command line build tool for JavaScript projects, based on nodejs.
