@@ -26,7 +26,8 @@
     "grunt-saucelabs-qunit": "bin/grunt-saucelabs-qunit"
   },
   "engines": {
-    "node": ">=0.6"
+    "node": ">=0.6",
+    "npm": ">=1.2.12"
   },
   "scripts": {
     "test": "grunt"
@@ -39,15 +40,13 @@
     "colors": "~0.6.0"
   },
   "peerDependencies": {
-    "grunt": "~0.4.0"
+    "grunt": "~0.4.1"
   },
   "devDependencies": {
-    "grunt": "~0.4.0",
     "grunt-contrib-jshint": "~0.1.1",
     "grunt-contrib-connect": "~0.1.2",
     "grunt-contrib-watch": "~0.2.0",
-    "publish": "~0.3.2",
-    "npm": "~1.2.12"
+    "publish": "~0.3.2"
   },
   "keywords": [
     "gruntplugin",
