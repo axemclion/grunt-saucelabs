@@ -63,7 +63,7 @@ module.exports = function(grunt) {
           var success = true;
           var results = [];
 
-          function onPageTested(status, page, config, browser, cb) {
+          function onPageTested(status, page, config, browser, results, cb) {
             var waitForAsync = false;
             this.async = function() {
               waitForAsync = true;
@@ -73,7 +73,7 @@ module.exports = function(grunt) {
               };
             };
             if (typeof onTestComplete === "function") {
-              var ret = onTestComplete(status, page, config, browser);
+              var ret = onTestComplete(status, page, config, browser, results);
               status = typeof ret === "undefined" ? status : ret;
             }
             if (!waitForAsync) {
@@ -116,7 +116,7 @@ module.exports = function(grunt) {
                 driver.get(pages[j], function(err) {
                   if (err) {
                     grunt.log.error("[%s] Could not fetch page (%s)%s", cfg.prefix, j, pages[j]);
-                    onPageTested(false, pages[j], cfg, driver, function() {
+                    onPageTested(false, pages[j], cfg, driver, null, function() {
                       testPage(j + 1);
                     });
                     return;
@@ -124,7 +124,7 @@ module.exports = function(grunt) {
                   driver.page = pages[j];
                   runner.call(me, driver, cfg, testTimeout, testInterval, testReadyTimeout, detailedError, function(status, obj) {
                     results.push(obj);
-                    onPageTested(status, pages[j], cfg, driver, function() {
+                    onPageTested(status, pages[j], cfg, driver, obj, function() {
                       testPage(j + 1);
                     });
                   });
@@ -227,8 +227,15 @@ module.exports = function(grunt) {
             var el = els[0];
             var retryCount = 0;
 
-            var fetchResults = function(cb, status) {
+            var fetchResults = function(cb, status,retries) {
+			  retries = typeof retries !== 'undefined' ? retries +1 : 0;
+			  if (retries>10)
+				return;
               driver.safeEval("jasmine.getJSReport ? jasmine.getJSReport() : null;", function(err, obj) {
+				if(obj==null){
+					fetchResults(cb,status,retries);
+					return;
+				}
                 cb(status, obj);
               });
             };
