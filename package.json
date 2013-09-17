@@ -47,7 +47,7 @@
     "grunt-contrib-connect": "~0.3.0",
     "grunt-contrib-watch": "~0.5.3",
     "publish": "~0.3.2",
--    "npm": "~1.2.12"
+    "npm": "~1.2.12"
   },
   "keywords": [
     "gruntplugin",
