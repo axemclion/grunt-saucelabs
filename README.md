@@ -54,8 +54,8 @@ In the `grunt.initConfig`, add the configuration that looks like the following
       browsers: [{
         browserName: 'opera'
       }],
-      onTestComplete: function(){
-        // Called after a qunit unit is done, per page, per browser
+      onTestComplete: function(status, page, config, browser, results){
+        // Called after a test is done, per page, per browser
         // Return true or false, passes or fails the test
         // Returning undefined does not alter the test result
 
