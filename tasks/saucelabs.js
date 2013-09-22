@@ -228,11 +228,11 @@ module.exports = function(grunt) {
             var retryCount = 0;
 
             var fetchResults = function(cb, status,retries) {
-			  retries = typeof retries !== 'undefined' ? retries +1 : 0;
-			  if (retries>3)
+              retries = typeof retries !== 'undefined' ? retries +1 : 0;
+              if (retries>3)
 				return;
               driver.safeEval("jasmine.getJSReport ? jasmine.getJSReport() : null;", function(err, obj) {
-				if(obj==null){
+                if(obj===null){
 					fetchResults(cb,status,retries);
 					return;
 				}
