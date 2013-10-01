@@ -117,6 +117,7 @@ Some projects that use this task are as follows. You can take a look at their Gr
 * [This project](https://github.com/axemclion/grunt-saucelabs/blob/master/Gruntfile.js)
 * [Jquery-IndexedDB](https://github.com/axemclion/jquery-indexeddb/blob/master/GruntFile.js)
 * [IndexedDBShim](https://github.com/axemclion/IndexedDBShim/blob/master/Gruntfile.js)
+* [Backbone.Geppetto](https://github.com/ModelN/backbone.geppetto/blob/master/Gruntfile.js#L135-L147) : An event-driven Command framework for BackboneJS
 
 If you have a project that uses this plugin, please add it to this list and send a pull request. 
 
