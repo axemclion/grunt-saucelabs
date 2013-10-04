@@ -499,11 +499,18 @@ module.exports = function(grunt) {
 
               // extract values from text, ex: "passes: 5pending: 0failures: 0duration: 0.01s"
               try {
+                var pending = 0;
+                try {
+                  pending = parseInt(text.match(/pending: (\d+)/)[1], 10);   // number of pending tests
+                } catch (e) {
+                  pending = 0;
+                }
+
                 currentState = [
                   text,
                   parseInt(text.match(/passes: (\d+)/)[1], 10),    // number of tests that pass
                   parseInt(text.match(/failures: (\d+)/)[1], 10),  // number of tests that fail
-                  parseInt(text.match(/pending: (\d+)/)[1], 10),   // number of pending tests
+                  pending,
                   text.match(/duration: ([\d,.]*)/)[1]             // duration, just the number
                 ];
                 currentState.push(totalResults);
