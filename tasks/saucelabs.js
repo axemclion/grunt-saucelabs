@@ -339,7 +339,7 @@ module.exports = function(grunt) {
       driver.elementById(testResult, function(err, el) {
         if (err) {
           grunt.log.error("[%s] Could not read test result for %s", cfg.prefix, err, driver.page);
-          grunt.log.error("[%s] More details at http://saucelabs.com/tests/%s", cfg.prefix, driver.page);
+          grunt.log.error("[%s] More details at http://saucelabs.com/tests/%s", cfg.prefix, driver.sessionID);
           callback(false);
           return;
         }
@@ -413,7 +413,7 @@ module.exports = function(grunt) {
       driver.safeEval("YUI.YUITest.Runner.getResults()", function(err, json) {
         if (err) {
           grunt.log.error("[%s] Could not read test result for %s", cfg.prefix, err, driver.page);
-          grunt.log.error("[%s] More details at http://saucelabs.com/tests/%s", cfg.prefix, driver.page);
+          grunt.log.error("[%s] More details at http://saucelabs.com/tests/%s", cfg.prefix, driver.sessionID);
           callback(false);
           return;
         }
@@ -470,7 +470,7 @@ module.exports = function(grunt) {
       driver.elementById(testResult, function(err, el) {
         if (err) {
           grunt.log.error("[%s] Could not read test result for %s", cfg.prefix, err, driver.page);
-          grunt.log.error("[%s] More details at http://saucelabs.com/tests/%s", cfg.prefix, driver.page);
+          grunt.log.error("[%s] More details at http://saucelabs.com/tests/%s", cfg.prefix, driver.sessionID);
           callback(false);
           return;
         }
@@ -519,7 +519,7 @@ module.exports = function(grunt) {
                 callback(false);
                 return;
               }
-              
+
               if ((!currentState || currentState[1] + currentState[2] + currentState[3] < totalResults) && ++retryCount * testInterval <= testTimeout) {
                 grunt.verbose.writeln("[%s] %s. Still running, Time passed - %s of %s milliseconds", cfg.prefix, retryCount, testInterval * retryCount, testTimeout);
                 setTimeout(isCompleted, testInterval);
@@ -555,7 +555,7 @@ module.exports = function(grunt) {
           }());
         });
 
-        
+
 
 
       });
