@@ -575,6 +575,7 @@ module.exports = function(grunt) {
 
     },
     detailedError: false,
+    'public':'public',
     testname: "",
     tags: [],
     browsers: [{}]
@@ -591,6 +592,7 @@ module.exports = function(grunt) {
       return _.extend(d, {
         'name': result.testname,
         'tags': result.tags,
+        'public':result['public'],
         'build': result.build,
         'tunnel-identifier': result.tunneled ? result.identifier : ''
       });
