@@ -229,6 +229,7 @@ module.exports = function(grunt) {
 
             var fetchResults = function(cb, status) {
               driver.safeEval("jasmine.getJSReport ? jasmine.getJSReport() : null;", function(err, obj) {
+                grunt.log.writeln("Test Video: http://saucelabs.com/tests/%s", driver.sessionID);
                 cb(status, obj);
               });
             };
@@ -261,7 +262,6 @@ module.exports = function(grunt) {
                   grunt.verbose.writeln("[%s] %s. Still running, Time passed - %s of %s milliseconds", cfg.prefix, retryCount, testInterval * retryCount, testTimeout);
                   setTimeout(isCompleted, testInterval);
                 }
-                grunt.log.writeln("Test Video: http://saucelabs.com/tests/%s", driver.sessionID);
               });
             }());
           });
@@ -357,6 +357,7 @@ module.exports = function(grunt) {
 
         var fetchResults = function(cb, status) {
           driver.safeEval("window.global_test_results", function(err, obj) {
+            grunt.log.writeln("Test Video: http://saucelabs.com/tests/%s", driver.sessionID);
             cb(status, err || obj);
           });
         };
@@ -399,7 +400,6 @@ module.exports = function(grunt) {
               grunt.log.ok("Result: %s", text.replace(/\n/g, '  '));
               fetchResults(callback, true);
             }
-            grunt.log.writeln("Test Video: http://saucelabs.com/tests/%s", driver.sessionID);
           });
         }());
       });
@@ -485,6 +485,7 @@ module.exports = function(grunt) {
         };
 
         var fetchResults = function(cb, status) {
+          grunt.log.writeln("Test Video: http://saucelabs.com/tests/%s", driver.sessionID);
           cb(status, err || currentState);
         };
 
@@ -550,7 +551,6 @@ module.exports = function(grunt) {
                 grunt.log.ok("Result: %s", text.replace(/\n/g, '  '));
                 fetchResults(callback, true);
               }
-              grunt.log.writeln("Test Video: http://saucelabs.com/tests/%s", driver.sessionID);
             });
           }());
         });
