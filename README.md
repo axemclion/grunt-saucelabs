@@ -52,6 +52,7 @@ In the `grunt.initConfig`, add the configuration that looks like the following
       testReadyTimeout: 'Milliseconds to wait until the test-page is ready to be read',
       detailedError: 'false (default) / true; if true log detailed test results when a test error occurs',
       testname: 'Name of the test',
+      'public':'public||public restricted||team||share||private',
       tags: ['Array of tags'],
       browsers: [{
         browserName: 'opera'
@@ -80,6 +81,8 @@ Note the options object inside a grunt target. This was introduced in grunt-sauc
 
 The parameters are
 
+*__public__ : sharing saucelabs jobs (defaults: 'public') _Optional_
+*__build__ : build # (defaults: undefined) _Optional_
 * __username__ : The Sauce Labs username that will be used to connect to the servers. _Required_
 * __key__ : The Sauce Labs secret key. Since this is a secret, this should not be checked into the source code and may be available as an environment variable. Grunt can access this using   `process.env.saucekey`. _Required_
 * __urls__: An array or URLs that will be loaded in the browsers, one after another. Since SauceConnect is used, these URLs can also be localhost URLs that are available using the `server` task from grunt. _Required_
