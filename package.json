@@ -44,7 +44,7 @@
   },
   "devDependencies": {
     "grunt-contrib-jshint": "~0.7.1",
-    "grunt-contrib-connect": "~0.3.0",
+    "grunt-contrib-connect": "~0.5.0",
     "grunt-contrib-watch": "~0.5.3",
     "publish": "~0.3.2"
   },
