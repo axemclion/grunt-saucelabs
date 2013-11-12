@@ -36,7 +36,7 @@
     "request": "~2.27.0",
     "wd": "~0.1.0",
     "saucelabs": "~0.1.0",
-    "sauce-tunnel": "~1.0.0",
+    "sauce-tunnel": "~1.1.0",
     "colors": "~0.6.0"
   },
   "peerDependencies": {
