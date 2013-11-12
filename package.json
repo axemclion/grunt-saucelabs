@@ -34,17 +34,17 @@
   },
   "dependencies": {
     "request": "~2.27.0",
-    "wd": "~0.1.0",
+    "wd": "~0.2.3",
     "saucelabs": "~0.1.0",
-    "sauce-tunnel": "~1.0.0",
+    "sauce-tunnel": "~1.1.0",
     "colors": "~0.6.0"
   },
   "peerDependencies": {
     "grunt": "~0.4.1"
   },
   "devDependencies": {
-    "grunt-contrib-jshint": "~0.6.3",
-    "grunt-contrib-connect": "~0.3.0",
+    "grunt-contrib-jshint": "~0.7.1",
+    "grunt-contrib-connect": "~0.5.0",
     "grunt-contrib-watch": "~0.5.3",
     "publish": "~0.3.2"
   },
