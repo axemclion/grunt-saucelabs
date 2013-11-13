@@ -23,7 +23,7 @@
   ],
   "main": "grunt.js",
   "bin": {
-    "grunt-saucelabs-qunit": "bin/grunt-saucelabs-qunit"
+    "grunt-saucelabs": "bin/grunt-saucelabs"
   },
   "engines": {
     "node": ">=0.6",
