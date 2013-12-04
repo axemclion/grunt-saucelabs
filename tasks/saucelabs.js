@@ -1,5 +1,5 @@
 module.exports = function(grunt) {
-  var _ = (grunt.utils || grunt.util)._,
+  var _ = require('lodash'),
     request = require('request'),
     wd = require('wd'),
     SauceTunnel = require('sauce-tunnel'),
@@ -229,6 +229,7 @@ module.exports = function(grunt) {
 
             var fetchResults = function(cb, status) {
               driver.safeEval("jasmine.getJSReport ? jasmine.getJSReport() : null;", function(err, obj) {
+                grunt.log.writeln("Test Video: http://saucelabs.com/tests/%s", driver.sessionID);
                 cb(status, obj);
               });
             };
@@ -261,7 +262,6 @@ module.exports = function(grunt) {
                   grunt.verbose.writeln("[%s] %s. Still running, Time passed - %s of %s milliseconds", cfg.prefix, retryCount, testInterval * retryCount, testTimeout);
                   setTimeout(isCompleted, testInterval);
                 }
-                grunt.log.writeln("Test Video: http://saucelabs.com/tests/%s", driver.sessionID);
               });
             }());
           });
@@ -339,7 +339,7 @@ module.exports = function(grunt) {
       driver.elementById(testResult, function(err, el) {
         if (err) {
           grunt.log.error("[%s] Could not read test result for %s", cfg.prefix, err, driver.page);
-          grunt.log.error("[%s] More details at http://saucelabs.com/tests/%s", cfg.prefix, driver.page);
+          grunt.log.error("[%s] More details at http://saucelabs.com/tests/%s", cfg.prefix, driver.sessionID);
           callback(false);
           return;
         }
@@ -357,6 +357,7 @@ module.exports = function(grunt) {
 
         var fetchResults = function(cb, status) {
           driver.safeEval("window.global_test_results", function(err, obj) {
+            grunt.log.writeln("Test Video: http://saucelabs.com/tests/%s", driver.sessionID);
             cb(status, err || obj);
           });
         };
@@ -399,7 +400,6 @@ module.exports = function(grunt) {
               grunt.log.ok("Result: %s", text.replace(/\n/g, '  '));
               fetchResults(callback, true);
             }
-            grunt.log.writeln("Test Video: http://saucelabs.com/tests/%s", driver.sessionID);
           });
         }());
       });
@@ -413,7 +413,7 @@ module.exports = function(grunt) {
       driver.safeEval("YUI.YUITest.Runner.getResults()", function(err, json) {
         if (err) {
           grunt.log.error("[%s] Could not read test result for %s", cfg.prefix, err, driver.page);
-          grunt.log.error("[%s] More details at http://saucelabs.com/tests/%s", cfg.prefix, driver.page);
+          grunt.log.error("[%s] More details at http://saucelabs.com/tests/%s", cfg.prefix, driver.sessionID);
           callback(false);
           return;
         }
@@ -470,7 +470,7 @@ module.exports = function(grunt) {
       driver.elementById(testResult, function(err, el) {
         if (err) {
           grunt.log.error("[%s] Could not read test result for %s", cfg.prefix, err, driver.page);
-          grunt.log.error("[%s] More details at http://saucelabs.com/tests/%s", cfg.prefix, driver.page);
+          grunt.log.error("[%s] More details at http://saucelabs.com/tests/%s", cfg.prefix, driver.sessionID);
           callback(false);
           return;
         }
@@ -485,6 +485,7 @@ module.exports = function(grunt) {
         };
 
         var fetchResults = function(cb, status) {
+          grunt.log.writeln("Test Video: http://saucelabs.com/tests/%s", driver.sessionID);
           cb(status, err || currentState);
         };
 
@@ -499,11 +500,18 @@ module.exports = function(grunt) {
 
               // extract values from text, ex: "passes: 5pending: 0failures: 0duration: 0.01s"
               try {
+                var pending = 0;
+                try {
+                  pending = parseInt(text.match(/pending: (\d+)/)[1], 10);   // number of pending tests
+                } catch (e) {
+                  pending = 0;
+                }
+
                 currentState = [
                   text,
                   parseInt(text.match(/passes: (\d+)/)[1], 10),    // number of tests that pass
                   parseInt(text.match(/failures: (\d+)/)[1], 10),  // number of tests that fail
-                  parseInt(text.match(/pending: (\d+)/)[1], 10),   // number of pending tests
+                  pending,
                   text.match(/duration: ([\d,.]*)/)[1]             // duration, just the number
                 ];
                 currentState.push(totalResults);
@@ -512,7 +520,7 @@ module.exports = function(grunt) {
                 callback(false);
                 return;
               }
-              
+
               if ((!currentState || currentState[1] + currentState[2] + currentState[3] < totalResults) && ++retryCount * testInterval <= testTimeout) {
                 grunt.verbose.writeln("[%s] %s. Still running, Time passed - %s of %s milliseconds", cfg.prefix, retryCount, testInterval * retryCount, testTimeout);
                 setTimeout(isCompleted, testInterval);
@@ -543,12 +551,11 @@ module.exports = function(grunt) {
                 grunt.log.ok("Result: %s", text.replace(/\n/g, '  '));
                 fetchResults(callback, true);
               }
-              grunt.log.writeln("Test Video: http://saucelabs.com/tests/%s", driver.sessionID);
             });
           }());
         });
 
-        
+
 
 
       });
