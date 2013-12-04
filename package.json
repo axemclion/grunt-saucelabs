@@ -37,7 +37,8 @@
     "wd": "~0.2.3",
     "saucelabs": "~0.1.0",
     "sauce-tunnel": "~1.1.0",
-    "colors": "~0.6.0"
+    "colors": "~0.6.0",
+    "lodash": "~2.4.1"
   },
   "peerDependencies": {
     "grunt": "~0.4.1"
