@@ -1,14 +1,13 @@
 module.exports = function(grunt) {
   var _ = (grunt.utils || grunt.util)._,
     request = require('request'),
-    wd = require('wd'),
     SauceTunnel = require('sauce-tunnel'),
-    Q = require('q');
+    Q = require('q'),
     rqst = request.defaults({
       jar: false
     });
 
-  var TestResult = function(jobId, user, key){
+  var TestResult = function(jobId, user, key, testInterval){
     var url = 'https://saucelabs.com/rest/v1/' + user + '/js-tests/status';
     var deferred = Q.defer();
 
@@ -17,7 +16,7 @@ module.exports = function(grunt) {
       url: url,
       auth: {
         user: user,
-        pass: key 
+        pass: key
       },
       json: true,
       body: {
@@ -29,11 +28,17 @@ module.exports = function(grunt) {
       
       rqst(requestParams, function(error, response, body){
         if (error){
-          //TODO: error here, fail hard?
+          deferred.resolve({
+            passed: undefined,
+            result: {
+              message: "Error connecting to api to get test status: " + error.toString()
+            }
+          });
+          return;
         }
 
         if (!body.completed){
-          setTimeout(checkStatus ,3000);
+          setTimeout(checkStatus ,testInterval);
         } else {
           deferred.resolve(body['js tests'][0]);
         }
@@ -46,12 +51,12 @@ module.exports = function(grunt) {
     return deferred.promise;
   };
 
-  var TestRunner = function(user, key) {
+  var TestRunner = function(user, key, testInterval) {
     this.user = user;
     this.key = key;
     this.url = 'https://saucelabs.com/rest/v1/' + this.user + '/js-tests';
-    this.results = new Array();
-    this.numberOfJobs = 0;
+    this.testInterval = testInterval;
+    this.results = [];
   };
 
   TestRunner.prototype.runTests = function(browsers, urls, framework, tunnelIdentifier, onTestComplete, callback){
@@ -64,20 +69,20 @@ module.exports = function(grunt) {
       if (me.results.length == numberOfJobs){
 
         Q.all(me.results).then(function(results){
-          var results = results.map(function(result){
+          results = results.map(function(result){
             return result.valueOf().result.passed;
           });
 
           callback(results);
         });
-      };
+      }
     };
 
     urls.forEach(function(url){
       me.runTest(browsers, url, framework, tunnelIdentifier, function(taskIds){
-        console.log('got task ids: ', taskIds)
+
         taskIds.forEach(function(taskId){
-          var resultPromise = new TestResult(taskId, me.user, me.key);
+          var resultPromise = new TestResult(taskId, me.user, me.key, me.testInterval);
           addResultPromise(resultPromise);
           resultPromise.then(function(result){
             
@@ -98,7 +103,6 @@ module.exports = function(grunt) {
   };
 
   TestRunner.prototype.runTest = function(browsers, url, framework, tunnelIdentifier, callback){
-    var me = this;
 
     var parsePlatforms = function(browsers){
       return browsers.map(function(browser){
@@ -113,7 +117,7 @@ module.exports = function(grunt) {
       url: this.url,
       auth: {
         user: this.user,
-        pass: this.key 
+        pass: this.key
       },
       json: true,
       body: {
@@ -130,7 +134,7 @@ module.exports = function(grunt) {
       callback(body['js tests']);
 
     });
-  }
+  };
 
   var defaultsObj = {
     username: process.env.SAUCE_USERNAME,
@@ -205,10 +209,10 @@ module.exports = function(grunt) {
           done(status);
         });
       });*/
-      var test = new TestRunner(arg.username, arg.key);
+      var test = new TestRunner(arg.username, arg.key, arg.testInterval);
 
       test.runTests(arg.browsers, arg.pages, 'jasmine', 'jonahIsCool', arg.onTestComplete, function(status){
-        status = status.every(function(passed){ return passed });
+        status = status.every(function(passed){ return passed; });
         grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
         done(status);
       });
