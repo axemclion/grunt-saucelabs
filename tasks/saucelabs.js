@@ -27,6 +27,7 @@ module.exports = function(grunt) {
     var checkStatus = function(){
       
       rqst(requestParams, function(error, response, body){
+
         if (error){
           deferred.resolve({
             passed: undefined,
@@ -36,6 +37,7 @@ module.exports = function(grunt) {
           });
           return;
         }
+
 
         if (!body.completed){
           setTimeout(checkStatus ,testInterval);
@@ -59,13 +61,14 @@ module.exports = function(grunt) {
     this.results = [];
   };
 
-  TestRunner.prototype.runTests = function(browsers, urls, framework, tunnelIdentifier, onTestComplete, callback){
+  TestRunner.prototype.runTests = function(browsers, urls, framework, tunnelIdentifier, testname, tags, build, onTestComplete, callback){
+
     var me = this;
     var numberOfJobs = browsers.length * urls.length;
 
     var addResultPromise = function(promise){
       me.results.push(promise);
-      console.log(me.results.length, "/", numberOfJobs, 'tests started');
+      grunt.log.writeln(me.results.length, "/", numberOfJobs, 'tests started');
       if (me.results.length == numberOfJobs){
 
         Q.all(me.results).then(function(results){
@@ -79,7 +82,9 @@ module.exports = function(grunt) {
     };
 
     urls.forEach(function(url){
-      me.runTest(browsers, url, framework, tunnelIdentifier, function(taskIds){
+      me.runTest(browsers, url, framework, tunnelIdentifier, testname, tags, build, function(taskIds){
+
+        console.log(taskIds);
 
         taskIds.forEach(function(taskId){
           var resultPromise = new TestResult(taskId, me.user, me.key, me.testInterval);
@@ -96,21 +101,22 @@ module.exports = function(grunt) {
             grunt.log.writeln("Url %s", result.url);
             
             onTestComplete(result);
+
+          }, function(e){
+            grunt.log.error('some error? %s', e);
           });
         });
       });
     });
   };
 
-  TestRunner.prototype.runTest = function(browsers, url, framework, tunnelIdentifier, callback){
+  TestRunner.prototype.runTest = function(browsers, url, framework, tunnelIdentifier, testname, tags, build, callback){
 
     var parsePlatforms = function(browsers){
       return browsers.map(function(browser){
         return [browser.platform, browser.browserName, browser.version || ""];
       });
     };
-
-    console.log('running test in runTest:', parsePlatforms(browsers), url, framework);
 
     var requestParams = {
       method: 'post',
@@ -125,11 +131,18 @@ module.exports = function(grunt) {
         url: url,
         framework: framework,
         tunnel: "tunnel-identifier:" + tunnelIdentifier,
+        name: testname,
+        tags: tags, 
+        build: build
       }
     };
 
     rqst(requestParams, function(error, response, body){
-      console.log(error, body);
+
+      if (error){
+        grunt.log.error("Could not connect to Sauce Labs api: %s", error);
+        throw error;
+      }
 
       callback(body['js tests']);
 
@@ -141,14 +154,12 @@ module.exports = function(grunt) {
     key: process.env.SAUCE_ACCESS_KEY,
     identifier: Math.floor((new Date()).getTime() / 1000 - 1230768000).toString(),
     tunneled: true,
-    testTimeout: (1000 * 60 * 5),
     tunnelTimeout: 120,
     testInterval: 1000 * 5,
     testReadyTimeout: 1000 * 5,
     onTestComplete: function() {
 
     },
-    detailedError: false,
     testname: "",
     tags: [],
     browsers: [{}]
@@ -160,16 +171,7 @@ module.exports = function(grunt) {
     if (!_.isArray(result.pages)) {
       result.pages = [result.pages];
     }
-
-    _.map(result.browsers, function(d) {
-      return _.extend(d, {
-        'name': result.testname,
-        'tags': result.tags,
-        'build': result.build,
-        'tunnel-identifier': result.tunneled ? result.identifier : ''
-      });
-    });
-    result.concurrency = result.concurrency || result.browsers.length;
+    
     return result;
   }
 
@@ -185,111 +187,71 @@ module.exports = function(grunt) {
     });
   }
 
-  grunt.registerMultiTask('saucelabs-jasmine', 'Run Jasmine test cases using Sauce Labs browsers', function() {
-    var done = this.async(),
-      arg = defaults(this.options(defaultsObj));
-    //var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, arg.tunnelTimeout);
-    //configureLogEvents(tunnel);
-    //grunt.log.writeln("=> Connecting to Saucelabs ...");
-    //if (this.tunneled) {
-    //  grunt.verbose.writeln("=> Starting Tunnel to Sauce Labs".inverse.bold);
-    //}
-    /*
-    tunnel.start(function(isCreated) {
-      if (!isCreated) {
-        done(false);
-        return;
-      }
-      grunt.log.ok("Connected to Saucelabs");
-      
-      
-      /*test.forEachBrowser(arg.browsers, 'jasmine', arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, arg.detailedError, function(status) {
-        grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
-        tunnel.stop(function() {
-          done(status);
-        });
-      });*/
-      var test = new TestRunner(arg.username, arg.key, arg.testInterval);
+  var runTask = function(arg, framework, done){
 
-      test.runTests(arg.browsers, arg.pages, 'jasmine', 'jonahIsCool', arg.onTestComplete, function(status){
+    var test = new TestRunner(arg.username, arg.key, arg.testInterval);
+
+    if (arg.tunneled){
+      var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, arg.tunnelTimeout);
+      grunt.log.writeln("=> Starting Tunnel to Sauce Labs".inverse.bold);
+
+      tunnel.start(function(isCreated) {
+        if (!isCreated) {
+          grunt.log.error("Could not create tunnel to Sauce Labs");
+          done(false);
+          return;
+        }
+        grunt.log.ok("Connected to Saucelabs");
+
+        test.runTests(arg.browsers, arg.pages, framework, arg.identifier, arg.testname, arg.tags, arg.build, arg.onTestComplete, function(status){
+          status = status.every(function(passed){ return passed; });
+          grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
+          tunnel.stop(function() {
+            done(status);
+          });
+        });
+      });
+
+    } else {
+      test.runTests(arg.browsers, arg.pages, framework, arg.identifier, arg.testname, arg.tags, arg.build, arg.onTestComplete, function(status){
         status = status.every(function(passed){ return passed; });
         grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
         done(status);
       });
+    }
 
-    //});
+    
+  }
+
+  grunt.registerMultiTask('saucelabs-jasmine', 'Run Jasmine test cases using Sauce Labs browsers', function() {
+    var done = this.async(),
+      arg = defaults(this.options(defaultsObj));
+
+    runTask(arg, 'jasmine', done);
+    
   });
 
   grunt.registerMultiTask('saucelabs-qunit', 'Run Qunit test cases using Sauce Labs browsers', function() {
     var done = this.async(),
       arg = defaults(this.options(defaultsObj));
-    var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, arg.tunnelTimeout);
-    configureLogEvents(tunnel);
-    grunt.log.writeln("=> Connecting to Saucelabs ...");
-    if (this.tunneled) {
-      grunt.verbose.writeln("=> Starting Tunnel to Sauce Labs".inverse.bold);
-    }
-    tunnel.start(function(isCreated) {
-      if (!isCreated) {
-        done(false);
-        return;
-      }
-      grunt.log.ok("Connected to Saucelabs");
-      var test = new TestRunner(arg.username, arg.key);
-      test.forEachBrowser(arg.browsers, test.qunitRunner, test.qunitSaucify, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, arg.detailedError, function(status) {
-        grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
-        tunnel.stop(function() {
-          done(status);
-        });
-      });
-    });
+
+    runTask(arg, 'qunit', done);
+
   });
 
   grunt.registerMultiTask('saucelabs-yui', 'Run YUI test cases using Sauce Labs browsers', function() {
     var done = this.async(),
-      arg = defaults(this.options(defaultsObj));
-    var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, arg.tunnelTimeout);
-    grunt.log.writeln("=> Connecting to Saucelabs ...");
-    if (this.tunneled) {
-      grunt.verbose.writeln("=> Starting Tunnel to Sauce Labs".inverse.bold);
-    }
-    tunnel.start(function(isCreated) {
-      if (!isCreated) {
-        done(false);
-        return;
-      }
-      grunt.log.ok("Connected to Saucelabs");
-      var test = new TestRunner(arg.username, arg.key);
-      test.forEachBrowser(arg.browsers, test.yuiRunner, test.yuiSaucify, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, arg.detailedError, function(status) {
-        grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
-        tunnel.stop(function() {
-          done(status);
-        });
-      });
-    });
+    arg = defaults(this.options(defaultsObj));
+
+    runTask(arg, 'YUI Test', done);
+
   });
 
   grunt.registerMultiTask('saucelabs-mocha', 'Run Mocha test cases using Sauce Labs browsers', function() {
     var done = this.async(),
       arg = defaults(this.options(defaultsObj));
-    var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, arg.tunnelTimeout);
-    grunt.log.writeln("=> Connecting to Saucelabs ...");
-    if (this.tunneled) {
-      grunt.verbose.writeln("=> Starting Tunnel to Sauce Labs".inverse.bold);
-    }
-    tunnel.start(function(isCreated) {
-      if (!isCreated) {
-        done(false);
-        return;
-      }
-      grunt.log.ok("Connected to Saucelabs");
-      var test = new TestRunner(arg.username, arg.key);
-      test.forEachBrowser(arg.browsers, test.mochaRunner, test.mochaSaucify, arg.concurrency, arg.onTestComplete).testPages(arg.pages, arg.testTimeout, arg.testInterval, arg.testReadyTimeout, arg.detailedError, function(status) {
-        grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
-        tunnel.stop(function() {
-          done(status);
-        });
-      });
-    });
+
+    runTask(arg, 'mocha', done);
+
   });
 };
