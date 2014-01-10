@@ -4,10 +4,10 @@ module.exports = function(grunt) {
 		version: '19',
 		platform: 'XP'
 	}, {
-		browserName: 'chrome',
+		browserName: 'googlechrome',
 		platform: 'XP'
 	}, {
-		browserName: 'chrome',
+		browserName: 'googlechrome',
 		platform: 'linux'
 	}, {
 		browserName: 'internet explorer',
@@ -21,10 +21,6 @@ module.exports = function(grunt) {
 		browserName: 'internet explorer',
 		platform: 'XP',
 		version: '8'
-	}, {
-		browserName: 'opera',
-		platform: 'Windows 2008',
-		version: '12'
 	}];
 
 	grunt.initConfig({
