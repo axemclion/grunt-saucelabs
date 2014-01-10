@@ -317,14 +317,15 @@ module.exports = function(grunt) {
 
   TestRunner.prototype.mochaSaucify = function(results) {
     var out = {'custom-data': {}};
-    _.each(results, function (result, i) {
-      if ( result !== null) {
+    _.each(results, function (stats, i) {
+      if (stats) {
         var keyName = i === 0 ? 'mocha' : 'mocha' + i;
         out['custom-data'][keyName] = {
-          failed: result[2],
-          passed: result[1],
-          total: result[4],
-          runtime: +result[3] * 1000
+          failed: stats.failures,
+          passed: stats.passes,
+          pending: stats.pending,
+          total: stats.tests,
+          runtime: stats.duration
         };
       }
     });
@@ -461,104 +462,96 @@ module.exports = function(grunt) {
   };
 
   TestRunner.prototype.mochaRunner = function(driver, cfg, testTimeout, testInterval, testReadyTimeout, detailedError, callback) {
-    var testResult = "mocha-stats",
-        currentState = null,
-        retryCount = 0;
     grunt.verbose.writeln("[%s] Starting mocha tests for page", cfg.prefix);
-    driver.waitForElementById(testResult, testReadyTimeout, function() {
-      grunt.verbose.writeln("[%s] Test div found, fetching the test results elements", cfg.prefix);
-      driver.elementById(testResult, function(err, el) {
-        if (err) {
-          grunt.log.error("[%s] Could not read test result for %s", cfg.prefix, err, driver.page);
-          grunt.log.error("[%s] More details at http://saucelabs.com/tests/%s", cfg.prefix, driver.sessionID);
-          callback(false);
-          return;
+
+    // callback helper
+    function done(err, stats) {
+      // Test is now complete
+      grunt.log.subhead("\nTested %s", driver.page);
+      if (stats) {
+        grunt.log[err ? 'error' : 'ok'](
+          "[%s] Result: total: %s passed: %s failed: %s",
+          cfg.prefix,
+          stats.tests,
+          stats.passes > 0 ? (stats.passes + '').green : stats.passes,
+          stats.failures > 0 ? (stats.failures + '').red : stats.failures
+        );
+      }
+      grunt.log.ok("[%s] Test Video: http://saucelabs.com/tests/%s", cfg.prefix, driver.sessionID);
+      if (err) {
+        if (detailedError) {
+          grunt.log.error("[%s] Error: %s", cfg.prefix, err.message);
         }
-        grunt.verbose.writeln("[%s] Fetched test result element, waiting for text inside it show complete status", cfg.prefix);
-        var showDetailedError = function(cb) {
-          driver.elementById(testResult, function(err, detailEl) {
-            driver.text(detailEl, function(err, detailText) {
-              grunt.log.error("\n%s", detailText);
-              cb();
-            });
+        callback(false, err);
+      } else {
+        callback(true, stats);
+      }
+    }
+
+    // call back helper for failures
+    function fail(msg, origErr) {
+      var err = new Error(msg);
+      if (origErr) {
+        if (origErr["jsonwire-error"]) {
+          err.message += " " + origErr["jsonwire-error"].detail;
+        } else {
+          err.message += " " + origErr.message;
+        }
+      }
+      done(err);
+    }
+
+    function waitUntil(condition, timeout, cb) {
+      driver.waitFor(new wd.asserters.jsCondition(condition, true), timeout, cb);
+    }
+
+    waitUntil("!!window.mochaRunner", testReadyTimeout, function(err) {
+      if (err) return fail("Unable to get window.mochaRunner.", err);
+      grunt.verbose.writeln("[%s] Test runner found, waiting for tests to complete", cfg.prefix);
+
+      waitUntil("window.mochaRunner.total === window.mochaRunner.stats.tests", testTimeout, function (err) {
+          if (err) return fail("Failed to get status of tests.", err);
+          grunt.verbose.writeln('[%s] Tests are complete, requesting stats', cfg.prefix);
+
+          // run in the browser to collect the titles of the failed tests
+          function collectStats (runner) {
+            /* jshint browser:true */
+            var stats = runner.stats;
+            stats.failureTitles = (function getFailedTestTitles(suite) {
+              var failed = [];
+
+              if (suite.tests) {
+                suite.tests.forEach(function (test) {
+                  if (test.state === "failed") {
+                    failed.push(suite.title + " " + test.title);
+                  }
+                });
+              }
+              if (suite.suites) {
+                suite.suites.forEach(function (child) {
+                  child.title = (suite.title ? suite.title + " " : "") + child.title;
+                  [].push.apply(failed, getFailedTestTitles(child));
+                });
+              }
+
+              return failed;
+            }(runner.suite));
+
+            return stats;
+          }
+
+          driver.safeEval("(" + collectStats + "(window.mochaRunner));", function(err, stats) {
+            if (err) return fail("Unable to get test results.", err);
+            grunt.verbose.writeln('[%s] Received test stats: \n' + JSON.stringify(stats, null, '  '), cfg.prefix);
+
+            if (stats.failures !== 0) {
+              fail(stats.failures + " Test failures:\n  - " + stats.failureTitles.join("\n  - "));
+            } else {
+              done(err, stats);
+            }
           });
-        };
-
-        var fetchResults = function(cb, status) {
-          grunt.log.writeln("Test Video: http://saucelabs.com/tests/%s", driver.sessionID);
-          cb(status, err || currentState);
-        };
-
-        driver.safeEval("mocha.suite.total()", function(err, totalResults) {
-          (function isCompleted() {
-            driver.text(el, function(err, text) {
-              if (typeof text !== 'string'){
-                grunt.log.error('Error - Could not read text to check if this was completed %s', typeof text);
-                callback(false);
-                return;
-              }
-
-              // extract values from text, ex: "passes: 5pending: 0failures: 0duration: 0.01s"
-              try {
-                var pending = 0;
-                try {
-                  pending = parseInt(text.match(/pending: (\d+)/)[1], 10);   // number of pending tests
-                } catch (e) {
-                  pending = 0;
-                }
-
-                currentState = [
-                  text,
-                  parseInt(text.match(/passes: (\d+)/)[1], 10),    // number of tests that pass
-                  parseInt(text.match(/failures: (\d+)/)[1], 10),  // number of tests that fail
-                  pending,
-                  text.match(/duration: ([\d,.]*)/)[1]             // duration, just the number
-                ];
-                currentState.push(totalResults);
-              } catch(err) {
-                grunt.log.error('Error - Could not extract passes, failures, or duration from text %s', err );
-                callback(false);
-                return;
-              }
-
-              if ((!currentState || currentState[1] + currentState[2] + currentState[3] < totalResults) && ++retryCount * testInterval <= testTimeout) {
-                grunt.verbose.writeln("[%s] %s. Still running, Time passed - %s of %s milliseconds", cfg.prefix, retryCount, testInterval * retryCount, testTimeout);
-                setTimeout(isCompleted, testInterval);
-                return;
-              }
-
-              // Test is now completed, so parse the results
-              grunt.log.subhead('\nTested %s', driver.page);
-              grunt.log.writeln('Environment: %s', cfg.prefix);
-              if (err) {
-                grunt.log.error("Could not see test results: %s", err.replace(/\n/g, ' '));
-                fetchResults(callback, false);
-                return;
-              }
-              if (retryCount * testInterval > testTimeout) {
-                grunt.log.error("Timeout, waited for more than %s milliseconds", testTimeout);
-                fetchResults(callback, false);
-                return;
-              }
-              if (+currentState[2] !== 0) {
-                if (detailedError) {
-                  return showDetailedError(function() {
-                    fetchResults(callback, false);
-                  });
-                }
-                fetchResults(callback, false);
-              } else {
-                grunt.log.ok("Result: %s", text.replace(/\n/g, '  '));
-                fetchResults(callback, true);
-              }
-            });
-          }());
-        });
-
-
-
-
-      });
+        }
+      );
     });
   };
 
