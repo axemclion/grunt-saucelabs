@@ -7,7 +7,27 @@ module.exports = function(grunt) {
       jar: false
     });
 
-  var TestResult = function(jobId, user, key, testInterval){
+  //these result parsers just return whether the tests all passed
+  var resultParsers = {
+    jasmine: function(result){
+      if (result.passed === undefined){ return undefined; }
+      return result.passed;
+    },
+    qunit: function(result){
+      if (result.passed === undefined){ return undefined; }
+      return result.passed == result.total;
+    },
+    mocha: function(result){
+      if (result.passes === undefined){ return undefined; }
+      return result.tests == result.passes;
+    },
+    'YUI Test': function(result){
+      if (result.passed === undefined){ return undefined; }
+      return result.passed == result.total;
+    }
+  }
+
+  var TestResult = function(jobId, user, key, framework, testInterval){
     var url = 'https://saucelabs.com/rest/v1/' + user + '/js-tests/status';
     var deferred = Q.defer();
 
@@ -42,7 +62,9 @@ module.exports = function(grunt) {
         if (!body.completed){
           setTimeout(checkStatus ,testInterval);
         } else {
-          deferred.resolve(body['js tests'][0]);
+          var testInfo = body['js tests'][0];
+          testInfo.passed = resultParsers[framework](testInfo.result);
+          deferred.resolve(testInfo);
         }
 
       });
@@ -73,7 +95,7 @@ module.exports = function(grunt) {
 
         Q.all(me.results).then(function(results){
           results = results.map(function(result){
-            return result.valueOf().result.passed;
+            return result.valueOf().passed;
           });
 
           callback(results);
@@ -87,16 +109,16 @@ module.exports = function(grunt) {
         console.log(taskIds);
 
         taskIds.forEach(function(taskId){
-          var resultPromise = new TestResult(taskId, me.user, me.key, me.testInterval);
+          var resultPromise = new TestResult(taskId, me.user, me.key, framework, me.testInterval);
           addResultPromise(resultPromise);
           resultPromise.then(function(result){
             
             grunt.log.subhead("\nTested %s", url);
             grunt.log.writeln("Platform: %s", result.platform);
-            if (result.result.passed === undefined){
+            if (result.passed === undefined){
               grunt.log.error(result.result.message);
             } else {
-              grunt.log.writeln("Passed: %s", result.result.passed);
+              grunt.log.writeln("Passed: %s", result.passed);
             }
             grunt.log.writeln("Url %s", result.url);
             
@@ -187,7 +209,7 @@ module.exports = function(grunt) {
     });
   }
 
-  var runTask = function(arg, framework, done){
+  function runTask(arg, framework, done){
 
     var test = new TestRunner(arg.username, arg.key, arg.testInterval);
 
