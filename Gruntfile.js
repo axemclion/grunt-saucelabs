@@ -66,7 +66,7 @@ module.exports = function(grunt) {
 				//username: '',
 				//key: '',
 				options: {
-					urls: ['http://127.0.0.1:9999/mocha/test/browser/opts.html'],
+					urls: ['http://127.0.0.1:9999/mocha/test/browser/index.html'],
 					tunnelTimeout: 5,
 					build: process.env.TRAVIS_JOB_ID,
 					concurrency: 3,
@@ -114,9 +114,10 @@ module.exports = function(grunt) {
 
 	var testjobs = ['jshint', 'connect'];
 	if (typeof process.env.SAUCE_ACCESS_KEY !== 'undefined'){
-		testjobs = testjobs.concat(['saucelabs-qunit', 'saucelabs-jasmine', 'saucelabs-yui', 'saucelabs-mocha']);
+		testjobs = testjobs.concat(['saucelabs-mocha']);
 	}
 
+    grunt.registerTask("dev", ["connect", "watch"]);
 	grunt.registerTask('test', testjobs);
 	grunt.registerTask('default', ['test']);
 };
