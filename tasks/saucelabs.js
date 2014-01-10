@@ -111,6 +111,11 @@ module.exports = function(grunt) {
           addResultPromise(resultPromise);
           resultPromise.then(function(result){
             
+            var alteredResult = onTestComplete(result);
+            if (alteredResult !== undefined){
+              result.passed = alteredResult;
+            }
+
             grunt.log.subhead("\nTested %s", url);
             grunt.log.writeln("Platform: %s", result.platform);
             if (result.passed === undefined){
@@ -120,7 +125,7 @@ module.exports = function(grunt) {
             }
             grunt.log.writeln("Url %s", result.url);
             
-            onTestComplete(result);
+            //onTestComplete(result);
 
           }, function(e){
             grunt.log.error('some error? %s', e);
