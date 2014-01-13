@@ -110,7 +110,7 @@ module.exports = function(grunt) {
 
 	var testjobs = ['jshint', 'connect'];
 	if (typeof process.env.SAUCE_ACCESS_KEY !== 'undefined'){
-		testjobs = testjobs.concat(['saucelabs-mocha']);
+		testjobs = testjobs.concat(['saucelabs-qunit', 'saucelabs-jasmine', 'saucelabs-yui', 'saucelabs-mocha']);
 	}
 
     grunt.registerTask("dev", ["connect", "watch"]);
