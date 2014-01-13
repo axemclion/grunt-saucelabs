@@ -139,7 +139,7 @@ module.exports = function(grunt) {
 
     var parsePlatforms = function(browsers){
       return browsers.map(function(browser){
-        return [browser.platform, browser.browserName, browser.version || ""];
+        return [browser.platform || "", browser.browserName || "", browser.version || ""];
       });
     };
 
