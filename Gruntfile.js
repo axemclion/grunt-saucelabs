@@ -113,7 +113,7 @@ module.exports = function(grunt) {
 		testjobs = testjobs.concat(['saucelabs-qunit', 'saucelabs-jasmine', 'saucelabs-yui', 'saucelabs-mocha']);
 	}
 
-    grunt.registerTask("dev", ["connect", "watch"]);
+	grunt.registerTask("dev", ["connect", "watch"]);
 	grunt.registerTask('test', testjobs);
 	grunt.registerTask('default', ['test']);
 };
