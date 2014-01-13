@@ -4,10 +4,10 @@ module.exports = function(grunt) {
 		version: '19',
 		platform: 'XP'
 	}, {
-		browserName: 'chrome',
+		browserName: 'googlechrome',
 		platform: 'XP'
 	}, {
-		browserName: 'chrome',
+		browserName: 'googlechrome',
 		platform: 'linux'
 	}, {
 		browserName: 'internet explorer',
@@ -21,10 +21,6 @@ module.exports = function(grunt) {
 		browserName: 'internet explorer',
 		platform: 'XP',
 		version: '8'
-	}, {
-		browserName: 'opera',
-		platform: 'Windows 2008',
-		version: '12'
 	}];
 
 	grunt.initConfig({
@@ -66,7 +62,7 @@ module.exports = function(grunt) {
 				//username: '',
 				//key: '',
 				options: {
-					urls: ['http://127.0.0.1:9999/mocha/test/browser/opts.html'],
+					urls: ['http://127.0.0.1:9999/mocha/test/browser/index.html'],
 					tunnelTimeout: 5,
 					build: process.env.TRAVIS_JOB_ID,
 					concurrency: 3,
@@ -117,6 +113,7 @@ module.exports = function(grunt) {
 		testjobs = testjobs.concat(['saucelabs-qunit', 'saucelabs-jasmine', 'saucelabs-yui', 'saucelabs-mocha']);
 	}
 
+    grunt.registerTask("dev", ["connect", "watch"]);
 	grunt.registerTask('test', testjobs);
 	grunt.registerTask('default', ['test']);
 };
