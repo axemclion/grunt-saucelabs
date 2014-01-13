@@ -169,8 +169,8 @@ module.exports = function(grunt) {
         throw error;
       }
 
-      if (!body.taskIds || !body.taskIds.length){
-          grunt.log.error('Error starting tests through Sauce API: %s', body);
+      if (!body['js tests'] || !body['js tests'].length){
+          grunt.log.error('Error starting tests through Sauce API: %s', JSON.stringify(body));
           throw new Error('Could not start tests through Sauce API');
       }
 
