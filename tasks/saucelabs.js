@@ -10,7 +10,6 @@ module.exports = function(grunt) {
   //these result parsers return true if the tests all passed
   var resultParsers = {
     jasmine: function(result){
-      if (result.passed === undefined){ return undefined; }
       return result.passed;
     },
     qunit: function(result){
