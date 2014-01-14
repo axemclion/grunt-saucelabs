@@ -43,22 +43,22 @@ In the `grunt.initConfig`, add the configuration that looks like the following
       options: {
       username: 'saucelabs-user-name', // if not provided it'll default to ENV SAUCE_USERNAME (if applicable)
       key: 'saucelabs-key', // if not provided it'll default to ENV SAUCE_ACCESS_KEY (if applicable)
-      urls: ['array or URLs to to load for QUnit'],
-      concurrency: 'Number of concurrent browsers to test against. Will default to the number of overall browsers specified. Check your plan (free: 2, OSS: 3) and make sure you have got sufficient Sauce Labs concurrency.',
+      urls: ['array of URLs for unit test pages'],
       tunneled: 'true (default) / false; false if you choose to skip creating a Sauce connect tunnel.',
       tunnelTimeout: 'A numeric value indicating the time to wait before closing all tunnels',
-      testTimeout: 'Milliseconds to wait before timeout for qunit test per page',
       testInterval: 'Milliseconds between retries to check if the tests are completed',
-      testReadyTimeout: 'Milliseconds to wait until the test-page is ready to be read',
-      detailedError: 'false (default) / true; if true log detailed test results when a test error occurs',
       testname: 'Name of the test',
       tags: ['Array of tags'],
       browsers: [{
-        browserName: 'opera'
+        browserName: 'firefox',
+		    version: '19',
+		    platform: 'XP'
       }],
-      onTestComplete: function(){
-        // Called after a qunit unit is done, per page, per browser
-        // Return true or false, passes or fails the test
+      onTestComplete: function(result){
+        // Called after a unit test is done, per page, per browser
+        // 'result' param is the object returned by the test framework's reporter
+        
+        // Returning true or false, passes or fails the test
         // Returning undefined does not alter the test result
 
         // For async return, call
@@ -87,17 +87,18 @@ The parameters are
 * __testname__: The name of this test, displayed on the Sauce Labs dashboard. _Optional_
 * __tags__: An array of tags displayed for this test on the Sauce Labs dashboard. This can be the build number, commit number, etc, that can be obtained from grunt. _Optional_
 * __browsers__: An array of objects representing the [various browsers](https://saucelabs.com/docs/platforms) on which this test should run.  _Optional_
-* __tunnelTimeout__: A numeric value indicating the time to wait before closing all tunnels (default: 120). _Optional_
-* __testTimeout__ : Number of milliseconds to wait for qunit tests on each page before timeout and failing the test (default: 300000). _Optional_
 * __testInterval__ : Number of milliseconds between each retry to see if a test is completed or not (default: 5000). _Optional_
-* __testReadyTimeout__: Number of milliseconds to wait until the test-page is ready to be read (default: 5000). _Optional_
-* __onTestComplete__ : A callback that is called everytime a qunit test for a page is complete. Runs per page, per browser configuration. A true or false return value passes or fails the test, undefined return value does not alter the result of the test. For async results, call `this.async()` in the function. The return of `this.async()` is a function that should be called once the async action is completed. _Optional_
+* __onTestComplete__ : A callback that is called everytime a unit test for a page is complete. Runs per page, per browser configuration. Recieves a 'result' argument which is the javascript object exposed to sauce labs. A true or false return value passes or fails the test, undefined return value does not alter the result of the test. For async results, call `this.async()` in the function. The return of `this.async()` is a function that should be called once the async action is completed. _Optional_
 
 A typical `test` task running from Grunt could look like `grunt.registerTask('test', ['server', 'qunit', 'saucelabs-qunit']);` This starts a server and then runs the Qunit tests first on PhantomJS and then using the Sauce Labs browsers.
 
-Test results details with Jasmine
----------------------------------
-You can make Job Details pages more infromative on Sauce by providing more data with each test. You will get info about each test run inside your suite directly on Sauce pages.
+Exposing Test Results to the Sauce Labs API
+-------------------------------------------
+Since this project uses the Sauce Labs js unit test API, the servers at Sauce Labs need a way to get the results of your test. Follow the instructions below to assure that the results of your tests are delivered properly.
+
+### Test result details with Jasmine ###
+
+You can make Job Details pages more informative on Sauce by providing more data with each test. You will get info about each test run inside your suite directly on Sauce pages.
 
 [![Jasmine detailed results](https://saucelabs.com/images/front-tests/jasmine.png)](https://saucelabs.com/docs/javascript-unit-tests-integration)
 
@@ -111,6 +112,37 @@ and telling Jasmine to use it:
 ```javascript
 jasmineEnv.addReporter(new jasmine.JSReporter());
 ````
+
+### Test result details with qunit ###
+
+Add the following to your qunit test specification
+```javascript
+QUnit.done(function(results){
+	window.global_test_results = results;
+});
+```
+
+### Test result details with mocha ###
+
+Add the following to the mocha test page html. Make sure you remove any calls to ```mocha.checkLeaks()``` or add ```mochaResults``` to the list of globals.
+```html
+<script>
+  onload = function(){
+    //mocha.checkLeaks();
+    //mocha.globals(['foo']);
+    var runner = mocha.run();
+
+    runner.on('end', function(){
+      window.mochaResults = runner.stats;
+    });
+
+  };
+</script>
+```
+
+## Test result details with YUI Test ###
+
+There's nothing you have to do for YUI Tests! The js library already exposes ```window.YUITest.TestRunner.getResults()```
 
 Examples
 --------
