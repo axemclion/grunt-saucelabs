@@ -1,5 +1,5 @@
 module.exports = function(grunt) {
-  var _ = (grunt.utils || grunt.util)._,
+  var _ = require('lodash'),
     request = require('request'),
     SauceTunnel = require('sauce-tunnel'),
     Q = require('q'),
