@@ -18,7 +18,7 @@ module.exports = function(grunt) {
     },
     mocha: function(result){
       if (result.passes === undefined){ return undefined; }
-      return result.tests == result.passes;
+      return result.failures === 0;
     },
     'YUI Test': function(result){
       if (result.passed === undefined){ return undefined; }
