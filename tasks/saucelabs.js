@@ -164,12 +164,15 @@ module.exports = function(grunt) {
         platforms: parsePlatforms(browsers),
         url: url,
         framework: framework,
-        tunnel: "tunnel-identifier:" + tunnelIdentifier,
         name: testname,
         tags: tags,
         build: build
       }
     };
+
+    if (tunnelIdentifier){
+      requestParams.body.tunnel = "tunnel-identifier:" + tunnelIdentifier;
+    }
 
     rqst(requestParams, function(error, response, body){
 
@@ -254,7 +257,7 @@ module.exports = function(grunt) {
       });
 
     } else {
-      test.runTests(arg.browsers, arg.pages, framework, arg.identifier, arg.testname, arg.tags, arg.build, arg.onTestComplete, function(status){
+      test.runTests(arg.browsers, arg.pages, framework, null, arg.testname, arg.tags, arg.build, arg.onTestComplete, function(status){
         status = status.every(function(passed){ return passed; });
         grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
         callback(status);
