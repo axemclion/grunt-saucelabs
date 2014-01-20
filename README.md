@@ -18,9 +18,9 @@ A Grunt task for running QUnit, Jasmine, Mocha and YUI tests using Sauce Labs' C
 
 About the tool
 --------------
-The [grunt-contrib-qunit](https://github.com/gruntjs/grunt-contrib-qunit) task runs qunit based test suites on [PhantomJS](http://phantomjs.org/).
+The [grunt-contrib-qunit](https://github.com/gruntjs/grunt-contrib-qunit) task runs QUnit based test suites on [PhantomJS](http://phantomjs.org/).
 The `saucelabs-qunit` task is very similar but runs the test suites on the cloudified browser environment provided by Sauce Labs. This ensures that subject of the test runs across different browser environment.
-The task also uses [Sauce Connect](https://saucelabs.com/docs/connect) to establish a tunnel between Sauce Labs browsers and the machine running Grunt to load local pages. This is typically useful for testing pages on localhost that are not publically accessible on the internet.
+The task also uses [Sauce Connect](https://saucelabs.com/docs/connect) to establish a tunnel between Sauce Labs browsers and the machine running Grunt to load local pages. This is typically useful for testing pages on localhost that are not publicly accessible on the internet.
 The `saucelabs-jasmine` runs [Jasmine](http://pivotal.github.io/jasmine/) tests in the Sauce Labs browser. The `saucelabs-jasmine` task requires `jasmine-1.3.0`. There are also `saucelabs-mocha` and `saucelabs-yui` tasks that let you run your Mocha and YUI tests on Sauce Labs cloudified browser environment.
 
 Usage
@@ -57,7 +57,7 @@ In the `grunt.initConfig`, add the configuration that looks like the following
       onTestComplete: function(result){
         // Called after a unit test is done, per page, per browser
         // 'result' param is the object returned by the test framework's reporter
-        
+
         // Returning true or false, passes or fails the test
         // Returning undefined does not alter the test result
 
@@ -75,7 +75,7 @@ In the `grunt.initConfig`, add the configuration that looks like the following
 ```
 
 The configuration of `saucelabs-jasmine`, `saucelabs-mocha`, `saucelabs-yui` are exactly the same.
-Note the options object inside a grunt target. This was introduced in grunt-saucelabs-* version 4.0.0 to be compatiable with grunt@0.4.0
+Note the options object inside a grunt target. This was introduced in grunt-saucelabs-* version 4.0.0 to be compatible with grunt@0.4.0
 
 
 The parameters are
@@ -88,9 +88,9 @@ The parameters are
 * __tags__: An array of tags displayed for this test on the Sauce Labs dashboard. This can be the build number, commit number, etc, that can be obtained from grunt. _Optional_
 * __browsers__: An array of objects representing the [various browsers](https://saucelabs.com/docs/platforms) on which this test should run.  _Optional_
 * __testInterval__ : Number of milliseconds between each retry to see if a test is completed or not (default: 5000). _Optional_
-* __onTestComplete__ : A callback that is called everytime a unit test for a page is complete. Runs per page, per browser configuration. Recieves a 'result' argument which is the javascript object exposed to sauce labs. A true or false return value passes or fails the test, undefined return value does not alter the result of the test. For async results, call `this.async()` in the function. The return of `this.async()` is a function that should be called once the async action is completed. _Optional_
+* __onTestComplete__ : A callback that is called every time a unit test for a page is complete. Runs per page, per browser configuration. Receives a 'result' argument which is the javascript object exposed to sauce labs. A true or false return value passes or fails the test, undefined return value does not alter the result of the test. For async results, call `this.async()` in the function. The return of `this.async()` is a function that should be called once the async action is completed. _Optional_
 
-A typical `test` task running from Grunt could look like `grunt.registerTask('test', ['server', 'qunit', 'saucelabs-qunit']);` This starts a server and then runs the Qunit tests first on PhantomJS and then using the Sauce Labs browsers.
+A typical `test` task running from Grunt could look like `grunt.registerTask('test', ['server', 'qunit', 'saucelabs-qunit']);` This starts a server and then runs the QUnit tests first on PhantomJS and then using the Sauce Labs browsers.
 
 Exposing Test Results to the Sauce Labs API
 -------------------------------------------
@@ -113,9 +113,9 @@ and telling Jasmine to use it:
 jasmineEnv.addReporter(new jasmine.JSReporter());
 ````
 
-### Test result details with qunit ###
+### Test result details with QUnit ###
 
-Add the following to your qunit test specification
+Add the following to your QUnit test specification
 ```javascript
 QUnit.done(function(results){
 	window.global_test_results = results;
@@ -152,7 +152,7 @@ Some projects that use this task are as follows. You can take a look at their Gr
 * [Jquery-IndexedDB](https://github.com/axemclion/jquery-indexeddb/blob/master/GruntFile.js)
 * [IndexedDBShim](https://github.com/axemclion/IndexedDBShim/blob/master/Gruntfile.js)
 
-If you have a project that uses this plugin, please add it to this list and send a pull request. 
+If you have a project that uses this plugin, please add it to this list and send a pull request.
 
 Integration with a CI system
 --------------------------
