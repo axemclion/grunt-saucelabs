@@ -57,11 +57,21 @@ module.exports = function(grunt) {
           return;
         }
 
+        var testInfo = body['js tests'][0];
+
+        if (testInfo.status == "test error"){
+          deferred.resolve({
+            passed: undefined,
+            result: {
+              message: "Test Error"
+            }
+          });
+          return;
+        }
 
         if (!body.completed){
           setTimeout(checkStatus ,testInterval);
         } else {
-          var testInfo = body['js tests'][0];
           testInfo.passed = testInfo.result ? resultParsers[framework](testInfo.result) : false;
           deferred.resolve(testInfo);
         }
