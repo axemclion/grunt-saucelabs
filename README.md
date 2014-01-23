@@ -140,7 +140,7 @@ Add the following to the mocha test page html. Make sure you remove any calls to
 </script>
 ```
 
-## Test result details with YUI Test ###
+### Test result details with YUI Test ###
 
 There's nothing you have to do for YUI Tests! The js library already exposes ```window.YUITest.TestRunner.getResults()```
 
