@@ -44,6 +44,7 @@ In the `grunt.initConfig`, add the configuration that looks like the following
       username: 'saucelabs-user-name', // if not provided it'll default to ENV SAUCE_USERNAME (if applicable)
       key: 'saucelabs-key', // if not provided it'll default to ENV SAUCE_ACCESS_KEY (if applicable)
       urls: ['array of URLs for unit test pages'],
+      build: process.env.CI_BUILD_NUMBER,
       tunneled: 'true (default) / false; false if you choose to skip creating a Sauce connect tunnel.',
       tunnelTimeout: 'A numeric value indicating the time to wait before closing all tunnels',
       testInterval: 'Milliseconds between retries to check if the tests are completed',
@@ -85,7 +86,8 @@ The parameters are
 * __urls__: An array or URLs that will be loaded in the browsers, one after another. Since SauceConnect is used, these URLs can also be localhost URLs that are available using the `server` task from grunt. _Required_
 * __tunneled__: Defaults to true; Won't launch a Sauce Connect tunnel if set to false. _Optional_
 * __testname__: The name of this test, displayed on the Sauce Labs dashboard. _Optional_
-* __tags__: An array of tags displayed for this test on the Sauce Labs dashboard. This can be the build number, commit number, etc, that can be obtained from grunt. _Optional_
+* __build__: The build number for this test. _Optional_
+* __tags__: An array of tags displayed for this test on the Sauce Labs dashboard. This can be the commit number, branch name, etc, that can be obtained from grunt. _Optional_
 * __browsers__: An array of objects representing the [various browsers](https://saucelabs.com/docs/platforms) on which this test should run.  _Optional_
 * __testInterval__ : Number of milliseconds between each retry to see if a test is completed or not (default: 5000). _Optional_
 * __onTestComplete__ : A callback that is called every time a unit test for a page is complete. Runs per page, per browser configuration. Receives a 'result' argument which is the javascript object exposed to sauce labs. A true or false return value passes or fails the test, undefined return value does not alter the result of the test. For async results, call `this.async()` in the function. The return of `this.async()` is a function that should be called once the async action is completed. _Optional_
