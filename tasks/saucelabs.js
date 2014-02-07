@@ -127,6 +127,11 @@ module.exports = function(grunt) {
 
             grunt.log.subhead("\nTested %s", url);
             grunt.log.writeln("Platform: %s", result.platform);
+
+            if (tunnelIdentifier && unsupportedPort(url)) {
+              grunt.log.writeln("Warning: This url might use a port that is not proxied by Sauce Connect.");
+            }
+
             if (result.passed === undefined){
               grunt.log.error(result.result.message);
             } else {
@@ -265,6 +270,24 @@ module.exports = function(grunt) {
     }
 
     
+  }
+
+  function unsupportedPort(url) {
+    // Not all ports are proxied by Sauce Connect. List of supported ports is
+    // available at https://saucelabs.com/docs/connect#localhost
+    var portRegExp = /:(\d+)\//;
+    var matches = portRegExp.exec(url);
+    var port = matches ? parseInt(matches[1], 10) : null;
+    var supportedPorts = [80, 443, 888, 2000, 2001, 2020, 2109, 2222, 2310, 3000, 3001, 3030,
+      3210, 3333, 4000, 4001, 4040, 4321, 4502, 4503, 4567, 5000, 5001, 5050, 5555, 5432, 6000,
+      6001, 6060, 6666, 6543, 7000, 7070, 7774, 7777, 8000, 8001, 8003, 8031, 8080, 8081, 8765,
+      8888, 9000, 9001, 9080, 9090, 9876, 9877, 9999, 49221, 55001];
+
+    if (port) {
+      return supportedPorts.indexOf(port) === -1;
+    }
+
+    return false;
   }
 
   grunt.registerMultiTask('saucelabs-jasmine', 'Run Jasmine test cases using Sauce Labs browsers', function() {
