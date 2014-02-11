@@ -119,7 +119,7 @@ module.exports = function(grunt) {
             grunt.log.writeln("Platform: %s", result.platform);
 
             if (tunnelIdentifier && unsupportedPort(url)) {
-              grunt.log.writeln("Warning: This url might use a port that is not proxied by Sauce Connect.");
+              grunt.log.writeln("Warning: This url might use a port that is not proxied by Sauce Connect.".yellow);
             }
 
             if (result.passed === undefined){
