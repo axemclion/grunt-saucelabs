@@ -139,8 +139,6 @@ module.exports = function(grunt) {
             }
             grunt.log.writeln("Url %s", result.url);
             
-            //onTestComplete(result);
-
           }, function(e){
             grunt.log.error('some error? %s', e);
           });
