@@ -119,8 +119,29 @@ jasmineEnv.addReporter(new jasmine.JSReporter());
 
 Add the following to your QUnit test specification
 ```javascript
-QUnit.done(function(results){
-	window.global_test_results = results;
+QUnit.done = function (test_results) {
+  var tests = log.map(function(details){
+    return {
+      name: details.name,
+      result: details.result,
+      expected: details.expected,
+      actual: details.actual,
+      source: details.source
+    }
+  });
+  test_results.tests = tests;
+
+  // delaying results a bit cause in real-world
+  // scenario you won't get them immediately
+  setTimeout(function () { window.global_test_results = test_results; }, 2000);
+};
+QUnit.testStart(function(testDetails){
+  QUnit.log = function(details){
+    if (!details.result) {
+      details.name = testDetails.name;
+      log.push(details);
+    }
+  }
 });
 ```
 
@@ -134,10 +155,27 @@ Add the following to the mocha test page html. Make sure you remove any calls to
     //mocha.globals(['foo']);
     var runner = mocha.run();
 
+    var failedTests = [];
     runner.on('end', function(){
       window.mochaResults = runner.stats;
+      window.mochaResults.reports = failedTests;
     });
+    
+    runner.on('fail', logFailure);
 
+    function logFailure(test, err){
+      
+      var flattenTitles = function(test){
+        var titles = [];
+        while (test.parent.title){
+          titles.push(test.parent.title);
+          test = test.parent;
+        }
+        return titles.reverse();
+      };
+
+      failedTests.push({name: test.title, result: false, message: err.message, stack: err.stack, titles: flattenTitles(test) });
+    };
   };
 </script>
 ```
@@ -155,6 +193,7 @@ Some projects that use this task are as follows. You can take a look at their Gr
 * [IndexedDBShim](https://github.com/axemclion/IndexedDBShim/blob/master/Gruntfile.js)
 
 If you have a project that uses this plugin, please add it to this list and send a pull request.
+
 
 Integration with a CI system
 --------------------------
