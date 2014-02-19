@@ -161,3 +161,7 @@ Integration with a CI system
 Grunt tasks are usually run alongside a continuous integration system. For example, when using [Travis](https://travis-ci.org), adding the following lines in the package.json ensures that the task is installed with `npm install` is run. Registering Sauce Labs in test task using `grunt.registerTask('test', ['server', 'saucelabs-qunit']);` ensures that the CI environment runs the tests using `npm test`.
 To secure the Sauce Key, the CI environment can be configured to provide the key as an environment variable instead of specifying it file. CI Environments like Travis provide [ways](http://about.travis-ci.org/docs/user/build-configuration/#Secure-environment-variables) to add secure variables in the initial configuration.
 The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that uses this plugin in a CI environment. Look at the [.travis.yml](https://github.com/axemclion/IndexedDBShim/blob/master/.travis.yml) and the [grunt.js](https://github.com/axemclion/IndexedDBShim/blob/master/Gruntfile.js) for usage example.
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/Jonahss/grunt-saucelabs/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
