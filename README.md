@@ -119,6 +119,8 @@ jasmineEnv.addReporter(new jasmine.JSReporter());
 
 Add the following to your QUnit test specification
 ```javascript
+var log = [];
+var testName;
 QUnit.done = function (test_results) {
   var tests = log.map(function(details){
     return {
