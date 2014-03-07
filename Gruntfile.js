@@ -71,6 +71,20 @@ module.exports = function(grunt) {
 				}
 			}
 		},
+		'saucelabs-custom': {
+			all: {
+				//username: '',
+				//key: '',
+				options: {
+					urls: ['http://127.0.0.1:9999/custom/custom.html'],
+					tunnelTimeout: 5,
+					build: process.env.TRAVIS_JOB_ID,
+					concurrency: 3,
+					browsers: browsers,
+					testname: "custom tests"
+				}
+			}
+		},
 		'saucelabs-qunit': {
 			all: {
 				//username: '',
@@ -110,7 +124,7 @@ module.exports = function(grunt) {
 
 	var testjobs = ['jshint', 'connect'];
 	if (typeof process.env.SAUCE_ACCESS_KEY !== 'undefined'){
-		testjobs = testjobs.concat(['saucelabs-qunit', 'saucelabs-jasmine', 'saucelabs-yui', 'saucelabs-mocha']);
+		testjobs = testjobs.concat(['saucelabs-qunit', 'saucelabs-jasmine', 'saucelabs-yui', 'saucelabs-mocha', 'saucelabs-custom']);
 	}
 
 	grunt.registerTask("dev", ["connect", "watch"]);

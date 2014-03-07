@@ -23,6 +23,10 @@ module.exports = function(grunt) {
     'YUI Test': function(result){
       if (result.passed === undefined){ return undefined; }
       return result.passed == result.total;
+    },
+    custom: function(result){
+      if (result.passed === undefined){ return undefined; }
+      return result.failed === 0;
     }
   };
 
@@ -39,12 +43,12 @@ module.exports = function(grunt) {
       },
       json: true,
       body: {
-        "js tests": [jobId],
+        "js tests": [jobId]
       }
     };
 
     var checkStatus = function(){
-      
+
       rqst(requestParams, function(error, response, body){
 
         if (error){
@@ -80,7 +84,7 @@ module.exports = function(grunt) {
     };
 
     checkStatus();
-    
+
     return deferred.promise;
   };
 
@@ -119,7 +123,7 @@ module.exports = function(grunt) {
           var resultPromise = new TestResult(taskId, me.user, me.key, framework, me.testInterval);
           addResultPromise(resultPromise);
           resultPromise.then(function(result){
-            
+
             var alteredResult = onTestComplete(result);
             if (alteredResult !== undefined){
               result.passed = alteredResult;
@@ -138,7 +142,7 @@ module.exports = function(grunt) {
               grunt.log.writeln("Passed: %s", result.passed);
             }
             grunt.log.writeln("Url %s", result.url);
-            
+
           }, function(e){
             grunt.log.error('some error? %s', e);
           });
@@ -216,7 +220,7 @@ module.exports = function(grunt) {
     if (!_.isArray(result.pages)) {
       result.pages = [result.pages];
     }
-    
+
     return result;
   }
 
@@ -266,8 +270,6 @@ module.exports = function(grunt) {
         callback(status);
       });
     }
-
-    
   }
 
   function unsupportedPort(url) {
@@ -288,35 +290,12 @@ module.exports = function(grunt) {
     return false;
   }
 
-  grunt.registerMultiTask('saucelabs-jasmine', 'Run Jasmine test cases using Sauce Labs browsers', function() {
-    var done = this.async(),
-      arg = defaults(this.options(defaultsObj));
+  Object.keys(resultParsers).forEach(function(framework) {
+    grunt.registerMultiTask('saucelabs-' + framework, 'Run ' + framework + 'test cases using Sauce Labs browsers', function() {
+      var done = this.async(),
+        arg = defaults(this.options(defaultsObj));
 
-    runTask(arg, 'jasmine', done);
-    
-  });
-
-  grunt.registerMultiTask('saucelabs-qunit', 'Run Qunit test cases using Sauce Labs browsers', function() {
-    var done = this.async(),
-      arg = defaults(this.options(defaultsObj));
-
-    runTask(arg, 'qunit', done);
-
-  });
-
-  grunt.registerMultiTask('saucelabs-yui', 'Run YUI test cases using Sauce Labs browsers', function() {
-    var done = this.async(),
-    arg = defaults(this.options(defaultsObj));
-
-    runTask(arg, 'YUI Test', done);
-
-  });
-
-  grunt.registerMultiTask('saucelabs-mocha', 'Run Mocha test cases using Sauce Labs browsers', function() {
-    var done = this.async(),
-      arg = defaults(this.options(defaultsObj));
-
-    runTask(arg, 'mocha', done);
-
+      runTask(arg, framework, done);
+    });
   });
 };

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Mocha</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../mocha/mocha.css" />
+    <script src="../mocha/mocha.js"></script>
+    <script>mocha.setup('bdd')</script>
+    <script>
+      function assert(expr, msg) {
+        if (!expr) throw new Error(msg || 'failed');
+      }
+    </script>
+    <script src="../mocha/test/browser/array.js"></script>
+    <script src="../mocha/test/acceptance/duration.js"></script>
+    <script src="../mocha/test/acceptance/timeout.js"></script>
+    <script>
+      window.onload = function() {
+        var runner = mocha.run();
+
+        var tests = [];
+        runner.on('end', function(){
+          window.global_test_results = {
+            passed: runner.stats.passes,
+            failed: runner.stats.failures,
+            total: runner.stats.tests,
+            duration: runner.stats.duration,
+            tests: tests
+          };
+        });
+
+        runner.on('pass', function(test) {
+          tests.push({
+            name: test.fullTitle(),
+            result: true,
+            duration: test.duration
+          });
+        });
+
+        runner.on('fail', function (test, err) {
+          tests.push({
+            name: test.fullTitle(),
+            result: false,
+            duration: test.duration,
+            message: err.stack
+          });
+        });
+      };
+    </script>
+  </head>
+  <body>
+    <div id="mocha"></div>
+  </body>
+</html>

@@ -8,7 +8,7 @@ grunt-saucelabs
 
 [![Dependency Status](https://david-dm.org/axemclion/grunt-saucelabs.png)](https://david-dm.org/axemclion/grunt-saucelabs) [![devDependency Status](https://david-dm.org/axemclion/grunt-saucelabs/dev-status.png)](https://david-dm.org/axemclion/grunt-saucelabs#info=devDependencies)
 
-A Grunt task for running QUnit, Jasmine, Mocha and YUI tests using Sauce Labs' Cloudified Browsers.
+A Grunt task for running QUnit, Jasmine, Mocha, YUI tests, or any framework using Sauce Labs' Cloudified Browsers.
 
 [Grunt](http://gruntjs.com/) is a task-based command line build tool for JavaScript projects, based on nodejs.
 [QUnit](http://qunitjs.com/) is a powerful, easy-to-use JavaScript unit test suite used by the jQuery, jQuery UI and jQuery Mobile projects and is capable of testing any generic JavaScript code, including itself!
@@ -75,7 +75,7 @@ In the `grunt.initConfig`, add the configuration that looks like the following
 
 ```
 
-The configuration of `saucelabs-jasmine`, `saucelabs-mocha`, `saucelabs-yui` are exactly the same.
+The configuration of `saucelabs-jasmine`, `saucelabs-mocha`, `saucelabs-yui`, and `saucelabs-custom` are exactly the same.
 Note the options object inside a grunt target. This was introduced in grunt-saucelabs-* version 4.0.0 to be compatible with grunt@0.4.0
 
 
@@ -185,6 +185,10 @@ Add the following to the mocha test page html. Make sure you remove any calls to
 ### Test result details with YUI Test ###
 
 There's nothing you have to do for YUI Tests! The js library already exposes ```window.YUITest.TestRunner.getResults()```
+
+### Test result details with a custom framework ###
+
+When you tests are finished, expose your tests results on `window.global_test_results` as explained in [SauceLab's JS Unit Testing REST API Documentation](https://saucelabs.com/docs/rest#jsunit)
 
 Examples
 --------
