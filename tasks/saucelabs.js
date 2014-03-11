@@ -290,12 +290,43 @@ module.exports = function(grunt) {
     return false;
   }
 
-  Object.keys(resultParsers).forEach(function(framework) {
-    grunt.registerMultiTask('saucelabs-' + framework, 'Run ' + framework + 'test cases using Sauce Labs browsers', function() {
-      var done = this.async(),
-        arg = defaults(this.options(defaultsObj));
+  grunt.registerMultiTask('saucelabs-jasmine', 'Run Jasmine test cases using Sauce Labs browsers', function() {
+    var done = this.async(),
+      arg = defaults(this.options(defaultsObj));
 
-      runTask(arg, framework, done);
-    });
+    runTask(arg, 'jasmine', done);
+
+  });
+
+  grunt.registerMultiTask('saucelabs-qunit', 'Run Qunit test cases using Sauce Labs browsers', function() {
+    var done = this.async(),
+      arg = defaults(this.options(defaultsObj));
+
+    runTask(arg, 'qunit', done);
+
+  });
+
+  grunt.registerMultiTask('saucelabs-yui', 'Run YUI test cases using Sauce Labs browsers', function() {
+    var done = this.async(),
+    arg = defaults(this.options(defaultsObj));
+
+    runTask(arg, 'YUI Test', done);
+
+  });
+
+  grunt.registerMultiTask('saucelabs-mocha', 'Run Mocha test cases using Sauce Labs browsers', function() {
+    var done = this.async(),
+      arg = defaults(this.options(defaultsObj));
+
+    runTask(arg, 'mocha', done);
+
+  });
+
+  grunt.registerMultiTask('saucelabs-custom', 'Run custom test cases using Sauce Labs browsers', function() {
+    var done = this.async(),
+      arg = defaults(this.options(defaultsObj));
+
+    runTask(arg, 'custom', done);
+
   });
 };
