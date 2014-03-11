@@ -17,10 +17,6 @@ module.exports = function(grunt) {
 		browserName: 'internet explorer',
 		platform: 'VISTA',
 		version: '9'
-	}, {
-		browserName: 'internet explorer',
-		platform: 'XP',
-		version: '8'
 	}];
 
 	grunt.initConfig({
@@ -90,7 +86,7 @@ module.exports = function(grunt) {
 				//username: '',
 				//key: '',
 				options: {
-					urls: ['http://127.0.0.1:9999/qunit/index.html', 'http://127.0.0.1:9999/qunit/logs.html'],
+					urls: ['http://127.0.0.1:9999/qunit/index.html'],
 					tunnelTimeout: 5,
 					build: process.env.TRAVIS_JOB_ID,
 					concurrency: 3,
