@@ -121,16 +121,19 @@ Add the following to your QUnit test specification
 ```javascript
 var log = [];
 var testName;
+
 QUnit.done = function (test_results) {
-  var tests = log.map(function(details){
-    return {
+  var tests = [];
+  for(var i = 0, len = log.length; i < len; i++) {
+    var details = log[i];
+    tests.push({
       name: details.name,
       result: details.result,
       expected: details.expected,
       actual: details.actual,
       source: details.source
-    }
-  });
+    });
+  }
   test_results.tests = tests;
 
   // delaying results a bit cause in real-world
@@ -143,7 +146,7 @@ QUnit.testStart(function(testDetails){
       details.name = testDetails.name;
       log.push(details);
     }
-  }
+  };
 });
 ```
 
