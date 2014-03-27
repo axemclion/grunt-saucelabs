@@ -210,6 +210,11 @@ The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that
 
 Changelog
 ---------
+####5.1.1####
+* Qunit reporting code made ecma3 compatible
+* Qunit reporting code doesn't clober the `.done()` callback
+* Updated dependencies
+
 ####5.1.0####
 * Added `custom` framework
 * Updated the test reporting on example pages to provide details when tests fail
