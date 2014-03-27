@@ -823,7 +823,7 @@ QUnit.done = function (test_results) {
   });
   test_results.tests = tests;
 
-  window.global_test_results = test_results; };
+  window.global_test_results = test_results;
 };
 
 QUnit.testStart(function(testDetails){
