@@ -96,11 +96,10 @@ module.exports = function(grunt) {
     this.results = [];
   };
 
-  TestRunner.prototype.runTests = function(browsers, urls, framework, tunnelIdentifier, testname, tags, build, onTestComplete, callback){
+  TestRunner.prototype.runTests = function(browsers, urls, framework, tunnelIdentifier, testname, tags, build, onTestComplete, throttled, callback){
 
     var me = this;
     var numberOfJobs = browsers.length * urls.length;
-
     var addResultPromise = function(promise){
       me.results.push(promise);
       grunt.log.writeln(me.results.length, "/", numberOfJobs, 'tests started');
@@ -116,39 +115,64 @@ module.exports = function(grunt) {
       }
     };
 
-    urls.forEach(function(url){
-      me.runTest(browsers, url, framework, tunnelIdentifier, testname, tags, build, function(taskIds){
+    var outstandingTests = 0;
 
-        taskIds.forEach(function(taskId){
-          var resultPromise = new TestResult(taskId, me.user, me.key, framework, me.testInterval);
-          addResultPromise(resultPromise);
-          resultPromise.then(function(result){
+    function take() {
+        var url = urls.shift();
+        if (url) {
+            outstandingTests++;
+            me.runTest(browsers, url, framework, tunnelIdentifier, testname, tags, build, function (taskIds) {
 
-            var alteredResult = onTestComplete(result);
-            if (alteredResult !== undefined){
-              result.passed = alteredResult;
-            }
+                var outstandingTasks = taskIds.length;
+                function taskComplete() {
+                    outstandingTasks--;
+                    if (outstandingTasks === 0) {
+                        outstandingTests--;
+                        takeMany();
+                    }
+                }
 
-            grunt.log.subhead("\nTested %s", url);
-            grunt.log.writeln("Platform: %s", result.platform);
+                taskIds.forEach(function (taskId) {
+                    var resultPromise = new TestResult(taskId, me.user, me.key, framework, me.testInterval);
+                    addResultPromise(resultPromise);
+                    resultPromise.then(function (result) {
+                        var alteredResult = onTestComplete(result);
+                        if (alteredResult !== undefined) {
+                            result.passed = alteredResult;
+                        }
 
-            if (tunnelIdentifier && unsupportedPort(url)) {
-              grunt.log.writeln("Warning: This url might use a port that is not proxied by Sauce Connect.".yellow);
-            }
+                        grunt.log.subhead("\nTested %s", url);
+                        grunt.log.writeln("Platform: %s", result.platform);
 
-            if (result.passed === undefined){
-              grunt.log.error(result.result.message);
-            } else {
-              grunt.log.writeln("Passed: %s", result.passed);
-            }
-            grunt.log.writeln("Url %s", result.url);
+                        if (tunnelIdentifier && unsupportedPort(url)) {
+                            grunt.log.writeln("Warning: This url might use a port that is not proxied by Sauce Connect.".yellow);
+                        }
 
-          }, function(e){
-            grunt.log.error('some error? %s', e);
-          });
-        });
-      });
-    });
+                        if (result.passed === undefined) {
+                            grunt.log.error(result.result.message);
+                        } else {
+                            grunt.log.writeln("Passed: %s", result.passed);
+                        }
+                        grunt.log.writeln("Url %s", result.url);
+                        taskComplete();
+                    }, function (e) {
+                        grunt.log.error('some error? %s', e);
+                        taskComplete();
+                    });
+                });
+            });
+        }
+    }
+
+    throttled = throttled || Number.MAX_VALUE;
+
+    function takeMany() {
+        while (urls.length && outstandingTests < throttled) {
+            take();
+        }
+    }
+
+    takeMany();
   };
 
   TestRunner.prototype.runTest = function(browsers, url, framework, tunnelIdentifier, testname, tags, build, callback){
@@ -253,7 +277,7 @@ module.exports = function(grunt) {
         }
         grunt.log.ok("Connected to Saucelabs");
 
-        test.runTests(arg.browsers, arg.pages, framework, arg.identifier, arg.testname, arg.tags, arg.build, arg.onTestComplete, function(status){
+        test.runTests(arg.browsers, arg.pages, framework, arg.identifier, arg.testname, arg.tags, arg.build, arg.onTestComplete, arg.throttled, function (status){
           status = status.every(function(passed){ return passed; });
           grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
           grunt.log.writeln("=> Stopping Tunnel to Sauce Labs".inverse.bold);
@@ -264,7 +288,7 @@ module.exports = function(grunt) {
       });
 
     } else {
-      test.runTests(arg.browsers, arg.pages, framework, null, arg.testname, arg.tags, arg.build, arg.onTestComplete, function(status){
+      test.runTests(arg.browsers, arg.pages, framework, null, arg.testname, arg.tags, arg.build, arg.onTestComplete, arg.throttled, function(status){
         status = status.every(function(passed){ return passed; });
         grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
         callback(status);
