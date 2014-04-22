@@ -48,6 +48,7 @@ In the `grunt.initConfig`, add the configuration that looks like the following
       tunneled: 'true (default) / false; false if you choose to skip creating a Sauce connect tunnel.',
       tunnelTimeout: 'A numeric value indicating the time to wait before closing all tunnels',
       testInterval: 'Milliseconds between retries to check if the tests are completed',
+      throttled: 'A numeric value indicating the maximum number of unit test pages to run concurrently',
       testname: 'Name of the test',
       tags: ['Array of tags'],
       browsers: [{
@@ -90,6 +91,7 @@ The parameters are
 * __tags__: An array of tags displayed for this test on the Sauce Labs dashboard. This can be the commit number, branch name, etc, that can be obtained from grunt. _Optional_
 * __browsers__: An array of objects representing the [various browsers](https://saucelabs.com/docs/platforms) on which this test should run.  _Optional_
 * __testInterval__ : Number of milliseconds between each retry to see if a test is completed or not (default: 5000). _Optional_
+* __thottled__: Maximum number of unit test pages which will be sent to Sauce Labs concurrently. The maximum number of jobs you may have outstanding is this times the number of browsers, can be used to mitigate concurrency failures if you have a lot of unit test pages. _Optional_
 * __onTestComplete__ : A callback that is called every time a unit test for a page is complete. Runs per page, per browser configuration. Receives a 'result' argument which is the javascript object exposed to sauce labs. A true or false return value passes or fails the test, undefined return value does not alter the result of the test. For async results, call `this.async()` in the function. The return of `this.async()` is a function that should be called once the async action is completed. _Optional_
 
 A typical `test` task running from Grunt could look like `grunt.registerTask('test', ['server', 'qunit', 'saucelabs-qunit']);` This starts a server and then runs the QUnit tests first on PhantomJS and then using the Sauce Labs browsers.
