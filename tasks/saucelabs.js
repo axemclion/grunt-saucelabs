@@ -202,7 +202,7 @@ module.exports = function(grunt) {
     };
 
     if (tunnelIdentifier){
-      requestParams.body.tunnel = "tunnel-identifier:" + tunnelIdentifier;
+      requestParams.body['tunnel-identifier'] = tunnelIdentifier;
     }
 
     rqst(requestParams, function(error, response, body){
