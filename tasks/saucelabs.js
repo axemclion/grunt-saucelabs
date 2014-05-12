@@ -1,7 +1,7 @@
 module.exports = function(grunt) {
   var _ = require('lodash'),
     request = require('request'),
-    SauceTunnel = require('sauce-tunnel-sc3-1'),
+    SauceTunnel = require('sauce-tunnel'),
     Q = require('q'),
     rqst = request.defaults({
       jar: false
