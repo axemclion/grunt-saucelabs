@@ -44,6 +44,8 @@ In the `grunt.initConfig`, add the configuration that looks like the following
       username: 'saucelabs-user-name', // if not provided it'll default to ENV SAUCE_USERNAME (if applicable)
       key: 'saucelabs-key', // if not provided it'll default to ENV SAUCE_ACCESS_KEY (if applicable)
       urls: ['array of URLs for unit test pages'],
+      directDomains: '', // Comma-separated list of domains.
+      fastFailRegExps: '', // Comma-separated list of regular expressions.
       build: process.env.CI_BUILD_NUMBER,
       tunneled: 'true (default) / false; false if you choose to skip creating a Sauce connect tunnel.',
       tunnelTimeout: 'A numeric value indicating the time to wait before closing all tunnels',
@@ -85,6 +87,8 @@ The parameters are
 * __username__ : The Sauce Labs username that will be used to connect to the servers. _Required_
 * __key__ : The Sauce Labs secret key. Since this is a secret, this should not be checked into the source code and may be available as an environment variable. Grunt can access this using   `process.env.saucekey`. _Required_
 * __urls__: An array or URLs that will be loaded in the browsers, one after another. Since SauceConnect is used, these URLs can also be localhost URLs that are available using the `server` task from grunt. _Required_
+* __directDomains__: Comma-separated list of domains. Requests whose host matches one of these will be relayed directly through the internet, instead of through the tunnel. _Optional_
+* __fastFailRegExps__: Comma-separated list of regular expressions. Requests matching one of these will get dropped instantly and will not go through the tunnel. _Optional_
 * __tunneled__: Defaults to true; Won't launch a Sauce Connect tunnel if set to false. _Optional_
 * __testname__: The name of this test, displayed on the Sauce Labs dashboard. _Optional_
 * __build__: The build number for this test. _Optional_
