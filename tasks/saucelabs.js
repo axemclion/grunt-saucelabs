@@ -1,7 +1,7 @@
 module.exports = function(grunt) {
   var _ = require('lodash'),
     request = require('request'),
-    SauceTunnel = require('sauce-tunnel-sc3-1'),
+    SauceTunnel = require('sauce-tunnel'),
     Q = require('q'),
     rqst = request.defaults({
       jar: false
@@ -235,7 +235,9 @@ module.exports = function(grunt) {
     },
     testname: "",
     tags: [],
-    browsers: [{}]
+    browsers: [{}],
+    fastFailRegExps: "",
+    directDomains: ""
   };
 
   function defaults(data) {
@@ -245,6 +247,23 @@ module.exports = function(grunt) {
       result.pages = [result.pages];
     }
 
+    return result;
+  }
+
+  function extraFlags(arg) {
+    var result = [];
+    //--fast-fail-regexps
+    if (arg.fastFailRegExps.length) {
+      result.push('--fast-fail-regexps');
+      result.push(JSON.stringify(arg.fastFailRegExps));
+    }
+    if (arg.directDomains.length) {
+      result.push('--direct-domains');
+      result.push(JSON.stringify(arg.directDomains));
+    }
+    if (grunt.option('verbose')) {
+      result.push('--verbose');
+    }
     return result;
   }
 
@@ -264,8 +283,8 @@ module.exports = function(grunt) {
 
     var test = new TestRunner(arg.username, arg.key, arg.testInterval);
 
-    if (arg.tunneled){
-      var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, arg.tunnelTimeout);
+    if (arg.tunneled) {
+      var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, extraFlags(arg));
       grunt.log.writeln("=> Starting Tunnel to Sauce Labs".inverse.bold);
       configureLogEvents(tunnel);
 
