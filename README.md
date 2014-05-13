@@ -212,6 +212,12 @@ The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that
 
 Changelog
 ---------
+####5.1.3####
+* update to sauce-tunnel 2.0.6, which uses Sauce Connect 4.2
+
+####5.1.2####
+* use sauce-tunnel-sc3-1 to protect against heartbleed bug
+
 ####5.1.1####
 * Qunit reporting code made ecma3 compatible
 * Qunit reporting code doesn't clober the `.done()` callback

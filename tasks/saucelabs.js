@@ -1,7 +1,7 @@
 module.exports = function(grunt) {
   var _ = require('lodash'),
     request = require('request'),
-    SauceTunnel = require('sauce-tunnel-sc3-1'),
+    SauceTunnel = require('sauce-tunnel'),
     Q = require('q'),
     rqst = request.defaults({
       jar: false
@@ -265,7 +265,7 @@ module.exports = function(grunt) {
     var test = new TestRunner(arg.username, arg.key, arg.testInterval);
 
     if (arg.tunneled){
-      var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, arg.tunnelTimeout);
+      var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, ['-P', '0']);
       grunt.log.writeln("=> Starting Tunnel to Sauce Labs".inverse.bold);
       configureLogEvents(tunnel);
 
