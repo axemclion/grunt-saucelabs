@@ -214,6 +214,7 @@ Changelog
 ---------
 ####5.1.3####
 * update to sauce-tunnel 2.0.6, which uses Sauce Connect 4.2
+* queued job throttling added
 
 ####5.1.2####
 * use sauce-tunnel-sc3-1 to protect against heartbleed bug
