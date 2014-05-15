@@ -89,7 +89,7 @@ The parameters are
 * __build__: The build number for this test. _Optional_
 * __tags__: An array of tags displayed for this test on the Sauce Labs dashboard. This can be the commit number, branch name, etc, that can be obtained from grunt. _Optional_
 * __browsers__: An array of objects representing the [various browsers](https://saucelabs.com/docs/platforms) on which this test should run.  _Optional_
-* __testInterval__ : Number of milliseconds between each retry to see if a test is completed or not (default: 5000). _Optional_
+* __testInterval__ : Number of milliseconds between each retry to see if a test is completed or not (default: 2000). _Optional_
 * __thottled__: Maximum number of unit test pages which will be sent to Sauce Labs concurrently. The maximum number of jobs you may have outstanding is this times the number of browsers, can be used to mitigate concurrency failures if you have a lot of unit test pages. _Optional_
 * __onTestComplete__ : A callback that is called every time a unit test for a page is complete. Runs per page, per browser configuration. Receives a 'result' argument which is the javascript object exposed to sauce labs. A true or false return value passes or fails the test, undefined return value does not alter the result of the test. For async results, call `this.async()` in the function. The return of `this.async()` is a function that should be called once the async action is completed. _Optional_
 
