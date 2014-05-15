@@ -96,7 +96,7 @@ module.exports = function(grunt) {
     this.results = [];
   };
 
-  TestRunner.prototype.runTests = function(browsers, urls, framework, tunnelIdentifier, testname, tags, build, onTestComplete, throttled, callback){
+  TestRunner.prototype.runTests = function(browsers, urls, framework, tunnelIdentifier, testname, tags, build, onTestComplete, throttled, maxDuration, callback){
 
     var me = this;
     var numberOfJobs = browsers.length * urls.length;
@@ -121,7 +121,7 @@ module.exports = function(grunt) {
         var url = urls.shift();
         if (url) {
             outstandingTests++;
-            me.runTest(browsers, url, framework, tunnelIdentifier, testname, tags, build, function (taskIds) {
+            me.runTest(browsers, url, framework, tunnelIdentifier, testname, tags, build, maxDuration, function (taskIds) {
 
                 var outstandingTasks = taskIds.length;
                 function taskComplete() {
@@ -175,7 +175,7 @@ module.exports = function(grunt) {
     takeMany();
   };
 
-  TestRunner.prototype.runTest = function(browsers, url, framework, tunnelIdentifier, testname, tags, build, callback){
+  TestRunner.prototype.runTest = function(browsers, url, framework, tunnelIdentifier, testname, tags, build, maxDuration, callback){
 
     var parsePlatforms = function(browsers){
       return browsers.map(function(browser){
@@ -203,6 +203,10 @@ module.exports = function(grunt) {
 
     if (tunnelIdentifier){
       requestParams.body['tunnel-identifier'] = tunnelIdentifier;
+    }
+
+    if (maxDuration) {
+      requestParams.body['max-duration'] = maxDuration;
     }
 
     rqst(requestParams, function(error, response, body){
@@ -277,7 +281,7 @@ module.exports = function(grunt) {
         }
         grunt.log.ok("Connected to Saucelabs");
 
-        test.runTests(arg.browsers, arg.pages, framework, arg.identifier, arg.testname, arg.tags, arg.build, arg.onTestComplete, arg.throttled, function (status){
+        test.runTests(arg.browsers, arg.pages, framework, arg.identifier, arg.testname, arg.tags, arg.build, arg.onTestComplete, arg.throttled, arg.maxDuration, function (status){
           status = status.every(function(passed){ return passed; });
           grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
           grunt.log.writeln("=> Stopping Tunnel to Sauce Labs".inverse.bold);
@@ -288,7 +292,7 @@ module.exports = function(grunt) {
       });
 
     } else {
-      test.runTests(arg.browsers, arg.pages, framework, null, arg.testname, arg.tags, arg.build, arg.onTestComplete, arg.throttled, function(status){
+      test.runTests(arg.browsers, arg.pages, framework, null, arg.testname, arg.tags, arg.build, arg.onTestComplete, arg.throttled, arg.maxDuration, function(status){
         status = status.every(function(passed){ return passed; });
         grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
         callback(status);
