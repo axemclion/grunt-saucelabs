@@ -45,7 +45,6 @@ module.exports = function(grunt) {
 				//key: '',
 				options: {
 					urls: ['http://127.0.0.1:9999/yui/index.html'],
-					tunnelTimeout: 5,
 					build: process.env.TRAVIS_JOB_ID,
 					concurrency: 3,
 					browsers: browsers,
@@ -59,7 +58,6 @@ module.exports = function(grunt) {
 				//key: '',
 				options: {
 					urls: ['http://127.0.0.1:9999/mocha/test/browser/index.html'],
-					tunnelTimeout: 5,
 					build: process.env.TRAVIS_JOB_ID,
 					concurrency: 3,
 					browsers: browsers,
@@ -73,7 +71,6 @@ module.exports = function(grunt) {
 				//key: '',
 				options: {
 					urls: ['http://127.0.0.1:9999/custom/custom.html'],
-					tunnelTimeout: 5,
 					build: process.env.TRAVIS_JOB_ID,
 					concurrency: 3,
 					browsers: browsers,
@@ -87,7 +84,6 @@ module.exports = function(grunt) {
 				//key: '',
 				options: {
 					urls: ['http://127.0.0.1:9999/qunit/index.html'],
-					tunnelTimeout: 5,
 					build: process.env.TRAVIS_JOB_ID,
 					concurrency: 3,
 					browsers: browsers,
@@ -101,7 +97,6 @@ module.exports = function(grunt) {
 				//key: '',
 				options: {
 					urls: ['http://127.0.0.1:9999/jasmine/SpecRunner.html', 'http://127.0.0.1:9999/jasmine/SpecRunnerDos.html'],
-					tunnelTimeout: 5,
 					build: process.env.TRAVIS_JOB_ID,
 					concurrency: 3,
 					browsers: browsers,

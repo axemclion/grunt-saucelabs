@@ -46,7 +46,6 @@ In the `grunt.initConfig`, add the configuration that looks like the following
       urls: ['array of URLs for unit test pages'],
       build: process.env.CI_BUILD_NUMBER,
       tunneled: 'true (default) / false; false if you choose to skip creating a Sauce connect tunnel.',
-      tunnelTimeout: 'A numeric value indicating the time to wait before closing all tunnels',
       testInterval: 'Milliseconds between retries to check if the tests are completed',
       throttled: 'A numeric value indicating the maximum number of unit test pages to run concurrently',
       testname: 'Name of the test',
