@@ -48,6 +48,7 @@ In the `grunt.initConfig`, add the configuration that looks like the following
       tunneled: 'true (default) / false; false if you choose to skip creating a Sauce connect tunnel.',
       testInterval: 'Milliseconds between retries to check if the tests are completed',
       throttled: 'A numeric value indicating the maximum number of unit test pages to run concurrently',
+      maxDuration: 'Maximum duration for the job in seconds (default 180s)',
       testname: 'Name of the test',
       tags: ['Array of tags'],
       browsers: [{
