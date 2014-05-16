@@ -12,6 +12,7 @@ A Grunt task for running QUnit, Jasmine, Mocha, YUI tests, or any framework usin
 
 [Grunt](http://gruntjs.com/) is a task-based command line build tool for JavaScript projects, based on nodejs.
 [QUnit](http://qunitjs.com/) is a powerful, easy-to-use JavaScript unit test suite used by the jQuery, jQuery UI and jQuery Mobile projects and is capable of testing any generic JavaScript code, including itself!
+[Jasmine](http://jasmine.github.io/) is a behavior-driven development framework for testing JavaScript code.
 [Mocha](http://visionmedia.github.io/mocha/) is a JavaScript test framework for running serial asynchronous tests.
 [YUI Test](http://developer.yahoo.com/yui/yuitest/) is a browser-based testing framework from Yahoo!.
 [Sauce Labs](https://saucelabs.com/) offers browser environments on the cloud for testing code.
@@ -43,13 +44,9 @@ In the `grunt.initConfig`, add the configuration that looks like the following
       options: {
       username: 'saucelabs-user-name', // if not provided it'll default to ENV SAUCE_USERNAME (if applicable)
       key: 'saucelabs-key', // if not provided it'll default to ENV SAUCE_ACCESS_KEY (if applicable)
-      urls: ['array of URLs for unit test pages'],
+      urls: ['www.example.com/qunitTests', 'www.example.com/mochaTests'],
       build: process.env.CI_BUILD_NUMBER,
-      tunneled: 'true (default) / false; false if you choose to skip creating a Sauce connect tunnel.',
-      testInterval: 'Milliseconds between retries to check if the tests are completed',
-      throttled: 'A numeric value indicating the maximum number of unit test pages to run concurrently',
-      testname: 'Name of the test',
-      tags: ['Array of tags'],
+      testname: 'Sauce Unit Test for example.com',
       browsers: [{
         browserName: 'firefox',
 		    version: '19',
@@ -79,18 +76,20 @@ The configuration of `saucelabs-jasmine`, `saucelabs-mocha`, `saucelabs-yui`, an
 Note the options object inside a grunt target. This was introduced in grunt-saucelabs-* version 4.0.0 to be compatible with grunt@0.4.0
 
 
-The parameters are
+Full list of parameters which can be added to a saucelabs-* task:
 
-* __username__ : The Sauce Labs username that will be used to connect to the servers. _Required_
-* __key__ : The Sauce Labs secret key. Since this is a secret, this should not be checked into the source code and may be available as an environment variable. Grunt can access this using   `process.env.saucekey`. _Required_
+* __username__ : The Sauce Labs username that will be used to connect to the servers. If not provided, uses the value of SAUCE_USERNAME environment variable. _Optional_
+* __key__ : The Sauce Labs secret key. Since this is a secret, this should not be checked into the source code and may be available as an environment variable. Grunt can access this using   `process.env.saucekey`. Will also default to SAUCE_ACCESS_KEY environment variable. _Optional_
 * __urls__: An array or URLs that will be loaded in the browsers, one after another. Since SauceConnect is used, these URLs can also be localhost URLs that are available using the `server` task from grunt. _Required_
-* __tunneled__: Defaults to true; Won't launch a Sauce Connect tunnel if set to false. _Optional_
-* __testname__: The name of this test, displayed on the Sauce Labs dashboard. _Optional_
 * __build__: The build number for this test. _Optional_
-* __tags__: An array of tags displayed for this test on the Sauce Labs dashboard. This can be the commit number, branch name, etc, that can be obtained from grunt. _Optional_
-* __browsers__: An array of objects representing the [various browsers](https://saucelabs.com/docs/platforms) on which this test should run.  _Optional_
+* __testname__: The name of this test, displayed on the Sauce Labs dashboard. _Optional_
+* __tunneled__: Defaults to true; Won't launch a Sauce Connect tunnel if set to false. _Optional_
+* __tunnelArgs__: Array of optional arguments to be passed to the Sauce Connect tunnel. example: `['--debug', '--direct-domains', 'google.com']`. See (here)[https://saucelabs.com/docs/connect] for further documentation.
+* __sauceConfig__: Map of extra parameters to be passed to sauce labs. example: `{'video-upload-on-pass': false, 'idle-timeout': 60}`. See (here)[https://saucelabs.com/docs/additional-config] for further documentation.
 * __testInterval__ : Number of milliseconds between each retry to see if a test is completed or not (default: 2000). _Optional_
 * __thottled__: Maximum number of unit test pages which will be sent to Sauce Labs concurrently. The maximum number of jobs you may have outstanding is this times the number of browsers, can be used to mitigate concurrency failures if you have a lot of unit test pages. _Optional_
+* __max-duration__: Maximum duration of a test, this is actually a Selenium Capability. Sauce Labs defaults to 180 seconds for js unit tests. _Optional_
+* __browsers__: An array of objects representing the [various browsers](https://saucelabs.com/docs/platforms) on which this test should run.  _Optional_
 * __onTestComplete__ : A callback that is called every time a unit test for a page is complete. Runs per page, per browser configuration. Receives a 'result' argument which is the javascript object exposed to sauce labs. A true or false return value passes or fails the test, undefined return value does not alter the result of the test. For async results, call `this.async()` in the function. The return of `this.async()` is a function that should be called once the async action is completed. _Optional_
 
 A typical `test` task running from Grunt could look like `grunt.registerTask('test', ['server', 'qunit', 'saucelabs-qunit']);` This starts a server and then runs the QUnit tests first on PhantomJS and then using the Sauce Labs browsers.

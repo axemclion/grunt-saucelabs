@@ -28,7 +28,7 @@ module.exports = function(grunt) {
 			files: ['bin/grunt-saucelabs-qunit',
 				'tasks/**/*.js',
 				'test/qunit/grunt-saucelabs-inject.js',
-				'Gruntfile.js']
+				'Gruntfile.js'],
 		},
 		connect: {
 			server: {
@@ -46,9 +46,11 @@ module.exports = function(grunt) {
 				options: {
 					urls: ['http://127.0.0.1:9999/yui/index.html'],
 					build: process.env.TRAVIS_JOB_ID,
-					concurrency: 3,
 					browsers: browsers,
-					testname: "yui tests"
+					testname: "yui tests",
+					sauceConfig: {
+						'video-upload-on-pass': false
+					}
 				}
 			}
 		},
@@ -59,9 +61,11 @@ module.exports = function(grunt) {
 				options: {
 					urls: ['http://127.0.0.1:9999/mocha/test/browser/index.html'],
 					build: process.env.TRAVIS_JOB_ID,
-					concurrency: 3,
 					browsers: browsers,
-					testname: "mocha tests"
+					testname: "mocha tests",
+					sauceConfig: {
+						'video-upload-on-pass': false
+					}
 				}
 			}
 		},
@@ -72,9 +76,11 @@ module.exports = function(grunt) {
 				options: {
 					urls: ['http://127.0.0.1:9999/custom/custom.html'],
 					build: process.env.TRAVIS_JOB_ID,
-					concurrency: 3,
 					browsers: browsers,
-					testname: "custom tests"
+					testname: "custom tests",
+					sauceConfig: {
+						'video-upload-on-pass': false
+					}
 				}
 			}
 		},
@@ -85,9 +91,11 @@ module.exports = function(grunt) {
 				options: {
 					urls: ['http://127.0.0.1:9999/qunit/index.html'],
 					build: process.env.TRAVIS_JOB_ID,
-					concurrency: 3,
 					browsers: browsers,
-					testname: "qunit tests"
+					testname: "qunit tests",
+					sauceConfig: {
+						'video-upload-on-pass': false
+					}
 				}
 			}
 		},
@@ -98,9 +106,11 @@ module.exports = function(grunt) {
 				options: {
 					urls: ['http://127.0.0.1:9999/jasmine/SpecRunner.html', 'http://127.0.0.1:9999/jasmine/SpecRunnerDos.html'],
 					build: process.env.TRAVIS_JOB_ID,
-					concurrency: 3,
 					browsers: browsers,
-					testname: "jasmine tests"
+					testname: "jasmine tests",
+					sauceConfig: {
+						'video-upload-on-pass': false
+					}
 				}
 			}
 		},

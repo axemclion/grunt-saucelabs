@@ -1,11 +1,11 @@
 module.exports = function(grunt) {
-  var _ = require('lodash'),
-    request = require('request'),
-    SauceTunnel = require('sauce-tunnel'),
-    Q = require('q'),
-    rqst = request.defaults({
-      jar: false
-    });
+  var _           = require('lodash'),
+  request         = require('request'),
+  SauceTunnel     = require('sauce-tunnel'),
+  Q               = require('q'),
+  rqst            = request.defaults({
+    jar: false
+  });
 
   //these result parsers return true if the tests all passed
   var resultParsers = {
@@ -175,7 +175,7 @@ module.exports = function(grunt) {
     takeMany();
   };
 
-  TestRunner.prototype.runTest = function(browsers, url, framework, tunnelIdentifier, testname, tags, build, callback){
+  TestRunner.prototype.runTest = function(browsers, url, framework, tunnelIdentifier, build, testname, sauceConfig, callback){
 
     var parsePlatforms = function(browsers){
       return browsers.map(function(browser){
@@ -195,11 +195,11 @@ module.exports = function(grunt) {
         platforms: parsePlatforms(browsers),
         url: url,
         framework: framework,
+        build: build,
         name: testname,
-        tags: tags,
-        build: build
       }
     };
+    _.merge(requestParams.body, sauceConfig);
 
     if (tunnelIdentifier){
       requestParams.body['tunnel-identifier'] = tunnelIdentifier;
@@ -229,12 +229,11 @@ module.exports = function(grunt) {
     tunneled: true,
     testInterval: 1000 * 2,
     testReadyTimeout: 1000 * 5,
-    onTestComplete: function() {
-
-    },
+    onTestComplete: function() {},
     testname: "",
-    tags: [],
-    browsers: [{}]
+    browsers: [{}],
+    tunnelArgs: [],
+    sauceConfig: {}
   };
 
   function defaults(data) {
@@ -264,7 +263,7 @@ module.exports = function(grunt) {
     var test = new TestRunner(arg.username, arg.key, arg.testInterval);
 
     if (arg.tunneled){
-      var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, ['-P', '0']);
+      var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, ['-P', '0'].concat(arg.tunnelArgs));
       grunt.log.writeln("=> Starting Tunnel to Sauce Labs".inverse.bold);
       configureLogEvents(tunnel);
 
@@ -276,7 +275,7 @@ module.exports = function(grunt) {
         }
         grunt.log.ok("Connected to Saucelabs");
 
-        test.runTests(arg.browsers, arg.pages, framework, arg.identifier, arg.testname, arg.tags, arg.build, arg.onTestComplete, arg.throttled, function (status){
+        test.runTests(arg.browsers, arg.pages, framework, arg.identifier, arg.build, arg.testname, arg.sauceConfig, arg.onTestComplete, arg.throttled, function (status){
           status = status.every(function(passed){ return passed; });
           grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
           grunt.log.writeln("=> Stopping Tunnel to Sauce Labs".inverse.bold);
@@ -287,7 +286,7 @@ module.exports = function(grunt) {
       });
 
     } else {
-      test.runTests(arg.browsers, arg.pages, framework, null, arg.testname, arg.tags, arg.build, arg.onTestComplete, arg.throttled, function(status){
+      test.runTests(arg.browsers, arg.pages, framework, null, arg.build, arg.testname, arg.sauceConfig, arg.onTestComplete, arg.throttled, function(status){
         status = status.every(function(passed){ return passed; });
         grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
         callback(status);
