@@ -1,11 +1,8 @@
 module.exports = function(grunt) {
   var _           = require('lodash'),
-  request         = require('request'),
+  rqst            = require('request'),
   SauceTunnel     = require('sauce-tunnel'),
-  Q               = require('q'),
-  rqst            = request.defaults({
-    jar: false
-  });
+  Q               = require('q');
 
   //these result parsers return true if the tests all passed
   var resultParsers = {
@@ -229,7 +226,7 @@ module.exports = function(grunt) {
     tunneled: true,
     testInterval: 1000 * 2,
     testReadyTimeout: 1000 * 5,
-    onTestComplete: function() {},
+    onTestComplete: _.noop,
     testname: "",
     browsers: [{}],
     tunnelArgs: [],
@@ -261,6 +258,11 @@ module.exports = function(grunt) {
   function runTask(arg, framework, callback){
 
     var test = new TestRunner(arg.username, arg.key, arg.testInterval);
+
+    //max-duration is actually a sauce selenium capability
+    if (arg['max-duration']){
+      arg.sauceConfig['max-duration'] = arg['max-duration'];
+    }
 
     if (arg.tunneled){
       var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, ['-P', '0'].concat(arg.tunnelArgs));
