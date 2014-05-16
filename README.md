@@ -196,6 +196,7 @@ Examples
 Some projects that use this task are as follows. You can take a look at their GruntFile.js for sample code
 
 * [This project](https://github.com/axemclion/grunt-saucelabs/blob/master/Gruntfile.js)
+* [WinJS](http://try.buildwinjs.com/#status)
 * [Jquery-IndexedDB](https://github.com/axemclion/jquery-indexeddb/blob/master/GruntFile.js)
 * [IndexedDBShim](https://github.com/axemclion/IndexedDBShim/blob/master/Gruntfile.js)
 
