@@ -211,6 +211,10 @@ The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that
 
 Changelog
 ---------
+####6.0.0####
+* default `testInterval` changed to 2000ms
+* added `max-duration`, sauceConfig, and sauceTunnel params
+
 ####5.1.3####
 * update to sauce-tunnel 2.0.6, which uses Sauce Connect 4.2
 * queued job throttling added
