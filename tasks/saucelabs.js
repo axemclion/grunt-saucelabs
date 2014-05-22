@@ -46,38 +46,37 @@ module.exports = function(grunt) {
 
     var checkStatus = function(){
 
-      rqst(requestParams, function(error, response, body){
+      Q.nfcall(rqst, requestParams)
+        .then(function(result){
+          var body = result[1],
+            testInfo = body['js tests'][0];
 
-        if (error){
+          if (testInfo.status == "test error"){
+            deferred.resolve({
+              passed: undefined,
+              result: {
+                message: "Test Error"
+              }
+            });
+            return;
+          }
+
+          if (!body.completed){
+            setTimeout(checkStatus ,testInterval);
+          } else {
+            testInfo.passed = testInfo.result ? resultParsers[framework](testInfo.result) : false;
+            deferred.resolve(testInfo);
+          }
+        })
+        .fail(function (error) {
           deferred.resolve({
             passed: undefined,
             result: {
               message: "Error connecting to api to get test status: " + error.toString()
             }
           });
-          return;
-        }
-
-        var testInfo = body['js tests'][0];
-
-        if (testInfo.status == "test error"){
-          deferred.resolve({
-            passed: undefined,
-            result: {
-              message: "Test Error"
-            }
-          });
-          return;
-        }
-
-        if (!body.completed){
-          setTimeout(checkStatus ,testInterval);
-        } else {
-          testInfo.passed = testInfo.result ? resultParsers[framework](testInfo.result) : false;
-          deferred.resolve(testInfo);
-        }
-
-      });
+        })
+        .done();
     };
 
     checkStatus();
