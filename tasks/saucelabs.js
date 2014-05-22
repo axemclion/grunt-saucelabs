@@ -118,46 +118,47 @@ module.exports = function(grunt) {
         var url = urls.shift();
         if (url) {
             outstandingTests++;
-            me.runTest(browsers, url, framework, tunnelIdentifier, testname, tags, build, function (taskIds) {
-
-                var outstandingTasks = taskIds.length;
-                function taskComplete() {
-                    outstandingTasks--;
-                    if (outstandingTasks === 0) {
-                        outstandingTests--;
-                        takeMany();
+            me.runTest(browsers, url, framework, tunnelIdentifier, testname, tags, build)
+                .then(function (taskIds) {
+                    var outstandingTasks = taskIds.length;
+                    function taskComplete() {
+                        outstandingTasks--;
+                        if (outstandingTasks === 0) {
+                            outstandingTests--;
+                            takeMany();
+                        }
                     }
-                }
 
-                taskIds.forEach(function (taskId) {
-                    var resultPromise = new TestResult(taskId, me.user, me.key, framework, me.testInterval);
-                    addResultPromise(resultPromise);
-                    resultPromise.then(function (result) {
-                        var alteredResult = onTestComplete(result);
-                        if (alteredResult !== undefined) {
-                            result.passed = alteredResult;
-                        }
+                    taskIds.forEach(function (taskId) {
+                        var resultPromise = new TestResult(taskId, me.user, me.key, framework, me.testInterval);
+                        addResultPromise(resultPromise);
+                        resultPromise.then(function (result) {
+                            var alteredResult = onTestComplete(result);
+                            if (alteredResult !== undefined) {
+                                result.passed = alteredResult;
+                            }
 
-                        grunt.log.subhead("\nTested %s", url);
-                        grunt.log.writeln("Platform: %s", result.platform);
+                            grunt.log.subhead("\nTested %s", url);
+                            grunt.log.writeln("Platform: %s", result.platform);
 
-                        if (tunnelIdentifier && unsupportedPort(url)) {
-                            grunt.log.writeln("Warning: This url might use a port that is not proxied by Sauce Connect.".yellow);
-                        }
+                            if (tunnelIdentifier && unsupportedPort(url)) {
+                                grunt.log.writeln("Warning: This url might use a port that is not proxied by Sauce Connect.".yellow);
+                            }
 
-                        if (result.passed === undefined) {
-                            grunt.log.error(result.result.message);
-                        } else {
-                            grunt.log.writeln("Passed: %s", result.passed);
-                        }
-                        grunt.log.writeln("Url %s", result.url);
-                        taskComplete();
-                    }, function (e) {
-                        grunt.log.error('some error? %s', e);
-                        taskComplete();
+                            if (result.passed === undefined) {
+                                grunt.log.error(result.result.message);
+                            } else {
+                                grunt.log.writeln("Passed: %s", result.passed);
+                            }
+                            grunt.log.writeln("Url %s", result.url);
+                            taskComplete();
+                        }, function (e) {
+                            grunt.log.error('some error? %s', e);
+                            taskComplete();
+                        });
                     });
-                });
-            });
+                })
+                .done();
         }
     }
 
@@ -172,7 +173,7 @@ module.exports = function(grunt) {
     takeMany();
   };
 
-  TestRunner.prototype.runTest = function(browsers, url, framework, tunnelIdentifier, build, testname, sauceConfig, callback){
+  TestRunner.prototype.runTest = function(browsers, url, framework, tunnelIdentifier, build, testname, sauceConfig){
 
     var parsePlatforms = function(browsers){
       return browsers.map(function(browser){
@@ -193,7 +194,7 @@ module.exports = function(grunt) {
         url: url,
         framework: framework,
         build: build,
-        name: testname,
+        name: testname
       }
     };
     _.merge(requestParams.body, sauceConfig);
@@ -202,21 +203,24 @@ module.exports = function(grunt) {
       requestParams.body['tunnel-identifier'] = tunnelIdentifier;
     }
 
-    rqst(requestParams, function(error, response, body){
+    return Q.nfcall(rqst, requestParams)
+      .then(
+        function (result) {
+          var body = result[1],
+            taskIds = body['js tests'];
 
-      if (error){
-        grunt.log.error("Could not connect to Sauce Labs api: %s", error);
-        throw error;
-      }
+          if (!taskIds || !taskIds.length){
+            grunt.log.error('Error starting tests through Sauce API: %s', JSON.stringify(body));
+            throw new Error('Could not start tests through Sauce API');
+          }
 
-      if (!body['js tests'] || !body['js tests'].length){
-          grunt.log.error('Error starting tests through Sauce API: %s', JSON.stringify(body));
-          throw new Error('Could not start tests through Sauce API');
-      }
-
-      callback(body['js tests']);
-
-    });
+          return taskIds;
+        },
+        function (error) {
+          grunt.log.error("Could not connect to Sauce Labs api: %s", error);
+          throw error;
+        }
+      );
   };
 
   var defaultsObj = {
