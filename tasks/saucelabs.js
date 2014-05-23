@@ -2,7 +2,8 @@ module.exports = function(grunt) {
   var _           = require('lodash'),
   rqst            = require('request'),
   SauceTunnel     = require('sauce-tunnel'),
-  Q               = require('q');
+  Q               = require('q'),
+  scheduler       = require('./promise-scheduler');
 
   //these result parsers return true if the tests all passed
   var resultParsers = {
@@ -90,96 +91,72 @@ module.exports = function(grunt) {
     this.key = key;
     this.url = 'https://saucelabs.com/rest/v1/' + this.user + '/js-tests';
     this.testInterval = testInterval;
-    this.results = [];
   };
 
   TestRunner.prototype.runTests = function(browsers, urls, framework, tunnelIdentifier, testname, tags, build, onTestComplete, throttled, callback){
 
     var me = this;
     var numberOfJobs = browsers.length * urls.length;
-    var addResultPromise = function(promise){
-      me.results.push(promise);
-      grunt.log.writeln(me.results.length, "/", numberOfJobs, 'tests started');
-      if (me.results.length == numberOfJobs){
+    var startedJobs = 0;
 
-        Q.all(me.results).then(function(results){
-          results = results.map(function(result){
-            return result.valueOf().passed;
-          });
+    function take(url, browser) {
+        return me.runTest(browser, url, framework, tunnelIdentifier, testname, tags, build)
+            .then(function (taskId) {
 
-          callback(results);
-        });
-      }
-    };
+                startedJobs += 1;
+                grunt.log.writeln(startedJobs, "/", numberOfJobs, 'tests started');
 
-    var outstandingTests = 0;
-
-    function take() {
-        var url = urls.shift();
-        if (url) {
-            outstandingTests++;
-            me.runTest(browsers, url, framework, tunnelIdentifier, testname, tags, build)
-                .then(function (taskIds) {
-                    var outstandingTasks = taskIds.length;
-                    function taskComplete() {
-                        outstandingTasks--;
-                        if (outstandingTasks === 0) {
-                            outstandingTests--;
-                            takeMany();
+                return TestResult(taskId, me.user, me.key, framework, me.testInterval)
+                    .then(function (result) {
+                        var alteredResult = onTestComplete(result);
+                        if (alteredResult !== undefined) {
+                            result.passed = alteredResult;
                         }
-                    }
 
-                    taskIds.forEach(function (taskId) {
-                        var resultPromise = new TestResult(taskId, me.user, me.key, framework, me.testInterval);
-                        addResultPromise(resultPromise);
-                        resultPromise.then(function (result) {
-                            var alteredResult = onTestComplete(result);
-                            if (alteredResult !== undefined) {
-                                result.passed = alteredResult;
-                            }
+                        grunt.log.subhead("\nTested %s", url);
+                        grunt.log.writeln("Platform: %s", result.platform);
 
-                            grunt.log.subhead("\nTested %s", url);
-                            grunt.log.writeln("Platform: %s", result.platform);
+                        if (tunnelIdentifier && unsupportedPort(url)) {
+                            grunt.log.writeln("Warning: This url might use a port that is not proxied by Sauce Connect.".yellow);
+                        }
 
-                            if (tunnelIdentifier && unsupportedPort(url)) {
-                                grunt.log.writeln("Warning: This url might use a port that is not proxied by Sauce Connect.".yellow);
-                            }
+                        if (result.passed === undefined) {
+                            grunt.log.error(result.result.message);
+                        } else {
+                            grunt.log.writeln("Passed: %s", result.passed);
+                        }
+                        grunt.log.writeln("Url %s", result.url);
 
-                            if (result.passed === undefined) {
-                                grunt.log.error(result.result.message);
-                            } else {
-                                grunt.log.writeln("Passed: %s", result.passed);
-                            }
-                            grunt.log.writeln("Url %s", result.url);
-                            taskComplete();
-                        }, function (e) {
-                            grunt.log.error('some error? %s', e);
-                            taskComplete();
-                        });
+                        return result;
+                    }, function (e) {
+                        grunt.log.error('some error? %s', e);
                     });
-                })
-                .done();
-        }
+            });
     }
 
-    throttled = throttled || Number.MAX_VALUE;
+    var throttledTake = scheduler.limitConcurrency(take, throttled || Number.MAX_VALUE);
+    var promises = urls
+        .map(function (url) {
+            return browsers.map(function (browser) {
+                return throttledTake(url, browser);
+            });
+        })
+        .reduce(function (acc, promisesForUrl) {
+            return acc.concat(promisesForUrl);
+        }, []);
 
-    function takeMany() {
-        while (urls.length && outstandingTests < throttled) {
-            take();
-        }
-    }
+    Q.all(promises)
+        .then(function (results) {
+            results = results.map(function (result) {
+                return result.passed;
+            });
 
-    takeMany();
+            callback(results);
+        })
+        .done();
   };
 
-  TestRunner.prototype.runTest = function(browsers, url, framework, tunnelIdentifier, build, testname, sauceConfig){
-
-    var parsePlatforms = function(browsers){
-      return browsers.map(function(browser){
-        return [browser.platform || "", browser.browserName || "", browser.version || ""];
-      });
-    };
+  TestRunner.prototype.runTest = function(browser, url, framework, tunnelIdentifier, build, testname, sauceConfig){
 
     var requestParams = {
       method: 'post',
@@ -190,7 +167,7 @@ module.exports = function(grunt) {
       },
       json: true,
       body: {
-        platforms: parsePlatforms(browsers),
+        platforms: [[browser.platform || "", browser.browserName || "", browser.version || ""]],
         url: url,
         framework: framework,
         build: build,
@@ -214,7 +191,7 @@ module.exports = function(grunt) {
             throw new Error('Could not start tests through Sauce API');
           }
 
-          return taskIds;
+          return taskIds[0];
         },
         function (error) {
           grunt.log.error("Could not connect to Sauce Labs api: %s", error);

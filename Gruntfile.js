@@ -108,6 +108,7 @@ module.exports = function(grunt) {
 					build: process.env.TRAVIS_JOB_ID,
 					browsers: browsers,
 					testname: "jasmine tests",
+					throttled: 3,
 					sauceConfig: {
 						'video-upload-on-pass': false
 					}
