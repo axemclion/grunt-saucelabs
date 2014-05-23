@@ -2,7 +2,8 @@ module.exports = function(grunt) {
   var _           = require('lodash'),
   rqst            = require('request'),
   SauceTunnel     = require('sauce-tunnel'),
-  Q               = require('q');
+  Q               = require('q'),
+  scheduler       = require('./promise-scheduler');
 
   //these result parsers return true if the tests all passed
   var resultParsers = {
@@ -90,49 +91,23 @@ module.exports = function(grunt) {
     this.key = key;
     this.url = 'https://saucelabs.com/rest/v1/' + this.user + '/js-tests';
     this.testInterval = testInterval;
-    this.results = [];
   };
 
   TestRunner.prototype.runTests = function(browsers, urls, framework, tunnelIdentifier, testname, tags, build, onTestComplete, throttled, callback){
 
     var me = this;
     var numberOfJobs = browsers.length * urls.length;
-    var addResultPromise = function(promise){
-      me.results.push(promise);
-      grunt.log.writeln(me.results.length, "/", numberOfJobs, 'tests started');
-      if (me.results.length == numberOfJobs){
+    var startedJobs = 0;
 
-        Q.all(me.results).then(function(results){
-          results = results.map(function(result){
-            return result.valueOf().passed;
-          });
+    function take(url, browser) {
+        return me.runTest(browser, url, framework, tunnelIdentifier, testname, tags, build)
+            .then(function (taskId) {
 
-          callback(results);
-        });
-      }
-    };
+                startedJobs += 1;
+                grunt.log.writeln(startedJobs, "/", numberOfJobs, 'tests started');
 
-    var outstandingTests = 0;
-
-    function take() {
-        var url = urls.shift();
-        if (url) {
-            outstandingTests++;
-            me.runTest(browsers, url, framework, tunnelIdentifier, testname, tags, build, function (taskIds) {
-
-                var outstandingTasks = taskIds.length;
-                function taskComplete() {
-                    outstandingTasks--;
-                    if (outstandingTasks === 0) {
-                        outstandingTests--;
-                        takeMany();
-                    }
-                }
-
-                taskIds.forEach(function (taskId) {
-                    var resultPromise = new TestResult(taskId, me.user, me.key, framework, me.testInterval);
-                    addResultPromise(resultPromise);
-                    resultPromise.then(function (result) {
+                return TestResult(taskId, me.user, me.key, framework, me.testInterval)
+                    .then(function (result) {
                         var alteredResult = onTestComplete(result);
                         if (alteredResult !== undefined) {
                             result.passed = alteredResult;
@@ -151,34 +126,37 @@ module.exports = function(grunt) {
                             grunt.log.writeln("Passed: %s", result.passed);
                         }
                         grunt.log.writeln("Url %s", result.url);
-                        taskComplete();
+
+                        return result;
                     }, function (e) {
                         grunt.log.error('some error? %s', e);
-                        taskComplete();
                     });
-                });
             });
-        }
     }
 
-    throttled = throttled || Number.MAX_VALUE;
+    var throttledTake = scheduler.limitConcurrency(take, throttled || Number.MAX_VALUE);
+    var promises = urls
+        .map(function (url) {
+            return browsers.map(function (browser) {
+                return throttledTake(url, browser);
+            });
+        })
+        .reduce(function (acc, promisesForUrl) {
+            return acc.concat(promisesForUrl);
+        }, []);
 
-    function takeMany() {
-        while (urls.length && outstandingTests < throttled) {
-            take();
-        }
-    }
+    Q.all(promises)
+        .then(function (results) {
+            results = results.map(function (result) {
+                return result.passed;
+            });
 
-    takeMany();
+            callback(results);
+        })
+        .done();
   };
 
-  TestRunner.prototype.runTest = function(browsers, url, framework, tunnelIdentifier, build, testname, sauceConfig, callback){
-
-    var parsePlatforms = function(browsers){
-      return browsers.map(function(browser){
-        return [browser.platform || "", browser.browserName || "", browser.version || ""];
-      });
-    };
+  TestRunner.prototype.runTest = function(browser, url, framework, tunnelIdentifier, build, testname, sauceConfig){
 
     var requestParams = {
       method: 'post',
@@ -189,11 +167,11 @@ module.exports = function(grunt) {
       },
       json: true,
       body: {
-        platforms: parsePlatforms(browsers),
+        platforms: [[browser.platform || "", browser.browserName || "", browser.version || ""]],
         url: url,
         framework: framework,
         build: build,
-        name: testname,
+        name: testname
       }
     };
     _.merge(requestParams.body, sauceConfig);
@@ -202,21 +180,24 @@ module.exports = function(grunt) {
       requestParams.body['tunnel-identifier'] = tunnelIdentifier;
     }
 
-    rqst(requestParams, function(error, response, body){
+    return Q.nfcall(rqst, requestParams)
+      .then(
+        function (result) {
+          var body = result[1],
+            taskIds = body['js tests'];
 
-      if (error){
-        grunt.log.error("Could not connect to Sauce Labs api: %s", error);
-        throw error;
-      }
+          if (!taskIds || !taskIds.length){
+            grunt.log.error('Error starting tests through Sauce API: %s', JSON.stringify(body));
+            throw new Error('Could not start tests through Sauce API');
+          }
 
-      if (!body['js tests'] || !body['js tests'].length){
-          grunt.log.error('Error starting tests through Sauce API: %s', JSON.stringify(body));
-          throw new Error('Could not start tests through Sauce API');
-      }
-
-      callback(body['js tests']);
-
-    });
+          return taskIds[0];
+        },
+        function (error) {
+          grunt.log.error("Could not connect to Sauce Labs api: %s", error);
+          throw error;
+        }
+      );
   };
 
   var defaultsObj = {
