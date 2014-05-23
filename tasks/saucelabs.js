@@ -104,7 +104,7 @@ module.exports = function(grunt) {
             .then(function (taskId) {
 
                 startedJobs += 1;
-                grunt.log.writeln(startedJobs, "/", numberOfJobs, 'tests started');
+                grunt.log.writeln("\n",startedJobs, "/", numberOfJobs, 'tests started');
 
                 return TestResult(taskId, me.user, me.key, framework, me.testInterval)
                     .then(function (result) {
