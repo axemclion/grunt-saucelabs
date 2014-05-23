@@ -211,6 +211,9 @@ The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that
 
 Changelog
 ---------
+####7.0.0####
+* `throttled` parameter now represents the max number of jobs sent concurrently. Previously was `throttled * browsers.length`
+
 ####6.0.0####
 * default `testInterval` changed to 2000ms
 * added `max-duration`, sauceConfig, and sauceTunnel params
