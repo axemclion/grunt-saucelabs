@@ -233,49 +233,51 @@ module.exports = function(grunt) {
     });
   }
 
-  function runTask(arg, framework, callback){
+  function runTask(arg, framework, callback) {
 
-    var test = new TestRunner(arg.username, arg.key, arg.testInterval);
+      var test = new TestRunner(arg.username, arg.key, arg.testInterval);
 
-    //max-duration is actually a sauce selenium capability
-    if (arg['max-duration']){
-      arg.sauceConfig['max-duration'] = arg['max-duration'];
-    }
+      //max-duration is actually a sauce selenium capability
+      if (arg['max-duration']) {
+          arg.sauceConfig['max-duration'] = arg['max-duration'];
+      }
 
-    if (arg.tunneled){
-      var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, ['-P', '0'].concat(arg.tunnelArgs));
-      grunt.log.writeln("=> Starting Tunnel to Sauce Labs".inverse.bold);
-      configureLogEvents(tunnel);
+      if (arg.tunneled) {
+          var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, ['-P', '0'].concat(arg.tunnelArgs));
+          grunt.log.writeln('=> Starting Tunnel to Sauce Labs'.inverse.bold);
+          configureLogEvents(tunnel);
 
-      tunnel.start(function(isCreated) {
-        if (!isCreated) {
-          grunt.log.error("Could not create tunnel to Sauce Labs");
-          callback(false);
-          return;
-        }
-        grunt.log.ok("Connected to Saucelabs");
+          tunnel.start(function (isCreated) {
+              if (!isCreated) {
+                  grunt.log.error('Could not create tunnel to Sauce Labs');
+                  callback(false);
+                  return;
+              }
+              grunt.log.ok('Connected to Saucelabs');
 
-        test.runTests(arg.browsers, arg.pages, framework, arg.identifier, arg.build, arg.testname, arg.sauceConfig, arg.onTestComplete, arg.throttled)
-          .then(function (status) {
-          status = status.every(function(passed){ return passed; });
-          grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
-          grunt.log.writeln("=> Stopping Tunnel to Sauce Labs".inverse.bold);
-          tunnel.stop(function() {
-            callback(status);
+              test
+                .runTests(arg.browsers, arg.pages, framework, arg.identifier, arg.build, arg.testname, arg.sauceConfig, arg.onTestComplete, arg.throttled)
+                .then(function (status) {
+                    status = status.every(function (passed) { return passed; });
+                    grunt.log[status ? 'ok' : 'error']('All tests completed with status %s', status);
+                    grunt.log.writeln('=> Stopping Tunnel to Sauce Labs'.inverse.bold);
+                    tunnel.stop(function () {
+                        callback(status);
+                    });
+                })
+                .done();
           });
-        })
-        .done();
-      });
 
-    } else {
-      test.runTests(arg.browsers, arg.pages, framework, null, arg.build, arg.testname, arg.sauceConfig, arg.onTestComplete, arg.throttled)
-        .then(function (status) {
-        status = status.every(function(passed){ return passed; });
-        grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
-        callback(status);
-      })
-      .done();
-    }
+      } else {
+          test
+            .runTests(arg.browsers, arg.pages, framework, null, arg.build, arg.testname, arg.sauceConfig, arg.onTestComplete, arg.throttled)
+            .then(function (status) {
+                status = status.every(function (passed) { return passed; });
+                grunt.log[status ? 'ok' : 'error']('All tests completed with status %s', status);
+                callback(status);
+            })
+            .done();
+      }
   }
 
   function unsupportedPort(url) {
