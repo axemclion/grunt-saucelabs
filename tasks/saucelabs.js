@@ -29,61 +29,61 @@ module.exports = function(grunt) {
   };
 
   var TestResult = function(jobId, user, key, framework, testInterval){
-    var url = 'https://saucelabs.com/rest/v1/' + user + '/js-tests/status';
-    var deferred = Q.defer();
+      var url = 'https://saucelabs.com/rest/v1/' + user + '/js-tests/status';
+      var deferred = Q.defer();
 
-    var requestParams = {
-      method: 'post',
-      url: url,
-      auth: {
-        user: user,
-        pass: key
-      },
-      json: true,
-      body: {
-        "js tests": [jobId]
-      }
-    };
+      var requestParams = {
+          method: 'post',
+          url: url,
+          auth: {
+              user: user,
+              pass: key
+          },
+          json: true,
+          body: {
+              'js tests': [jobId]
+          }
+      };
 
-    var checkStatus = function(){
+      var checkStatus = function () {
 
-      rqst(requestParams, function(error, response, body){
+          rqst(requestParams, function (error, response, body) {
 
-        if (error){
-          deferred.resolve({
-            passed: undefined,
-            result: {
-              message: "Error connecting to api to get test status: " + error.toString()
-            }
+              if (error) {
+                  deferred.resolve({
+                      passed: undefined,
+                      result: {
+                          message: 'Error connecting to api to get test status: ' + error.toString()
+                      }
+                  });
+                  return;
+              }
+
+              var testInfo = body['js tests'][0];
+
+              if (testInfo.status == 'test error') {
+                  deferred.resolve({
+                      passed: undefined,
+                      result: {
+                          message: 'Test Error'
+                      }
+                  });
+                  return;
+              }
+
+              if (!body.completed) {
+                  setTimeout(checkStatus, testInterval);
+              } else {
+                  testInfo.passed = testInfo.result ? resultParsers[framework](testInfo.result) : false;
+                  deferred.resolve(testInfo);
+              }
+
           });
-          return;
-        }
+      };
 
-        var testInfo = body['js tests'][0];
+      checkStatus();
 
-        if (testInfo.status == "test error"){
-          deferred.resolve({
-            passed: undefined,
-            result: {
-              message: "Test Error"
-            }
-          });
-          return;
-        }
-
-        if (!body.completed){
-          setTimeout(checkStatus ,testInterval);
-        } else {
-          testInfo.passed = testInfo.result ? resultParsers[framework](testInfo.result) : false;
-          deferred.resolve(testInfo);
-        }
-
-      });
-    };
-
-    checkStatus();
-
-    return deferred.promise;
+      return deferred.promise;
   };
 
   var TestRunner = function(user, key, testInterval) {
