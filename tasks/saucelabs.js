@@ -93,7 +93,7 @@ module.exports = function(grunt) {
     this.testInterval = testInterval;
   };
 
-  TestRunner.prototype.runTests = function(browsers, urls, framework, tunnelIdentifier, testname, tags, build, onTestComplete, throttled, callback){
+  TestRunner.prototype.runTests = function(browsers, urls, framework, tunnelIdentifier, testname, tags, build, onTestComplete, throttled){
 
     var me = this;
     var numberOfJobs = browsers.length * urls.length;
@@ -145,15 +145,12 @@ module.exports = function(grunt) {
             return acc.concat(promisesForUrl);
         }, []);
 
-    Q.all(promises)
+    return Q.all(promises)
         .then(function (results) {
-            results = results.map(function (result) {
+            return results.map(function (result) {
                 return result.passed;
             });
-
-            callback(results);
-        })
-        .done();
+        });
   };
 
   TestRunner.prototype.runTest = function(browser, url, framework, tunnelIdentifier, build, testname, sauceConfig){
@@ -258,22 +255,26 @@ module.exports = function(grunt) {
         }
         grunt.log.ok("Connected to Saucelabs");
 
-        test.runTests(arg.browsers, arg.pages, framework, arg.identifier, arg.build, arg.testname, arg.sauceConfig, arg.onTestComplete, arg.throttled, function (status){
+        test.runTests(arg.browsers, arg.pages, framework, arg.identifier, arg.build, arg.testname, arg.sauceConfig, arg.onTestComplete, arg.throttled)
+          .then(function (status) {
           status = status.every(function(passed){ return passed; });
           grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
           grunt.log.writeln("=> Stopping Tunnel to Sauce Labs".inverse.bold);
           tunnel.stop(function() {
             callback(status);
           });
-        });
+        })
+        .done();
       });
 
     } else {
-      test.runTests(arg.browsers, arg.pages, framework, null, arg.build, arg.testname, arg.sauceConfig, arg.onTestComplete, arg.throttled, function(status){
+      test.runTests(arg.browsers, arg.pages, framework, null, arg.build, arg.testname, arg.sauceConfig, arg.onTestComplete, arg.throttled)
+        .then(function (status) {
         status = status.every(function(passed){ return passed; });
         grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
         callback(status);
-      });
+      })
+      .done();
     }
   }
 
