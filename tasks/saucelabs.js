@@ -47,28 +47,14 @@ module.exports = function(grunt) {
 
       var checkStatus = function () {
 
-          rqst(requestParams, function (error, response, body) {
-
-              if (error) {
-                  deferred.resolve({
-                      passed: undefined,
-                      result: {
-                          message: 'Error connecting to api to get test status: ' + error.toString()
-                      }
-                  });
-                  return;
-              }
-
+          Q
+              .nfcall(rqst, requestParams)
+              .then(function (result) {
+                  var body = result[1];
               var testInfo = body['js tests'][0];
 
               if (testInfo.status == 'test error') {
-                  deferred.resolve({
-                      passed: undefined,
-                      result: {
-                          message: 'Test Error'
-                      }
-                  });
-                  return;
+                  throw 'Test Error';
               }
 
               if (!body.completed) {
@@ -77,8 +63,22 @@ module.exports = function(grunt) {
                   testInfo.passed = testInfo.result ? resultParsers[framework](testInfo.result) : false;
                   deferred.resolve(testInfo);
               }
-
-          });
+              },
+                   function (error) {
+                       throw 'Error connecting to api to get test status: ' + error.toString();
+                   }
+               )
+               .catch(function (error) {
+                   // We indicate errors by setting the passed element to undefined
+                   // instead of rejecting the deferred.
+                   deferred.resolve({
+                       passed: undefined,
+                       result: {
+                           message: error.toString()
+                       }
+                   });
+               })
+               .done();
       };
 
       checkStatus();
