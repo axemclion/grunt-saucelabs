@@ -46,39 +46,39 @@ module.exports = function(grunt) {
       };
 
       var checkStatus = function () {
-
           Q
               .nfcall(rqst, requestParams)
-              .then(function (result) {
-                  var body = result[1];
-              var testInfo = body['js tests'][0];
+              .then(
+                  function (result) {
+                      var body = result[1];
+                      var testInfo = body['js tests'][0];
 
-              if (testInfo.status == 'test error') {
-                  throw 'Test Error';
-              }
+                      if (testInfo.status == 'test error') {
+                          throw 'Test Error';
+                      }
 
-              if (!body.completed) {
-                  setTimeout(checkStatus, testInterval);
-              } else {
-                  testInfo.passed = testInfo.result ? resultParsers[framework](testInfo.result) : false;
-                  deferred.resolve(testInfo);
-              }
-              },
-                   function (error) {
-                       throw 'Error connecting to api to get test status: ' + error.toString();
-                   }
-               )
-               .catch(function (error) {
-                   // We indicate errors by setting the passed element to undefined
-                   // instead of rejecting the deferred.
-                   deferred.resolve({
-                       passed: undefined,
-                       result: {
-                           message: error.toString()
-                       }
-                   });
-               })
-               .done();
+                      if (!body.completed) {
+                          setTimeout(checkStatus, testInterval);
+                      } else {
+                          testInfo.passed = testInfo.result ? resultParsers[framework](testInfo.result) : false;
+                          deferred.resolve(testInfo);
+                      }
+                  },
+                  function (error) {
+                      throw 'Error connecting to api to get test status: ' + error.toString();
+                  }
+              )
+              .catch(function (error) {
+                  // We indicate errors by setting the passed element to undefined
+                  // instead of rejecting the deferred.
+                  deferred.resolve({
+                      passed: undefined,
+                      result: {
+                          message: error.toString()
+                      }
+                  });
+              })
+              .done();
       };
 
       checkStatus();
