@@ -11,26 +11,21 @@ module.exports = function(grunt) {
       return result.passed;
     },
     qunit: function(result){
-      if (result.passed === undefined){ return undefined; }
       return result.passed == result.total;
     },
     mocha: function(result){
-      if (result.passes === undefined){ return undefined; }
       return result.failures === 0;
     },
     'YUI Test': function(result){
-      if (result.passed === undefined){ return undefined; }
       return result.passed == result.total;
     },
     custom: function(result){
-      if (result.passed === undefined){ return undefined; }
       return result.failed === 0;
     }
   };
 
   var TestResult = function(jobId, user, key, framework, testInterval){
       var url = 'https://saucelabs.com/rest/v1/' + user + '/js-tests/status';
-      var deferred = Q.defer();
 
       var requestParams = {
           method: 'post',
@@ -45,45 +40,51 @@ module.exports = function(grunt) {
           }
       };
 
-      var checkStatus = function () {
-          Q
+      function checkStatus () {
+          return Q
               .nfcall(rqst, requestParams)
               .then(
                   function (result) {
                       var body = result[1];
-                      var testInfo = body['js tests'][0];
+                      var testInfo;
 
-                      if (testInfo.status == 'test error') {
-                          throw 'Test Error';
+                      if (!body || !body['js tests'] || !body['js tests'].length || !body['js tests'][0]) {
+                          throw 'Unexpected response from the Sauce Labs API.';
+                      }
+                      if (body.completed) {
+                          testInfo = body['js tests'][0];
+                          if (!testInfo.result) {
+                              // Sauce Labs' 64KB limit on custom-data was hit, see #123.
+                              throw 'Test result is too big. Shrink it by modifying the test reporter or splitting the tests into multiple test runners.';
+                          } else if (testInfo.status == 'test error') {
+                              // A detailed error message should be composed here after
+                              // the Sauce Labs API is modified to report errors better,
+                              // see #102.
+                              throw 'Test Error';
+                          }
                       }
 
-                      if (!body.completed) {
-                          setTimeout(checkStatus, testInterval);
-                      } else {
-                          testInfo.passed = testInfo.result ? resultParsers[framework](testInfo.result) : false;
-                          deferred.resolve(testInfo);
-                      }
+                      return body;
                   },
                   function (error) {
                       throw 'Error connecting to api to get test status: ' + error.toString();
                   }
               )
-              .catch(function (error) {
-                  // We indicate errors by setting the passed element to undefined
-                  // instead of rejecting the deferred.
-                  deferred.resolve({
-                      passed: undefined,
-                      result: {
-                          message: error.toString()
-                      }
-                  });
-              })
-              .done();
-      };
+              .then(function (body) {
+                  if (body.completed) {
+                      var testInfo = body['js tests'][0];
 
-      checkStatus();
+                      testInfo.passed = resultParsers[framework](testInfo.result);
+                      return testInfo;
+                  } else {
+                      return Q
+                          .delay(testInterval)
+                          .thenResolve(checkStatus());
+                  }
+              });
+      }
 
-      return deferred.promise;
+      return checkStatus();
   };
 
   var TestRunner = function(user, key, testInterval) {
@@ -120,16 +121,10 @@ module.exports = function(grunt) {
                             grunt.log.writeln("Warning: This url might use a port that is not proxied by Sauce Connect.".yellow);
                         }
 
-                        if (result.passed === undefined) {
-                            grunt.log.error(result.result.message);
-                        } else {
-                            grunt.log.writeln("Passed: %s", result.passed);
-                        }
+                        grunt.log.writeln("Passed: %s", result.passed);
                         grunt.log.writeln("Url %s", result.url);
 
-                        return result;
-                    }, function (e) {
-                        grunt.log.error('some error? %s', e);
+                        return result.passed;
                     });
             });
     }
@@ -147,9 +142,7 @@ module.exports = function(grunt) {
 
     return Q.all(promises)
         .then(function (results) {
-            return results.map(function (result) {
-                return result.passed;
-            });
+            return results.indexOf(false) === -1;
         });
   };
 
@@ -253,29 +246,58 @@ module.exports = function(grunt) {
                   callback(false);
                   return;
               }
-              grunt.log.ok('Connected to Saucelabs');
+              grunt.log.ok('Connected to Sauce Labs');
 
               test
                 .runTests(arg.browsers, arg.pages, framework, arg.identifier, arg.build, arg.testname, arg.sauceConfig, arg.onTestComplete, arg.throttled)
-                .then(function (status) {
-                    status = status.every(function (passed) { return passed; });
-                    grunt.log[status ? 'ok' : 'error']('All tests completed with status %s', status);
+                .then(function (passed) {
+                    if (passed) {
+                        grunt.log.ok('All tests completed with status true');
+                    } else {
+                        grunt.log.error('All tests completed with status false');
+                    }
+                    return passed;
+                })
+                .finally(function () {
+                    var deferred = Q.defer();
                     grunt.log.writeln('=> Stopping Tunnel to Sauce Labs'.inverse.bold);
                     tunnel.stop(function () {
-                        callback(status);
+                        deferred.resolve();
                     });
+                    return deferred.promise;
                 })
+                .then(
+                    function(passed) {
+                        callback(passed);
+                    },
+                    function(error) {
+                        grunt.log.error(error.toString());
+                        callback(false);
+                    }
+                )
                 .done();
           });
 
       } else {
           test
             .runTests(arg.browsers, arg.pages, framework, null, arg.build, arg.testname, arg.sauceConfig, arg.onTestComplete, arg.throttled)
-            .then(function (status) {
-                status = status.every(function (passed) { return passed; });
-                grunt.log[status ? 'ok' : 'error']('All tests completed with status %s', status);
-                callback(status);
+            .then(function (passed) {
+                if (passed) {
+                    grunt.log.ok('All tests completed with status true');
+                } else {
+                    grunt.log.error('All tests completed with status false');
+                }
+                return passed;
             })
+            .then(
+                function(passed) {
+                    callback(passed);
+                },
+                function(error) {
+                    grunt.log.error(error.toString());
+                    callback(false);
+                }
+            )
             .done();
       }
   }
