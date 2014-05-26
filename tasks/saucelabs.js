@@ -109,11 +109,20 @@ module.exports = function(grunt) {
 
                 return TestResult(taskId, me.user, me.key, framework, me.testInterval)
                     .then(function (result) {
-                        var alteredResult = onTestComplete(result);
-                        if (alteredResult !== undefined) {
-                            result.passed = alteredResult;
+                        if (onTestComplete) {
+                            var clone = _.clone(result, true);
+                            return Q
+                                .fcall(onTestComplete, clone)
+                                .then(function (passed) {
+                                    if (passed !== undefined) {
+                                        result.passed = !!passed;
+                                    }
+                                    return result;
+                                });
                         }
-
+                        return result;
+                    })
+                    .then(function (result) {
                         grunt.log.subhead("\nTested %s", url);
                         grunt.log.writeln("Platform: %s", result.platform);
 
@@ -197,7 +206,7 @@ module.exports = function(grunt) {
     tunneled: true,
     testInterval: 1000 * 2,
     testReadyTimeout: 1000 * 5,
-    onTestComplete: _.noop,
+    onTestComplete: function (result) { return result.passed; },
     testname: "",
     browsers: [{}],
     tunnelArgs: [],
