@@ -25,10 +25,12 @@ module.exports = function(grunt) {
       options: {
         jshintrc: __dirname + '/.jshintrc'
       },
-      files: ['bin/grunt-saucelabs-qunit',
-        'tasks/**/*.js',
-        'test/qunit/grunt-saucelabs-inject.js',
-        'Gruntfile.js'],
+      all: {
+        src: [
+          'tasks/**/*.js',
+          'Gruntfile.js'
+        ]
+      }
     },
     connect: {
       server: {
@@ -36,6 +38,13 @@ module.exports = function(grunt) {
           base: 'test',
           port: 9999
         }
+      }
+    },
+    jscs: {
+      all: {
+        src: [
+          '<%= jshint.all.src %>'
+        ]
       }
     },
 
@@ -120,11 +129,12 @@ module.exports = function(grunt) {
 
   grunt.loadTasks('tasks');
 
-  grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-connect');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-jscs-checker');
 
-  var testjobs = ['jshint', 'connect'];
+  var testjobs = ['jscs', 'jshint', 'connect'];
   if (typeof process.env.SAUCE_ACCESS_KEY !== 'undefined'){
     testjobs = testjobs.concat(['saucelabs-qunit', 'saucelabs-jasmine', 'saucelabs-yui', 'saucelabs-mocha', 'saucelabs-custom']);
   }
