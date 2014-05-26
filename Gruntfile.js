@@ -1,4 +1,5 @@
 module.exports = function(grunt) {
+	var Q = require('Q');
 	var browsers = [{
 		browserName: 'firefox',
 		version: '19',
@@ -55,7 +56,7 @@ module.exports = function(grunt) {
 			}
 		},
 		'saucelabs-mocha': {
-			all: {
+			succeeds: {
 				//username: '',
 				//key: '',
 				options: {
@@ -67,10 +68,24 @@ module.exports = function(grunt) {
 						'video-upload-on-pass': false
 					}
 				}
+			},
+			fails: {
+				options: {
+					urls: ['http://127.0.0.1:9999/mocha/test/browser/fails.html'],
+					build: process.env.TRAVIS_JOB_ID,
+					browsers: [{
+						browserName: 'googlechrome',
+						platform: 'XP'
+					}],
+					testname: 'fails',
+					sauceConfig: {
+						'video-upload-on-pass': false
+					}
+				}
 			}
 		},
 		'saucelabs-custom': {
-			all: {
+			succeeds: {
 				//username: '',
 				//key: '',
 				options: {
@@ -80,6 +95,70 @@ module.exports = function(grunt) {
 					testname: "custom tests",
 					sauceConfig: {
 						'video-upload-on-pass': false
+					}
+				}
+			},
+			fails: {
+				options: {
+					urls: ['http://127.0.0.1:9999/custom/fails.html'],
+					build: process.env.TRAVIS_JOB_ID,
+					browsers: [{
+						browserName: 'googlechrome',
+						platform: 'XP'
+					}],
+					testname: 'fails',
+					sauceConfig: {
+						'video-upload-on-pass': false
+					}
+				}
+			},
+			'test-result-too-big': {
+				options: {
+					urls: ['http://127.0.0.1:9999/custom/test-result-too-big.html'],
+					build: process.env.TRAVIS_JOB_ID,
+					browsers: [{
+						browserName: 'googlechrome',
+						platform: 'XP'
+					}],
+					testname: 'test-result-too-big',
+					sauceConfig: {
+						'video-upload-on-pass': false
+					}
+				}
+			},
+			'callback-fails': {
+				options: {
+					urls: ['http://127.0.0.1:9999/custom/simple.html'],
+					build: process.env.TRAVIS_JOB_ID,
+					browsers: [{
+						browserName: 'googlechrome',
+						platform: 'XP'
+					}],
+					testname: 'callback-fails',
+					sauceConfig: {
+						'video-upload-on-pass': false
+					},
+					onTestComplete: function() {
+						return false;
+					}
+				}
+			},
+			'callback-async': {
+				options: {
+					urls: ['http://127.0.0.1:9999/custom/simple.html'],
+					build: process.env.TRAVIS_JOB_ID,
+					browsers: [{
+						browserName: 'googlechrome',
+						platform: 'XP'
+					}],
+					testname: 'callback-async',
+					sauceConfig: {
+						'video-upload-on-pass': false
+					},
+					onTestComplete: function() {
+						return Q
+							.delay(3000)
+							.thenResolve(true);
 					}
 				}
 			}
@@ -126,10 +205,14 @@ module.exports = function(grunt) {
 
 	var testjobs = ['jshint', 'connect'];
 	if (typeof process.env.SAUCE_ACCESS_KEY !== 'undefined'){
-		testjobs = testjobs.concat(['saucelabs-qunit', 'saucelabs-jasmine', 'saucelabs-yui', 'saucelabs-mocha', 'saucelabs-custom']);
+		testjobs = testjobs.concat(['saucelabs-qunit', 'saucelabs-jasmine', 'saucelabs-yui', 'saucelabs-mocha:succeeds', 'saucelabs-custom:succeeds', 'saucelabs-custom:callback-async']);
 	}
 
 	grunt.registerTask("dev", ["connect", "watch"]);
 	grunt.registerTask('test', testjobs);
 	grunt.registerTask('default', ['test']);
+	grunt.registerTask('custom-fails', ['jshint', 'connect', 'saucelabs-custom:fails']);
+	grunt.registerTask('custom-test-result-too-big', ['jshint', 'connect', 'saucelabs-custom:test-result-too-big']);
+	grunt.registerTask('mocha-fails', ['jshint', 'connect', 'saucelabs-mocha:fails']);
+	grunt.registerTask('callback-fails', ['jshint', 'connect', 'saucelabs-custom:callback-fails']);
 };

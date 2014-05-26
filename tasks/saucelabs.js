@@ -11,79 +11,80 @@ module.exports = function(grunt) {
       return result.passed;
     },
     qunit: function(result){
-      if (result.passed === undefined){ return undefined; }
       return result.passed == result.total;
     },
     mocha: function(result){
-      if (result.passes === undefined){ return undefined; }
       return result.failures === 0;
     },
     'YUI Test': function(result){
-      if (result.passed === undefined){ return undefined; }
       return result.passed == result.total;
     },
     custom: function(result){
-      if (result.passed === undefined){ return undefined; }
       return result.failed === 0;
     }
   };
 
   var TestResult = function(jobId, user, key, framework, testInterval){
-    var url = 'https://saucelabs.com/rest/v1/' + user + '/js-tests/status';
-    var deferred = Q.defer();
+      var url = 'https://saucelabs.com/rest/v1/' + user + '/js-tests/status';
 
-    var requestParams = {
-      method: 'post',
-      url: url,
-      auth: {
-        user: user,
-        pass: key
-      },
-      json: true,
-      body: {
-        "js tests": [jobId]
+      var requestParams = {
+          method: 'post',
+          url: url,
+          auth: {
+              user: user,
+              pass: key
+          },
+          json: true,
+          body: {
+              'js tests': [jobId]
+          }
+      };
+
+      function checkStatus () {
+          return Q
+              .nfcall(rqst, requestParams)
+              .then(
+                  function (result) {
+                      var body = result[1];
+                      var testInfo;
+
+                      if (!body || !body['js tests'] || !body['js tests'].length || !body['js tests'][0]) {
+                          throw 'Unexpected response from the Sauce Labs API.';
+                      }
+                      if (body.completed) {
+                          testInfo = body['js tests'][0];
+                          if (!testInfo.result) {
+                              // Sauce Labs' 64KB limit on custom-data was hit, see #123.
+                              throw 'Test result is too big. Shrink it by modifying the test reporter or splitting the tests into multiple test runners.';
+                          } else if (testInfo.status == 'test error') {
+                              // A detailed error message should be composed here after
+                              // the Sauce Labs API is modified to report errors better,
+                              // see #102.
+                              throw 'Test Error';
+                          }
+                      }
+
+                      return body;
+                  },
+                  function (error) {
+                      throw 'Error connecting to api to get test status: ' + error.toString();
+                  }
+              )
+              .then(function (body) {
+                  if (body.completed) {
+                      var testInfo = body['js tests'][0];
+
+                      testInfo.passed = resultParsers[framework](testInfo.result);
+                      return testInfo;
+                  } else {
+                      return Q
+                          .delay(testInterval)
+                          .thenResolve(checkStatus());
+                  }
+              });
       }
-    };
 
-    var checkStatus = function(){
-
-      rqst(requestParams, function(error, response, body){
-
-        if (error){
-          deferred.resolve({
-            passed: undefined,
-            result: {
-              message: "Error connecting to api to get test status: " + error.toString()
-            }
-          });
-          return;
-        }
-
-        var testInfo = body['js tests'][0];
-
-        if (testInfo.status == "test error"){
-          deferred.resolve({
-            passed: undefined,
-            result: {
-              message: "Test Error"
-            }
-          });
-          return;
-        }
-
-        if (!body.completed){
-          setTimeout(checkStatus ,testInterval);
-        } else {
-          testInfo.passed = testInfo.result ? resultParsers[framework](testInfo.result) : false;
-          deferred.resolve(testInfo);
-        }
-
-      });
-    };
-
-    checkStatus();
-
-    return deferred.promise;
+      return checkStatus();
   };
 
   var TestRunner = function(user, key, testInterval) {
@@ -93,7 +94,7 @@ module.exports = function(grunt) {
     this.testInterval = testInterval;
   };
 
-  TestRunner.prototype.runTests = function(browsers, urls, framework, tunnelIdentifier, testname, tags, build, onTestComplete, throttled, callback){
+  TestRunner.prototype.runTests = function(browsers, urls, framework, tunnelIdentifier, testname, tags, build, onTestComplete, throttled){
 
     var me = this;
     var numberOfJobs = browsers.length * urls.length;
@@ -108,11 +109,20 @@ module.exports = function(grunt) {
 
                 return TestResult(taskId, me.user, me.key, framework, me.testInterval)
                     .then(function (result) {
-                        var alteredResult = onTestComplete(result);
-                        if (alteredResult !== undefined) {
-                            result.passed = alteredResult;
+                        if (onTestComplete) {
+                            var clone = _.clone(result, true);
+                            return Q
+                                .fcall(onTestComplete, clone)
+                                .then(function (passed) {
+                                    if (passed !== undefined) {
+                                        result.passed = !!passed;
+                                    }
+                                    return result;
+                                });
                         }
-
+                        return result;
+                    })
+                    .then(function (result) {
                         grunt.log.subhead("\nTested %s", url);
                         grunt.log.writeln("Platform: %s", result.platform);
 
@@ -120,16 +130,10 @@ module.exports = function(grunt) {
                             grunt.log.writeln("Warning: This url might use a port that is not proxied by Sauce Connect.".yellow);
                         }
 
-                        if (result.passed === undefined) {
-                            grunt.log.error(result.result.message);
-                        } else {
-                            grunt.log.writeln("Passed: %s", result.passed);
-                        }
+                        grunt.log.writeln("Passed: %s", result.passed);
                         grunt.log.writeln("Url %s", result.url);
 
-                        return result;
-                    }, function (e) {
-                        grunt.log.error('some error? %s', e);
+                        return result.passed;
                     });
             });
     }
@@ -145,15 +149,10 @@ module.exports = function(grunt) {
             return acc.concat(promisesForUrl);
         }, []);
 
-    Q.all(promises)
+    return Q.all(promises)
         .then(function (results) {
-            results = results.map(function (result) {
-                return result.passed;
-            });
-
-            callback(results);
-        })
-        .done();
+            return results.indexOf(false) === -1;
+        });
   };
 
   TestRunner.prototype.runTest = function(browser, url, framework, tunnelIdentifier, build, testname, sauceConfig){
@@ -207,7 +206,7 @@ module.exports = function(grunt) {
     tunneled: true,
     testInterval: 1000 * 2,
     testReadyTimeout: 1000 * 5,
-    onTestComplete: _.noop,
+    onTestComplete: function (result) { return result.passed; },
     testname: "",
     browsers: [{}],
     tunnelArgs: [],
@@ -236,45 +235,80 @@ module.exports = function(grunt) {
     });
   }
 
-  function runTask(arg, framework, callback){
+  function runTask(arg, framework, callback) {
 
-    var test = new TestRunner(arg.username, arg.key, arg.testInterval);
+      var test = new TestRunner(arg.username, arg.key, arg.testInterval);
 
-    //max-duration is actually a sauce selenium capability
-    if (arg['max-duration']){
-      arg.sauceConfig['max-duration'] = arg['max-duration'];
-    }
+      //max-duration is actually a sauce selenium capability
+      if (arg['max-duration']) {
+          arg.sauceConfig['max-duration'] = arg['max-duration'];
+      }
 
-    if (arg.tunneled){
-      var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, ['-P', '0'].concat(arg.tunnelArgs));
-      grunt.log.writeln("=> Starting Tunnel to Sauce Labs".inverse.bold);
-      configureLogEvents(tunnel);
+      if (arg.tunneled) {
+          var tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, arg.tunneled, ['-P', '0'].concat(arg.tunnelArgs));
+          grunt.log.writeln('=> Starting Tunnel to Sauce Labs'.inverse.bold);
+          configureLogEvents(tunnel);
 
-      tunnel.start(function(isCreated) {
-        if (!isCreated) {
-          grunt.log.error("Could not create tunnel to Sauce Labs");
-          callback(false);
-          return;
-        }
-        grunt.log.ok("Connected to Saucelabs");
+          tunnel.start(function (isCreated) {
+              if (!isCreated) {
+                  grunt.log.error('Could not create tunnel to Sauce Labs');
+                  callback(false);
+                  return;
+              }
+              grunt.log.ok('Connected to Sauce Labs');
 
-        test.runTests(arg.browsers, arg.pages, framework, arg.identifier, arg.build, arg.testname, arg.sauceConfig, arg.onTestComplete, arg.throttled, function (status){
-          status = status.every(function(passed){ return passed; });
-          grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
-          grunt.log.writeln("=> Stopping Tunnel to Sauce Labs".inverse.bold);
-          tunnel.stop(function() {
-            callback(status);
+              test
+                .runTests(arg.browsers, arg.pages, framework, arg.identifier, arg.build, arg.testname, arg.sauceConfig, arg.onTestComplete, arg.throttled)
+                .then(function (passed) {
+                    if (passed) {
+                        grunt.log.ok('All tests completed with status true');
+                    } else {
+                        grunt.log.error('All tests completed with status false');
+                    }
+                    return passed;
+                })
+                .finally(function () {
+                    var deferred = Q.defer();
+                    grunt.log.writeln('=> Stopping Tunnel to Sauce Labs'.inverse.bold);
+                    tunnel.stop(function () {
+                        deferred.resolve();
+                    });
+                    return deferred.promise;
+                })
+                .then(
+                    function(passed) {
+                        callback(passed);
+                    },
+                    function(error) {
+                        grunt.log.error(error.toString());
+                        callback(false);
+                    }
+                )
+                .done();
           });
-        });
-      });
 
-    } else {
-      test.runTests(arg.browsers, arg.pages, framework, null, arg.build, arg.testname, arg.sauceConfig, arg.onTestComplete, arg.throttled, function(status){
-        status = status.every(function(passed){ return passed; });
-        grunt.log[status ? 'ok' : 'error']("All tests completed with status %s", status);
-        callback(status);
-      });
-    }
+      } else {
+          test
+            .runTests(arg.browsers, arg.pages, framework, null, arg.build, arg.testname, arg.sauceConfig, arg.onTestComplete, arg.throttled)
+            .then(function (passed) {
+                if (passed) {
+                    grunt.log.ok('All tests completed with status true');
+                } else {
+                    grunt.log.error('All tests completed with status false');
+                }
+                return passed;
+            })
+            .then(
+                function(passed) {
+                    callback(passed);
+                },
+                function(error) {
+                    grunt.log.error(error.toString());
+                    callback(false);
+                }
+            )
+            .done();
+      }
   }
 
   function unsupportedPort(url) {
