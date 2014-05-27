@@ -14,46 +14,46 @@ var q = require('q');
  * @returns function that returns a promise that eventually proxies to promiseFactory.
  */
 function limitConcurrency(promiseFactory, limit) {
-    var running = 0,
-        semaphore;
+  var running = 0,
+    semaphore;
 
-    function scheduleNextJob() {
-        if (running < limit) {
-            running += 1;
-            return q();
-        }
-
-        if (!semaphore) {
-            semaphore = q.defer();
-        }
-
-        return semaphore.promise
-            .finally(scheduleNextJob);
+  function scheduleNextJob() {
+    if (running < limit) {
+      running += 1;
+      return q();
     }
 
-    function processScheduledJobs() {
-        running -= 1;
-
-        if (semaphore && running < limit) {
-            semaphore.resolve();
-            semaphore = null;
-        }
+    if (!semaphore) {
+      semaphore = q.defer();
     }
 
-    return function () {
-        var _this = this,
-            args = arguments;
+    return semaphore.promise
+      .finally(scheduleNextJob);
+  }
 
-        function runJob() {
-            return promiseFactory.apply(_this, args);
-        }
+  function processScheduledJobs() {
+    running -= 1;
 
-        return scheduleNextJob()
-            .then(runJob)
-            .finally(processScheduledJobs);
-    };
+    if (semaphore && running < limit) {
+      semaphore.resolve();
+      semaphore = null;
+    }
+  }
+
+  return function () {
+    var _this = this,
+      args = arguments;
+
+    function runJob() {
+      return promiseFactory.apply(_this, args);
+    }
+
+    return scheduleNextJob()
+      .then(runJob)
+      .finally(processScheduledJobs);
+  };
 }
 
 module.exports = {
-    limitConcurrency: limitConcurrency
+  limitConcurrency: limitConcurrency
 };

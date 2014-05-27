@@ -100,60 +100,60 @@ module.exports = function(grunt) {
     var startedJobs = 0;
 
     function take(url, browser) {
-        return me.runTest(browser, url, framework, tunnelIdentifier, testname, tags, build)
-            .then(function (taskId) {
+      return me.runTest(browser, url, framework, tunnelIdentifier, testname, tags, build)
+        .then(function (taskId) {
 
-                startedJobs += 1;
-                grunt.log.writeln("\n",startedJobs, "/", numberOfJobs, 'tests started');
+          startedJobs += 1;
+          grunt.log.writeln("\n",startedJobs, "/", numberOfJobs, 'tests started');
 
-                return TestResult(taskId, me.user, me.key, framework, me.testInterval)
-                    .then(function (result) {
-                        var alteredResult = onTestComplete(result);
-                        if (alteredResult !== undefined) {
-                            result.passed = alteredResult;
-                        }
+          return TestResult(taskId, me.user, me.key, framework, me.testInterval)
+            .then(function (result) {
+              var alteredResult = onTestComplete(result);
+              if (alteredResult !== undefined) {
+                result.passed = alteredResult;
+              }
 
-                        grunt.log.subhead("\nTested %s", url);
-                        grunt.log.writeln("Platform: %s", result.platform);
+              grunt.log.subhead("\nTested %s", url);
+              grunt.log.writeln("Platform: %s", result.platform);
 
-                        if (tunnelIdentifier && unsupportedPort(url)) {
-                            grunt.log.writeln("Warning: This url might use a port that is not proxied by Sauce Connect.".yellow);
-                        }
+              if (tunnelIdentifier && unsupportedPort(url)) {
+                grunt.log.writeln("Warning: This url might use a port that is not proxied by Sauce Connect.".yellow);
+              }
 
-                        if (result.passed === undefined) {
-                            grunt.log.error(result.result.message);
-                        } else {
-                            grunt.log.writeln("Passed: %s", result.passed);
-                        }
-                        grunt.log.writeln("Url %s", result.url);
+              if (result.passed === undefined) {
+                grunt.log.error(result.result.message);
+              } else {
+                grunt.log.writeln("Passed: %s", result.passed);
+              }
+              grunt.log.writeln("Url %s", result.url);
 
-                        return result;
-                    }, function (e) {
-                        grunt.log.error('some error? %s', e);
-                    });
+              return result;
+            }, function (e) {
+              grunt.log.error('some error? %s', e);
             });
+        });
     }
 
     var throttledTake = scheduler.limitConcurrency(take, throttled || Number.MAX_VALUE);
     var promises = urls
-        .map(function (url) {
-            return browsers.map(function (browser) {
-                return throttledTake(url, browser);
-            });
-        })
-        .reduce(function (acc, promisesForUrl) {
-            return acc.concat(promisesForUrl);
-        }, []);
+      .map(function (url) {
+        return browsers.map(function (browser) {
+          return throttledTake(url, browser);
+        });
+      })
+      .reduce(function (acc, promisesForUrl) {
+        return acc.concat(promisesForUrl);
+      }, []);
 
     Q.all(promises)
-        .then(function (results) {
-            results = results.map(function (result) {
-                return result.passed;
-            });
+      .then(function (results) {
+        results = results.map(function (result) {
+          return result.passed;
+        });
 
-            callback(results);
-        })
-        .done();
+        callback(results);
+      })
+      .done();
   };
 
   TestRunner.prototype.runTest = function(browser, url, framework, tunnelIdentifier, build, testname, sauceConfig){
@@ -283,10 +283,12 @@ module.exports = function(grunt) {
     var portRegExp = /:(\d+)\//;
     var matches = portRegExp.exec(url);
     var port = matches ? parseInt(matches[1], 10) : null;
-    var supportedPorts = [80, 443, 888, 2000, 2001, 2020, 2109, 2222, 2310, 3000, 3001, 3030,
-      3210, 3333, 4000, 4001, 4040, 4321, 4502, 4503, 4567, 5000, 5001, 5050, 5555, 5432, 6000,
-      6001, 6060, 6666, 6543, 7000, 7070, 7774, 7777, 8000, 8001, 8003, 8031, 8080, 8081, 8765,
-      8888, 9000, 9001, 9080, 9090, 9876, 9877, 9999, 49221, 55001];
+    var supportedPorts = [
+        80, 443, 888, 2000, 2001, 2020, 2109, 2222, 2310, 3000, 3001, 3030,
+        3210, 3333, 4000, 4001, 4040, 4321, 4502, 4503, 4567, 5000, 5001, 5050, 5555, 5432, 6000,
+        6001, 6060, 6666, 6543, 7000, 7070, 7774, 7777, 8000, 8001, 8003, 8031, 8080, 8081, 8765,
+        8888, 9000, 9001, 9080, 9090, 9876, 9877, 9999, 49221, 55001
+      ];
 
     if (port) {
       return supportedPorts.indexOf(port) === -1;
