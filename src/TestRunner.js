@@ -172,10 +172,12 @@ TestRunner.prototype.startJob = function (browser, url) {
         var pollIds = body['js tests'];
 
         if (response.statusCode !== 200) {
-          throw ['Unexpected response from the Sauce Labs API.',
+          throw [
+            'Unexpected response from the Sauce Labs API.',
             request.method + ' ' + request.url,
             'Response status: ' + response.statusCode,
-            'Body: ' + JSON.stringify(body)].join('\n');
+            'Body: ' + JSON.stringify(body)
+          ].join('\n');
         } else if (!pollIds || !pollIds.length) {
           throw 'Error starting tests through Sauce API: ' + JSON.stringify(body);
         }

@@ -93,10 +93,12 @@ Job.prototype.complete = function () {
           var body = result[1];
 
           if (response.statusCode !== 200) {
-            throw ['Unexpected response from the Sauce Labs API.',
+            throw [
+              'Unexpected response from the Sauce Labs API.',
               request.method + ' ' + request.url,
               'Response status: ' + response.statusCode,
-              'Response body: ' + JSON.stringify(body)].join('\n');
+              'Response body: ' + JSON.stringify(body)
+            ].join('\n');
           }
 
           return body;
