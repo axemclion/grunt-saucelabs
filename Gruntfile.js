@@ -29,6 +29,7 @@ module.exports = function (grunt) {
 			},
 			files: ['bin/grunt-saucelabs-qunit',
 				'tasks/**/*.js',
+				'src/**/*.js',
 				'test/qunit/grunt-saucelabs-inject.js',
 				'Gruntfile.js']
 		},

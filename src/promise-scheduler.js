@@ -1,4 +1,3 @@
-/*jshint es5:true*/
 // copied from https://gist.github.com/gaearon/7930162
 
 'use strict';
