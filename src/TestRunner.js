@@ -111,15 +111,20 @@ TestRunner.prototype.runTest = function (browser, url) {
       return job
         .getResult()
         .then(function (result) {
-          var alteredResult;
-
           if (me.onTestComplete) {
-            alteredResult = me.onTestComplete(result);
-            if (alteredResult !== undefined) {
-              result.passed = alteredResult;
-            }
+            var clone = _.clone(result, true);
+            return Q
+              .fcall(me.onTestComplete, clone)
+              .then(function (passed) {
+                if (passed !== undefined) {
+                  result.passed = !!passed;
+                }
+                return result;
+              });
           }
-
+          return result;
+        })
+        .then(function (result) {
           me.reportProgress({
             type: notifications.jobCompleted,
             url: url,

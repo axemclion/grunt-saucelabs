@@ -1,4 +1,5 @@
 module.exports = function(grunt) {
+  var Q = require('q');
   var browsers = [{
     browserName: 'firefox',
     version: '19',
@@ -79,14 +80,88 @@ module.exports = function(grunt) {
       }
     },
     'saucelabs-custom': {
-      all: {
+      succeeds: {
         //username: '',
         //key: '',
         options: {
           urls: ['http://127.0.0.1:9999/custom/custom.html'],
           build: process.env.TRAVIS_JOB_ID,
           browsers: browsers,
-          testname: "custom tests",
+          testname: 'saucelabs-custom:succeeds',
+          sauceConfig: {
+            'video-upload-on-pass': false
+          }
+        }
+      },
+      fails: {
+        options: {
+          urls: ['http://127.0.0.1:9999/custom/fails.html'],
+          build: process.env.TRAVIS_JOB_ID,
+          browsers: [{
+            browserName: 'googlechrome',
+            platform: 'XP'
+          }],
+          testname: 'saucelabs-custom:fails',
+          sauceConfig: {
+            'video-upload-on-pass': false
+          }
+        }
+      },
+      'callback-succeeds': {
+        options: {
+          urls: ['http://127.0.0.1:9999/custom/simple.html'],
+          build: process.env.TRAVIS_JOB_ID,
+          browsers: [{
+            browserName: 'googlechrome',
+            platform: 'XP'
+          }],
+          testname: 'saucelabs-custom:callback-succeeds',
+          onTestComplete: function () { return true; },
+          sauceConfig: {
+            'video-upload-on-pass': false
+          }
+        }
+      },
+      'callback-async-succeeds': {
+        options: {
+          urls: ['http://127.0.0.1:9999/custom/simple.html'],
+          build: process.env.TRAVIS_JOB_ID,
+          browsers: [{
+            browserName: 'googlechrome',
+            platform: 'XP'
+          }],
+          testname: 'saucelabs-custom:callback-async-succeeds',
+          onTestComplete: function () { return Q.delay(3000).thenResolve(true); },
+          sauceConfig: {
+            'video-upload-on-pass': false
+          }
+        }
+      },
+      'callback-fails': {
+        options: {
+          urls: ['http://127.0.0.1:9999/custom/simple.html'],
+          build: process.env.TRAVIS_JOB_ID,
+          browsers: [{
+            browserName: 'googlechrome',
+            platform: 'XP'
+          }],
+          testname: 'saucelabs-custom:callback-fails',
+          onTestComplete: function () { return false; },
+          sauceConfig: {
+            'video-upload-on-pass': false
+          }
+        }
+      },
+      'callback-async-fails': {
+        options: {
+          urls: ['http://127.0.0.1:9999/custom/simple.html'],
+          build: process.env.TRAVIS_JOB_ID,
+          browsers: [{
+            browserName: 'googlechrome',
+            platform: 'XP'
+          }],
+          testname: 'saucelabs-custom:callback-async-fails',
+          onTestComplete: function () { return Q.delay(3000).thenResolve(false); },
           sauceConfig: {
             'video-upload-on-pass': false
           }
@@ -136,7 +211,15 @@ module.exports = function(grunt) {
 
   var testjobs = ['jscs', 'jshint', 'connect'];
   if (typeof process.env.SAUCE_ACCESS_KEY !== 'undefined'){
-    testjobs = testjobs.concat(['saucelabs-qunit', 'saucelabs-jasmine', 'saucelabs-yui', 'saucelabs-mocha', 'saucelabs-custom']);
+    testjobs = testjobs.concat([
+      'saucelabs-qunit',
+      'saucelabs-jasmine',
+      'saucelabs-yui',
+      'saucelabs-mocha',
+      'saucelabs-custom:succeeds',
+      'saucelabs-custom:callback-succeeds',
+      'saucelabs-custom:callback-async-succeeds'
+    ]);
   }
 
   grunt.registerTask("dev", ["connect", "watch"]);
