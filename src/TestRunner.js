@@ -19,7 +19,7 @@ var notifications = require('./notifications');
 var TestRunner = function (properties, framework, onProgress) {
   this.user = properties.username;
   this.key = properties.key;
-  this.testInterval = properties.testInterval;
+  this.pollInterval = properties.pollInterval;
   this.framework = framework;
   this.tunneled = properties.tunneled;
   this.tunnelId = properties.identifier;
@@ -169,7 +169,7 @@ TestRunner.prototype.startJob = function (browser, url) {
       function (result) {
         var response = result[0];
         var body = result[1];
-        var pollIds = body['js tests'];
+        var taskIds = body['js tests'];
 
         if (response.statusCode !== 200) {
           throw [
@@ -178,11 +178,11 @@ TestRunner.prototype.startJob = function (browser, url) {
             'Response status: ' + response.statusCode,
             'Body: ' + JSON.stringify(body)
           ].join('\n');
-        } else if (!pollIds || !pollIds.length) {
+        } else if (!taskIds || !taskIds.length) {
           throw 'Error starting tests through Sauce API: ' + JSON.stringify(body);
         }
 
-        return new Job(pollIds[0], me.user, me.key, me.framework, me.testInterval);
+        return new Job(taskIds[0], me.user, me.key, me.framework, me.pollInterval);
       },
       function (error) {
         throw 'Could not connect to Sauce Labs API: ' + error.toString();

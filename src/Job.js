@@ -26,20 +26,20 @@ var resultParsers = {
  * Represents a Sauce Labs job.
  *
  * @constructor
- * @param {String} pollId - The id used for polling the status of jobs.
+ * @param {String} taskId - Sauce Labs task id. Used for polling the job's status.
  * @param {String} user - The Sauce Labs username.
  * @param {String} key - The Sauce Labs access key.
  * @param {String} framework - The unit test framework's name. Can be 'yasmine',
  *     'qunit', 'YUI Test', 'mocha' or 'custom'.
- * @param {Number} testInterval - The polling interval in milliseconds.
+ * @param {Number} pollInterval - The polling interval in milliseconds.
  */
-var Job = function (pollId, user, key, framework, testInterval) {
+var Job = function (taskId, user, key, framework, pollInterval) {
   this.id = null;
-  this.pollId = pollId;
+  this.taskId = taskId;
   this.user = user;
   this.key = key;
   this.framework = framework;
-  this.testInterval = testInterval;
+  this.pollInterval = pollInterval;
 };
 
 /**
@@ -85,7 +85,7 @@ Job.prototype.complete = function () {
       .nfcall(request.post, {
         url: ['https://saucelabs.com/rest/v1', me.user, 'js-tests/status'].join('/'),
         auth: { user: me.user, pass: me.key },
-        json: { 'js tests': [me.pollId] }
+        json: { 'js tests': [me.taskId] }
       })
       .then(
         function (result) {
@@ -110,7 +110,7 @@ Job.prototype.complete = function () {
       .then(function (body) {
         if (!body.completed) {
           return Q
-            .delay(me.testInterval)
+            .delay(me.pollInterval)
             .then(fetch);
         }
 
