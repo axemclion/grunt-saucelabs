@@ -2,8 +2,8 @@
 
 module.exports = function (grunt) {
   var Q = require('q');
+  var SauceTunnel = require('sauce-tunnel');
   var TestRunner = require('../src/TestRunner');
-  var Tunnel = require('../src/Tunnel');
 
   function reportProgress(notification) {
     switch (notification.type) {
@@ -45,15 +45,60 @@ module.exports = function (grunt) {
     }
   }
 
+  function createTunnel(arg) {
+    var tunnel;
+
+    reportProgress({
+      type: 'tunnelOpen'
+    });
+
+    tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, true, ['-P', '0'].concat(arg.tunnelArgs));
+
+    ['write', 'writeln', 'error', 'ok', 'debug'].forEach(function (method) {
+      tunnel.on('log:' + method, function (text) {
+        reportProgress({
+          type: 'tunnelEvent',
+          verbose: false,
+          method: method,
+          text: text
+        });
+      });
+      tunnel.on('verbose:' + method, function (text) {
+        reportProgress({
+          type: 'tunnelEvent',
+          verbose: true,
+          method: method,
+          text: text
+        });
+      });
+    });
+
+    return tunnel;
+  }
+
   function runTask(arg, framework, callback) {
     var tunnel;
 
     Q
       .fcall(function () {
+        var deferred;
+
         if (arg.tunneled) {
-          tunnel = new Tunnel(arg, reportProgress);
-          arg.identifier = tunnel.id;
-          return tunnel.open();
+          deferred = Q.defer();
+
+          tunnel = createTunnel(arg);
+          tunnel.start(function (succeeded) {
+            if (!succeeded) {
+              deferred.reject('Could not create tunnel to Sauce Labs');
+            } else {
+              reportProgress({
+                type: 'tunnelOpened'
+              });
+
+              deferred.resolve();
+            }
+          });
+          return deferred.promise;
         }
       })
       .then(function () {
@@ -61,8 +106,20 @@ module.exports = function (grunt) {
         return testRunner.runTests();
       })
       .fin(function () {
+        var deferred;
+
         if (tunnel) {
-          return tunnel.close();
+          deferred = Q.defer();
+          
+          reportProgress({
+            type: 'tunnelClose'
+          });
+
+          tunnel.stop(function () {
+            deferred.resolve();
+          });
+
+          return deferred.promise;
         }
       })
       .then(

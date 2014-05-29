@@ -13,16 +13,15 @@
       if (!expr) throw new Error(msg || 'failed');
     }
 
+    describe('This spec', function () {
+      it('should fail', function () {
+        assert(false);
+      });
+    });
+
     window.onload = function () {
       var runner = mocha.run();
       var failedTests = [];
-
-      runner.on('end', function () {
-        window.mochaResults = runner.stats;
-        window.mochaResults.reports = failedTests;
-      });
-
-
       var flattenTitles = function (test) {
         var titles = [];
         while (test.parent.title) {
@@ -32,14 +31,13 @@
         return titles.reverse();
       };
 
-      runner.on('fail', function (test, err) {
-        failedTests.push({ name: test.title, result: false, message: err.message, stack: err.stack, titles: flattenTitles(test) });
+      runner.on('end', function () {
+        window.mochaResults = runner.stats;
+        window.mochaResults.reports = failedTests;
       });
 
-      describe('This spec', function () {
-        it('should fail', function () {
-          assert(false);
-        });
+      runner.on('fail', function (test, err) {
+        failedTests.push({ name: test.title, result: false, message: err.message, stack: err.stack, titles: flattenTitles(test) });
       });
     };
   </script>
