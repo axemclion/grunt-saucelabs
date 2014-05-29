@@ -2,7 +2,6 @@
 
 var SauceTunnel = require('sauce-tunnel');
 var Q = require('q');
-var notifications = require('./notifications');
 
 /**
  * Abstraction over sauce-tunnel. This one has methods which return promises.
@@ -41,14 +40,14 @@ Tunnel.prototype.open = function () {
   var deferred = Q.defer();
 
   this.reportProgress({
-    type: notifications.tunnelOpen
+    type: 'tunnelOpen'
   });
 
   this.tunnel = new SauceTunnel(me.user, me.key, me.id, true, me.tunnelArgs);
   ['write', 'writeln', 'error', 'ok', 'debug'].forEach(function (method) {
     this.tunnel.on('log:' + method, function (text) {
       me.reportProgress({
-        type: notifications.tunnelEvent,
+        type: 'tunnelEvent',
         verbose: false,
         method: method,
         text: text
@@ -56,7 +55,7 @@ Tunnel.prototype.open = function () {
     });
     this.tunnel.on('verbose:' + method, function (text) {
       me.reportProgress({
-        type: notifications.tunnelEvent,
+        type: 'tunnelEvent',
         verbose: true,
         method: method,
         text: text
@@ -69,7 +68,7 @@ Tunnel.prototype.open = function () {
       deferred.reject('Could not create tunnel to Sauce Labs');
     } else {
       me.reportProgress({
-        type: notifications.tunnelOpened
+        type: 'tunnelOpened'
       });
 
       me.opened = true;
@@ -92,7 +91,7 @@ Tunnel.prototype.close = function () {
 
   if (this.opened) {
     this.reportProgress({
-      type: notifications.tunnelClose
+      type: 'tunnelClose'
     });
 
     this.tunnel.stop(function () {

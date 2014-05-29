@@ -4,30 +4,29 @@ module.exports = function (grunt) {
   var Q = require('q');
   var TestRunner = require('../src/TestRunner');
   var Tunnel = require('../src/Tunnel');
-  var notifications = require('../src/notifications');
 
   function reportProgress(notification) {
     switch (notification.type) {
-    case notifications.tunnelOpen:
+    case 'tunnelOpen':
       grunt.log.writeln('=> Starting Tunnel to Sauce Labs'.inverse.bold);
       break;
-    case notifications.tunnelOpened:
+    case 'tunnelOpened':
       grunt.log.ok('Connected to Saucelabs');
       break;
-    case notifications.tunnelClose:
+    case 'tunnelClose':
       grunt.log.writeln('=> Stopping Tunnel to Sauce Labs'.inverse.bold);
       break;
-    case notifications.tunnelEvent:
+    case 'tunnelEvent':
       if (notification.verbose) {
         grunt.verbose[notification.method](notification.text);
       } else {
         grunt.log[notification.method](notification.text);
       }
       break;
-    case notifications.jobStarted:
+    case 'jobStarted':
       grunt.log.writeln('\n', notification.startedJobs, '/', notification.numberOfJobs, 'tests started');
       break;
-    case notifications.jobCompleted:
+    case 'jobCompleted':
       grunt.log.subhead('\nTested %s', notification.url);
       grunt.log.writeln('Platform: %s', notification.platform);
 
@@ -38,7 +37,7 @@ module.exports = function (grunt) {
       grunt.log.writeln('Passed: %s', notification.passed);
       grunt.log.writeln('Url %s', notification.url);
       break;
-    case notifications.testCompleted:
+    case 'testCompleted':
       grunt.log[notification.passed ? 'ok' : 'error']('All tests completed with status %s', notification.passed);
       break;
     default:

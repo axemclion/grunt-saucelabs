@@ -5,7 +5,6 @@ var request = require('request');
 var Q = require('q');
 var scheduler = require('./promise-scheduler');
 var Job = require('./Job');
-var notifications = require('./notifications');
 
 /**
  * Test runner.
@@ -79,7 +78,7 @@ TestRunner.prototype.runTests = function () {
       var passed = results.indexOf(false) === -1;
 
       me.reportProgress({
-        type: notifications.testCompleted,
+        type: 'testCompleted',
         passed: passed
       });
 
@@ -103,7 +102,7 @@ TestRunner.prototype.runTest = function (browser, url) {
     .then(function (job) {
       me.startedJobs += 1;
       me.reportProgress({
-        type: notifications.jobStarted,
+        type: 'jobStarted',
         numberOfJobs: me.numberOfJobs,
         startedJobs: me.startedJobs
       });
@@ -126,7 +125,7 @@ TestRunner.prototype.runTest = function (browser, url) {
         })
         .then(function (result) {
           me.reportProgress({
-            type: notifications.jobCompleted,
+            type: 'jobCompleted',
             url: url,
             platform: result.platform,
             passed: result.passed,
