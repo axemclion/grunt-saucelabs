@@ -211,7 +211,7 @@ The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that
 
 Changelog
 ---------
-####8.0.0####
+####8.0.1####
 * Major refactor, thanks to all the work done by @gvas
 * async `onTestComplete` callback fixed. Now the callback is passed two args: result, callback. `callback` is a node style callback (err, result);
 * `/examples` directory added, while the actual tests and Gruntfile are now more complicated (and useful)
