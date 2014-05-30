@@ -1,5 +1,3 @@
-/*jslint node:true*/
-
 // copied from https://gist.github.com/gaearon/7930162
 
 'use strict';
@@ -14,8 +12,8 @@ var q = require('q');
  * @returns function that returns a promise that eventually proxies to promiseFactory.
  */
 function limitConcurrency(promiseFactory, limit) {
-  var running = 0,
-    semaphore;
+  var running = 0;
+  var semaphore;
 
   function scheduleNextJob() {
     if (running < limit) {
@@ -41,8 +39,8 @@ function limitConcurrency(promiseFactory, limit) {
   }
 
   return function () {
-    var _this = this,
-      args = arguments;
+    var _this = this;
+    var args = arguments;
 
     function runJob() {
       return promiseFactory.apply(_this, args);
