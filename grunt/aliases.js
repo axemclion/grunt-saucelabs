@@ -21,7 +21,7 @@ module.exports = function (grunt) {
   ];
 
   if (typeof process.env.SAUCE_ACCESS_KEY !== 'undefined') {
-    testjobs = testjobs.concat(positiveTests, negativeTests);
+    testjobs = testjobs.concat('saucelabs-custom:tunnel-test', 'sauce_tunnel', positiveTests, negativeTests, 'sauce_tunnel_stop');
   }
 
   grunt.registerTask('dev', ['connect', 'watch']);

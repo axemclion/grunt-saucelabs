@@ -3,6 +3,7 @@
 module.exports = function (grunt) {
   var Q = require('q');
   var request = require('request');
+  var tunnelId = Math.floor((new Date()).getTime() / 1000 - 1230768000).toString();
 
   var negateResult = function (result) {
     // Reverses the job's passed status. Can be used as the onTestComplete callback for
@@ -42,14 +43,17 @@ module.exports = function (grunt) {
     data: {
       srcFiles: ['tasks/**/*.js', 'src/**/*.js', 'Gruntfile.js'],
       negateResult: negateResult,
+      tunnelId: tunnelId,
       baseSaucelabsTaskOptions: {
         build: process.env.TRAVIS_JOB_ID,
         browsers: [{
           browserName: 'googlechrome',
           platform: 'XP'
         }],
+        tunneled: false,
         sauceConfig: {
-          'video-upload-on-pass': false
+          'video-upload-on-pass': false,
+          'tunnel-identifier': tunnelId
         }
       }
     }
