@@ -113,7 +113,7 @@ TestRunner.prototype.runTest = function (browser, url) {
           if (me.onTestComplete) {
             var clone = _.clone(result, true);
             return Q
-              .fcall(me.onTestComplete, clone)
+              .nfcall(me.onTestComplete, clone)
               .then(function (passed) {
                 if (passed !== undefined) {
                   result.passed = !!passed;

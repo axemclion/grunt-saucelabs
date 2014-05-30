@@ -5,7 +5,7 @@ module.exports = function (grunt) {
   var request = require('request');
   var tunnelId = Math.floor((new Date()).getTime() / 1000 - 1230768000).toString();
 
-  var negateResult = function (result) {
+  var negateResult = function (result, callback) {
     // Reverses the job's passed status. Can be used as the onTestComplete callback for
     //the  negative tests.
     return Q.nfcall(request.put, {
@@ -33,8 +33,10 @@ module.exports = function (grunt) {
         grunt.log.error(error);
         throw error;
       }
+
+      return !result.passed;
     })
-    .thenResolve(!result.passed);
+    .nodeify(callback);
   };
 
   grunt.task.loadTasks('tasks');

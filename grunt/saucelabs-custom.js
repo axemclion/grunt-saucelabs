@@ -29,14 +29,14 @@ module.exports = function (grunt, options) {
       options: merge(true, {}, options.baseSaucelabsTaskOptions, {
         urls: ['http://127.0.0.1:9999/custom/succeeds.html'],
         testname: 'saucelabs-custom:callback-succeeds',
-        onTestComplete: function (result) { return result.passed; }
+        onTestComplete: function (result, callback) { callback(null, result.passed); }
       })
     },
     'callback-async-succeeds': {
       options: merge(true, {}, options.baseSaucelabsTaskOptions, {
         urls: ['http://127.0.0.1:9999/custom/succeeds.html'],
         testname: 'saucelabs-custom:callback-async-succeeds',
-        onTestComplete: function (result) { return Q.delay(3000).thenResolve(result.passed); }
+        onTestComplete: function (result, callback) { return Q.delay(3000).thenResolve(result.passed).nodeify(callback); }
       })
     },
     'throttled': {
