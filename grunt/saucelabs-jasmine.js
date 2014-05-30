@@ -6,12 +6,8 @@ module.exports = function (grunt, options) {
   return {
     succeeds: {
       options: merge(true, {}, options.baseSaucelabsTaskOptions, {
-        urls: [
-          'http://127.0.0.1:9999/jasmine/SpecRunner.html',
-          'http://127.0.0.1:9999/jasmine/SpecRunnerDos.html'
-        ],
-        testname: 'saucelabs-jasmine:succeeds',
-        throttled: 3
+        urls: ['http://127.0.0.1:9999/jasmine/succeeds.html'],
+        testname: 'saucelabs-jasmine:succeeds'
       })
     },
     fails: {

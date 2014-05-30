@@ -9,7 +9,8 @@ module.exports = function (grunt) {
     'saucelabs-mocha:succeeds',
     'saucelabs-custom:succeeds',
     'saucelabs-custom:callback-succeeds',
-    'saucelabs-custom:callback-async-succeeds'
+    'saucelabs-custom:callback-async-succeeds',
+    'saucelabs-custom:throttled'
   ];
   var negativeTests = [
     'saucelabs-qunit:fails',
