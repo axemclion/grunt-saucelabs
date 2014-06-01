@@ -25,4 +25,4 @@ If you are looking for a feature, it would be best to open a bug and send in a p
 
 Discussions
 ------------
-This project is maintained by [Sebastian Tiedtke](https://github.com/sourishkrout) and [Parashuram](http://github.com/axemcion). It would be easy to send them a tweet and ask them questions.
+This project is maintained by [Sebastian Tiedtke](https://github.com/sourishkrout) and [Parashuram](http://github.com/axemclion). It would be easy to send them a tweet and ask them questions.
