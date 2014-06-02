@@ -86,7 +86,7 @@ Full list of parameters which can be added to a saucelabs-* task:
 * __tunneled__: Defaults to true; Won't launch a Sauce Connect tunnel if set to false. _Optional_
 * __tunnelArgs__: Array of optional arguments to be passed to the Sauce Connect tunnel. example: `['--debug', '--direct-domains', 'google.com']`. See [here](https://saucelabs.com/docs/connect) for further documentation.
 * __sauceConfig__: Map of extra parameters to be passed to sauce labs. example: `{'video-upload-on-pass': false, 'idle-timeout': 60}`. See [here](https://saucelabs.com/docs/additional-config) for further documentation.
-* __testInterval__ : Number of milliseconds between each retry to see if a test is completed or not (default: 2000). _Optional_
+* __pollInterval__ : Number of milliseconds between each retry to see if a test is completed or not (default: 2000). _Optional_
 * __throttled__: Maximum number of unit test pages which will be sent to Sauce Labs concurrently. The maximum number of jobs you may have outstanding is this times the number of browsers, can be used to mitigate concurrency failures if you have a lot of unit test pages. _Optional_
 * __max-duration__: Maximum duration of a test, this is actually a Selenium Capability. Sauce Labs defaults to 180 seconds for js unit tests. _Optional_
 * __browsers__: An array of objects representing the [various browsers](https://saucelabs.com/docs/platforms) on which this test should run. _Optional_
