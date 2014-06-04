@@ -211,6 +211,9 @@ The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that
 
 Changelog
 ---------
+####8.0.2####
+* fixed bug, `testname` option not working
+
 ####8.0.1####
 * Major refactor, thanks to all the work done by @gvas
 * async `onTestComplete` callback fixed. Now the callback is passed two args: result, callback. `callback` is a node style callback (err, result);
