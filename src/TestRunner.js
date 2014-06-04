@@ -154,7 +154,7 @@ TestRunner.prototype.startJob = function (browser, url) {
       url: url,
       framework: this.framework,
       build: this.build,
-      name: this.testname
+      name: this.testName
     }
   };
   _.merge(requestParams.json, this.sauceConfig);
