@@ -1,7 +1,6 @@
 'use strict';
 
 var _ = require('lodash');
-var request = require('request');
 var Q = require('q');
 var scheduler = require('./promise-scheduler');
 var Job = require('./Job');
@@ -96,10 +95,12 @@ TestRunner.prototype.runTests = function () {
  */
 TestRunner.prototype.runTest = function (browser, url) {
   var me = this;
+  var job = new Job(this.user, this.key, this.framework, this.pollInterval, url, browser,
+    this.build, this.testName, this.sauceConfig, this.tunneled, this.tunnelId);
 
-  return this
-    .startJob(browser, url)
-    .then(function (job) {
+  return job
+    .start()
+    .then(function () {
       me.startedJobs += 1;
       me.reportProgress({
         type: 'jobStarted',
@@ -135,58 +136,6 @@ TestRunner.prototype.runTest = function (browser, url) {
           return result.passed;
         });
     });
-};
-
-/**
- * Creates and starts a new Sauce Labs job.
- *
- * @param {Object} browser - The environment to run the job on.
- * @param {String} url - An URL that will be loaded in the browser.
- * @returns {Object} - A promise which will be eventually resolved with the Job instance.
- */
-TestRunner.prototype.startJob = function (browser, url) {
-  var me = this;
-  var requestParams = {
-    url: ['https://saucelabs.com/rest/v1', this.user, 'js-tests'].join('/'),
-    auth: { user: this.user, pass: this.key },
-    json: {
-      platforms: [[browser.platform || '', browser.browserName || '', browser.version || '']],
-      url: url,
-      framework: this.framework,
-      build: this.build,
-      name: this.testName
-    }
-  };
-  _.merge(requestParams.json, this.sauceConfig);
-
-  if (this.tunneled) {
-    requestParams.json['tunnel-identifier'] = this.tunnelId;
-  }
-
-  return Q.nfcall(request.post, requestParams)
-    .then(
-      function (result) {
-        var response = result[0];
-        var body = result[1];
-        var taskIds = body['js tests'];
-
-        if (response.statusCode !== 200) {
-          throw [
-            'Unexpected response from the Sauce Labs API.',
-            request.method + ' ' + request.url,
-            'Response status: ' + response.statusCode,
-            'Body: ' + JSON.stringify(body)
-          ].join('\n');
-        } else if (!taskIds || !taskIds.length) {
-          throw 'Error starting tests through Sauce API: ' + JSON.stringify(body);
-        }
-
-        return new Job(taskIds[0], me.user, me.key, me.framework, me.pollInterval);
-      },
-      function (error) {
-        throw 'Could not connect to Sauce Labs API: ' + error.toString();
-      }
-    );
 };
 
 module.exports = TestRunner;
