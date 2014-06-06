@@ -28,6 +28,7 @@ var TestRunner = function (properties, framework, onProgress) {
   this.throttled = properties.throttled;
   this.browsers = properties.browsers;
   this.urls = properties.url || properties.urls;
+  this.maxRetries = properties.maxRetries;
   this.onProgress = onProgress;
 
   if (properties['max-duration']) {
@@ -97,6 +98,34 @@ TestRunner.prototype.runTest = function (browser, url) {
   var me = this;
   var job = new Job(this.user, this.key, this.framework, this.pollInterval, url, browser,
     this.build, this.testName, this.sauceConfig, this.tunneled, this.tunnelId);
+  var retry = 0;
+
+  function getResult() {
+    return job
+      .getResult()
+      .then(function (result) {
+        // when a test times out then the result property is a string
+        if (result.result &&
+          result.result.indexOf &&
+          result.result.indexOf('Test exceeded maximum duration') > -1 &&
+          retry < me.maxRetries) {
+          retry += 1;
+
+          me.reportProgress({
+            type: 'retrying'
+          });
+
+          return job
+            .stop()
+          // set the timed out job's passed attribute to true otherwise the SauceLabs
+          // badge/status image would indicate failure
+            .then(function () { return job.update({ passed: true }); })
+            .then(function () { return job.start(); })
+            .then(function () { return getResult(); });
+        }
+        return result;
+      });
+  }
 
   return job
     .start()
@@ -108,8 +137,7 @@ TestRunner.prototype.runTest = function (browser, url) {
         startedJobs: me.startedJobs
       });
 
-      return job
-        .getResult()
+      return getResult()
         .then(function (result) {
           if (me.onTestComplete) {
             var clone = _.clone(result, true);

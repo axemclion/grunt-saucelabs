@@ -40,6 +40,9 @@ module.exports = function (grunt) {
     case 'testCompleted':
       grunt.log[notification.passed ? 'ok' : 'error']('All tests completed with status %s', notification.passed);
       break;
+    case 'retrying':
+      grunt.log.writeln('Timed out, retrying');
+      break;
     default:
       grunt.log.error('Unexpected notification type');
     }
@@ -163,7 +166,8 @@ module.exports = function (grunt) {
     testname: '',
     browsers: [{}],
     tunnelArgs: [],
-    sauceConfig: {}
+    sauceConfig: {},
+    maxRetries: 0
   };
 
   grunt.registerMultiTask('saucelabs-jasmine', 'Run Jasmine test cases using Sauce Labs browsers', function () {

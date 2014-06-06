@@ -166,4 +166,34 @@ Job.prototype.complete = function () {
   return deferred.promise;
 };
 
+/**
+ * Stops the job.
+ *
+ * @returns {Object} - A promise which will eventually be resolved after the job has been
+ *   stopped.
+ */
+Job.prototype.stop = function () {
+  return utils.makeRequest({
+    method: 'PUT',
+    url: ['https://saucelabs.com/rest/v1', this.user, 'jobs', this.id, 'stop' ].join('/'),
+    auth: { user: this.user, pass: this.key }
+  });
+};
+
+/**
+ * Updates the job's attributes.
+ *
+ * @param {Object} attributes - The attributes to update.
+ * @returns {Object} - A promise which will eventually be resolved after the job has been
+ *   updated.
+ */
+Job.prototype.update = function (attributes) {
+  return utils.makeRequest({
+    method: 'PUT',
+    url: ['https://saucelabs.com/rest/v1', this.user, 'jobs', this.id].join('/'),
+    auth: { user: this.user, pass: this.key },
+    json: attributes
+  });
+};
+
 module.exports = Job;

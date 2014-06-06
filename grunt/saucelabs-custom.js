@@ -1,9 +1,31 @@
 'use strict';
 
-module.exports = function (grunt, options) {
-  var merge = require('merge');
-  var Q = require('q');
+var Q = require('q');
+var merge = require('merge');
+var utils = require('../src/utils');
 
+/**
+ * Updates a job's attributes.
+ *
+ * @param {String} jobId - Job ID.
+ * @param {Object} attributes - The attributes to update.
+ * @returns {Object} - A promise which will eventually be resolved after the job is
+ *   updated.
+ */
+function updateJob(jobId, attributes) {
+  var user = process.env.SAUCE_USERNAME;
+  var pass = process.env.SAUCE_ACCESS_KEY;
+
+  return utils
+    .makeRequest({
+      method: 'PUT',
+      url: ['https://saucelabs.com/rest/v1', user, 'jobs', jobId].join('/'),
+      auth: { user: user, pass: pass },
+      json: attributes
+    });
+}
+
+module.exports = function (grunt, options) {
   return {
     'tunnel-test': {
       options: merge(true, {}, options.baseSaucelabsTaskOptions, {
@@ -39,7 +61,7 @@ module.exports = function (grunt, options) {
         onTestComplete: function (result, callback) { return Q.delay(3000).thenResolve(result.passed).nodeify(callback); }
       })
     },
-    'throttled': {
+    throttled: {
       options: merge(true, {}, options.baseSaucelabsTaskOptions, {
         browsers: [
           { browserName: 'firefox', version: '19', platform: 'XP' },
@@ -55,6 +77,26 @@ module.exports = function (grunt, options) {
         ],
         throttled: 3,
         testname: 'saucelabs-custom:throttled'
+      })
+    },
+    timeout: {
+      options: merge(true, {}, options.baseSaucelabsTaskOptions, {
+        urls: ['http://127.0.0.1:9999/custom/timeout.html'],
+        testname: 'saucelabs-custom:timeout',
+        'max-duration': 3,
+        maxRetries: 2,
+        onTestComplete: function (result, callback) {
+          if (result.passed) {
+            return Q(false).nodeify(callback);
+          }
+
+          // can't automate this without an ugly hack, it must be done manually
+          grunt.log.writeln('Please check that 2 retrying attempts were logged to the console.');
+
+          return updateJob(result.job_id, { passed: true })
+            .thenResolve(true)
+            .nodeify(callback);
+        }
       })
     }
   };
