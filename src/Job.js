@@ -1,8 +1,8 @@
 'use strict';
 
-var request = require('request');
 var Q = require('q');
 var _ = require('lodash');
+var utils = require('./utils');
 
 //these result parsers return true if the tests all passed
 var resultParsers = {
@@ -22,24 +22,6 @@ var resultParsers = {
     return result.failed === 0;
   }
 };
-
-/**
- * Composes the error message for an HTTP error.
- *
- * @param {String} method - The request's HTTP method.
- * @param {String} url - The request's URL.
- * @param {http.IncomingMessage} response - Can be used to access response status, headers
- *   and data.
- * @param {Object} body - The response's body (JSON).
- */
-function composeHttpErrorMessage(method, url, response, body) {
-  return [
-    'Unexpected response from the Sauce Labs API.',
-    method + ' ' + url,
-    'Response status: ' + response.statusCode,
-    'Body: ' + JSON.stringify(body)
-  ].join('\n');
-}
 
 /**
  * Represents a Sauce Labs job.
@@ -85,6 +67,7 @@ var Job = function (user, key, framework, pollInterval, url, browser, build, tes
 Job.prototype.start = function () {
   var me = this;
   var requestParams = {
+    method: 'POST',
     url: ['https://saucelabs.com/rest/v1', this.user, 'js-tests'].join('/'),
     auth: { user: this.user, pass: this.key },
     json: {
@@ -101,26 +84,20 @@ Job.prototype.start = function () {
     requestParams.json['tunnel-identifier'] = this.tunnelId;
   }
 
-  return Q
-    .nfcall(request.post, requestParams)
-    .then(
-      function (result) {
-        var response = result[0];
-        var body = result[1];
-        var taskIds = body['js tests'];
+  this.id = null;
+  this.taskId = null;
 
-        if (response.statusCode !== 200) {
-          throw composeHttpErrorMessage('POST', requestParams.url, response, body);
-        } else if (!taskIds || !taskIds.length) {
-          throw 'Error starting tests through Sauce API: ' + JSON.stringify(body);
-        }
+  return utils
+    .makeRequest(requestParams)
+    .then(function (body) {
+      var taskIds = body['js tests'];
 
-        me.taskId = taskIds[0];
-      },
-      function (error) {
-        throw 'Could not connect to Sauce Labs API: ' + error.toString();
+      if (!taskIds || !taskIds.length) {
+        throw 'Error starting tests through Sauce API: ' + JSON.stringify(body);
       }
-    );
+
+      me.taskId = taskIds[0];
+    });
 };
 
 /**
@@ -160,30 +137,15 @@ Job.prototype.getResult = function () {
 Job.prototype.complete = function () {
   var me = this;
   var deferred = Q.defer();
-  var url = ['https://saucelabs.com/rest/v1', me.user, 'js-tests/status'].join('/');
 
   function fetch() {
-    Q
-      .nfcall(request.post, {
-        url: url,
+    utils
+      .makeRequest({
+        method: 'POST',
+        url: ['https://saucelabs.com/rest/v1', me.user, 'js-tests/status'].join('/'),
         auth: { user: me.user, pass: me.key },
         json: { 'js tests': [me.taskId] }
       })
-      .then(
-        function (result) {
-          var response = result[0];
-          var body = result[1];
-
-          if (response.statusCode !== 200) {
-            throw composeHttpErrorMessage('POST', url, response, body);
-          }
-
-          return body;
-        },
-        function (error) {
-          throw 'Error connecting to api to get test status: ' + error.toString();
-        }
-      )
       .then(function (body) {
         if (!body.completed) {
           return Q
