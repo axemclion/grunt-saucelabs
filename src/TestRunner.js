@@ -117,9 +117,9 @@ TestRunner.prototype.runTest = function (browser, url) {
 
           return job
             .stop()
-          // set the timed out job's passed attribute to true otherwise the SauceLabs
-          // badge/status image would indicate failure
-            .then(function () { return job.update({ passed: true }); })
+          // delete the timed out job otherwise the SauceLabs badge/status image would
+          // indicate failure
+            .then(function () { return job.del(); })
             .then(function () { return job.start(); })
             .then(function () { return getResult(); });
         }

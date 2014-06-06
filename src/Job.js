@@ -181,18 +181,16 @@ Job.prototype.stop = function () {
 };
 
 /**
- * Updates the job's attributes.
+ * Deletes the job.
  *
- * @param {Object} attributes - The attributes to update.
  * @returns {Object} - A promise which will eventually be resolved after the job has been
- *   updated.
+ *   deleted.
  */
-Job.prototype.update = function (attributes) {
+Job.prototype.del = function () {
   return utils.makeRequest({
-    method: 'PUT',
+    method: 'DELETE',
     url: ['https://saucelabs.com/rest/v1', this.user, 'jobs', this.id].join('/'),
-    auth: { user: this.user, pass: this.key },
-    json: attributes
+    auth: { user: this.user, pass: this.key }
   });
 };
 
