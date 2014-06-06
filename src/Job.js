@@ -3,6 +3,7 @@
 var Q = require('q');
 var _ = require('lodash');
 var utils = require('./utils');
+var reJobId = /^[a-z0-9]{32}$/;
 
 //these result parsers return true if the tests all passed
 var resultParsers = {
@@ -117,10 +118,6 @@ Job.prototype.getResult = function () {
         throw 'Test Error';
       }
 
-      /*jshint camelcase:false*/
-      me.id = result.job_id;
-      /*jshint camelcase:true*/
-
       return result;
     })
     .then(function (result) {
@@ -147,13 +144,18 @@ Job.prototype.complete = function () {
         json: { 'js tests': [me.taskId] }
       })
       .then(function (body) {
-        if (!body.completed) {
+        var result = body['js tests'] && body['js tests'][0];
+        var jobId = result.job_id;
+
+        if (!body.completed || !reJobId.test(jobId)) {
           return Q
             .delay(me.pollInterval)
             .then(fetch);
         }
 
-        deferred.resolve(body['js tests'][0]);
+        me.id = jobId;
+
+        deferred.resolve(result);
       })
       .fail(function (error) {
         deferred.reject(error);
