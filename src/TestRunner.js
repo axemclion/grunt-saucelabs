@@ -2,7 +2,7 @@
 
 var _ = require('lodash');
 var Q = require('q');
-var scheduler = require('./promise-scheduler');
+var utils = require('./utils');
 var Job = require('./Job');
 
 /**
@@ -59,7 +59,7 @@ TestRunner.prototype.runTests = function () {
   var me = this;
   var throttledRunTest, promises;
 
-  throttledRunTest = scheduler.limitConcurrency(this.runTest.bind(this), this.throttled || Number.MAX_VALUE);
+  throttledRunTest = utils.limitConcurrency(this.runTest.bind(this), this.throttled || Number.MAX_VALUE);
 
   promises = this.urls
     .map(function (url) {
