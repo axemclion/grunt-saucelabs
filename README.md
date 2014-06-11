@@ -90,7 +90,8 @@ Full list of parameters which can be added to a saucelabs-* task:
 * __throttled__: Maximum number of unit test pages which will be sent to Sauce Labs concurrently. The maximum number of jobs you may have outstanding is this times the number of browsers, can be used to mitigate concurrency failures if you have a lot of unit test pages. _Optional_
 * __max-duration__: Maximum duration of a test, this is actually a Selenium Capability. Sauce Labs defaults to 180 seconds for js unit tests. _Optional_
 * __browsers__: An array of objects representing the [various browsers](https://saucelabs.com/docs/platforms) on which this test should run. _Optional_
-* __onTestComplete__ : A callback that is called every time a unit test for a page is complete. Runs per page, per browser configuration. Receives two arguments `(result, callback)`. `result` is the javascript object exposed to sauce labs as the results of the test. `callback` must be called, node-style (having arguments `err`, `result` where result is a true/false boolean which sets the test result reported to the command line) _Optional_
+* __onTestComplete__: A callback that is called every time a unit test for a page is complete. Runs per page, per browser configuration. Receives two arguments `(result, callback)`. `result` is the javascript object exposed to sauce labs as the results of the test. `callback` must be called, node-style (having arguments `err`, `result` where result is a true/false boolean which sets the test result reported to the command line) _Optional_
+* __maxRetries__: Specifies how many times the timed out tests should be retried (default: 0). _Optional_
 
 A typical `test` task running from Grunt could look like `grunt.registerTask('test', ['server', 'qunit', 'saucelabs-qunit']);` This starts a server and then runs the QUnit tests first on PhantomJS and then using the Sauce Labs browsers.
 
