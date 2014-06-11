@@ -85,9 +85,6 @@ Job.prototype.start = function () {
     requestParams.json['tunnel-identifier'] = this.tunnelId;
   }
 
-  this.id = null;
-  this.taskId = null;
-
   return utils
     .makeRequest(requestParams)
     .then(function (body) {

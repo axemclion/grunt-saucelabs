@@ -96,13 +96,15 @@ TestRunner.prototype.runTests = function () {
  */
 TestRunner.prototype.runTest = function (browser, url) {
   var me = this;
-  var job = new Job(this.user, this.key, this.framework, this.pollInterval, url, browser,
-    this.build, this.testName, this.sauceConfig, this.tunneled, this.tunnelId);
   var retry = 0;
 
   function getResult() {
+    var job = new Job(me.user, me.key, me.framework, me.pollInterval, url, browser,
+      me.build, me.testName, me.sauceConfig, me.tunneled, me.tunnelId);
+
     return job
-      .getResult()
+      .start()
+      .then(function () { return job.getResult(); })
       .then(function (result) {
         // when a test times out then the result property is a string
         if (result.result &&
@@ -120,49 +122,46 @@ TestRunner.prototype.runTest = function (browser, url) {
           // delete the timed out job otherwise the SauceLabs badge/status image would
           // indicate failure
             .then(function () { return job.del(); })
-            .then(function () { return job.start(); })
-            .then(function () { return getResult(); });
+            .then(getResult);
         }
         return result;
       });
   }
 
-  return job
-    .start()
-    .then(function () {
+  return Q
+    .fcall(function () {
       me.startedJobs += 1;
       me.reportProgress({
         type: 'jobStarted',
         numberOfJobs: me.numberOfJobs,
         startedJobs: me.startedJobs
       });
-
-      return getResult()
-        .then(function (result) {
-          if (me.onTestComplete) {
-            var clone = _.clone(result, true);
-            return Q
-              .nfcall(me.onTestComplete, clone)
-              .then(function (passed) {
-                if (passed !== undefined) {
-                  result.passed = !!passed;
-                }
-                return result;
-              });
-          }
-          return result;
-        })
-        .then(function (result) {
-          me.reportProgress({
-            type: 'jobCompleted',
-            url: url,
-            platform: result.platform,
-            passed: result.passed,
-            tunnelId: me.tunnelId
+    })
+    .then(getResult)
+    .then(function (result) {
+      if (me.onTestComplete) {
+        var clone = _.clone(result, true);
+        return Q
+          .nfcall(me.onTestComplete, clone)
+          .then(function (passed) {
+            if (passed !== undefined) {
+              result.passed = !!passed;
+            }
+            return result;
           });
+      }
+      return result;
+    })
+    .then(function (result) {
+      me.reportProgress({
+        type: 'jobCompleted',
+        url: url,
+        platform: result.platform,
+        passed: result.passed,
+        tunnelId: me.tunnelId
+      });
 
-          return result.passed;
-        });
+      return result.passed;
     });
 };
 
