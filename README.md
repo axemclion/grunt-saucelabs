@@ -1,6 +1,8 @@
 grunt-saucelabs
 ---------------------
 
+[![Bountysource](https://www.bountysource.com/badge/tracker?tracker_id=281349)](https://www.bountysource.com/trackers/281349-axemclion-grunt-saucelabs?utm_source=281349&utm_medium=shield&utm_campaign=TRACKER_BADGE)
+
 [![Build Status](https://api.travis-ci.org/axemclion/grunt-saucelabs.png?branch=master)](https://travis-ci.org/axemclion/grunt-saucelabs)
 [![Selenium Test Status](https://saucelabs.com/buildstatus/grunt-sauce)](https://saucelabs.com/u/grunt-sauce)
 
