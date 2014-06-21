@@ -126,7 +126,7 @@ TestRunner.prototype.runTest = function (browser, url) {
         .then(function (result) {
           me.reportProgress({
             type: 'jobCompleted',
-            url: url,
+            url: result.url,
             platform: result.platform,
             passed: result.passed,
             tunnelId: me.tunnelId
