@@ -212,6 +212,9 @@ The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that
 
 Changelog
 ---------
+####8.1.0####
+* added retry logic, thanks again to @gvas, now you can use `maxRetries` parameter to automaticall retry tests which fail
+
 ####8.0.3####
 * fixed bug, sauce job urls displayed in log properly again
 
