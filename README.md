@@ -212,6 +212,9 @@ The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that
 
 Changelog
 ---------
+####8.0.3####
+* fixed bug, sauce job urls displayed in log properly again
+
 ####8.0.2####
 * fixed bug, `testname` option not working
 
