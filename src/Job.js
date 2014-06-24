@@ -1,7 +1,9 @@
 'use strict';
 
-var request = require('request');
 var Q = require('q');
+var _ = require('lodash');
+var utils = require('./utils');
+var reJobId = /^[a-z0-9]{32}$/;
 
 //these result parsers return true if the tests all passed
 var resultParsers = {
@@ -26,20 +28,74 @@ var resultParsers = {
  * Represents a Sauce Labs job.
  *
  * @constructor
- * @param {String} taskId - Sauce Labs task id. Used for polling the job's status.
  * @param {String} user - The Sauce Labs username.
  * @param {String} key - The Sauce Labs access key.
- * @param {String} framework - The unit test framework's name. Can be 'yasmine',
- *     'qunit', 'YUI Test', 'mocha' or 'custom'.
+ * @param {String} framework - The unit test framework's name. Can be 'jasmine',
+ *   'qunit', 'YUI Test', 'mocha' or 'custom'.
  * @param {Number} pollInterval - The polling interval in milliseconds.
+ * @param {String} url - The test runner page's URL.
+ * @param {Object} browser - Object describing the platform to run the test on.
+ * @param {String} build - Build ID.
+ * @param {String} testName -  The name of this test, displayed on the Sauce Labs
+ *   dashboard.
+ * @param {Object} sauceConfig - Map of extra parameters to be passed to Sauce Labs.
+ * @param {Boolean} tunneled - Does the test runs on a tunnel?
+ * @param {String} tunnelId - Tunnel ID.
  */
-var Job = function (taskId, user, key, framework, pollInterval) {
+var Job = function (user, key, framework, pollInterval, url, browser, build, testName,
+  sauceConfig, tunneled, tunnelId) {
   this.id = null;
-  this.taskId = taskId;
+  this.taskId = null;
   this.user = user;
   this.key = key;
   this.framework = framework;
   this.pollInterval = pollInterval;
+  this.url = url;
+  this.platform = [browser.platform || '', browser.browserName || '', browser.version || ''];
+  this.build = build;
+  this.testName = testName;
+  this.sauceConfig = sauceConfig;
+  this.tunneled = tunneled;
+  this.tunnelId = tunnelId;
+};
+
+/**
+ * Starts the job.
+ *
+ * @returns {Object} - A promise which will eventually be resolved after the job has been
+ * started.
+ */
+Job.prototype.start = function () {
+  var me = this;
+  var requestParams = {
+    method: 'POST',
+    url: ['https://saucelabs.com/rest/v1', this.user, 'js-tests'].join('/'),
+    auth: { user: this.user, pass: this.key },
+    json: {
+      platforms: [this.platform],
+      url: this.url,
+      framework: this.framework,
+      build: this.build,
+      name: this.testName
+    }
+  };
+  _.merge(requestParams.json, this.sauceConfig);
+
+  if (this.tunneled) {
+    requestParams.json['tunnel-identifier'] = this.tunnelId;
+  }
+
+  return utils
+    .makeRequest(requestParams)
+    .then(function (body) {
+      var taskIds = body['js tests'];
+
+      if (!taskIds || !taskIds.length) {
+        throw 'Error starting tests through Sauce API: ' + JSON.stringify(body);
+      }
+
+      me.taskId = taskIds[0];
+    });
 };
 
 /**
@@ -59,10 +115,6 @@ Job.prototype.getResult = function () {
         throw 'Test Error';
       }
 
-      /*jshint camelcase:false*/
-      me.id = result.job_id;
-      /*jshint camelcase:true*/
-
       return result;
     })
     .then(function (result) {
@@ -81,40 +133,26 @@ Job.prototype.complete = function () {
   var deferred = Q.defer();
 
   function fetch() {
-    Q
-      .nfcall(request.post, {
+    utils
+      .makeRequest({
+        method: 'POST',
         url: ['https://saucelabs.com/rest/v1', me.user, 'js-tests/status'].join('/'),
         auth: { user: me.user, pass: me.key },
         json: { 'js tests': [me.taskId] }
       })
-      .then(
-        function (result) {
-          var response = result[0];
-          var body = result[1];
-
-          if (response.statusCode !== 200) {
-            throw [
-              'Unexpected response from the Sauce Labs API.',
-              request.method + ' ' + request.url,
-              'Response status: ' + response.statusCode,
-              'Response body: ' + JSON.stringify(body)
-            ].join('\n');
-          }
-
-          return body;
-        },
-        function (error) {
-          throw 'Error connecting to api to get test status: ' + error.toString();
-        }
-      )
       .then(function (body) {
-        if (!body.completed) {
+        var result = body['js tests'] && body['js tests'][0];
+        var jobId = result.job_id;
+
+        if (!body.completed || !reJobId.test(jobId)) {
           return Q
             .delay(me.pollInterval)
             .then(fetch);
         }
 
-        deferred.resolve(body['js tests'][0]);
+        me.id = jobId;
+
+        deferred.resolve(result);
       })
       .fail(function (error) {
         deferred.reject(error);
@@ -125,6 +163,34 @@ Job.prototype.complete = function () {
   fetch();
 
   return deferred.promise;
+};
+
+/**
+ * Stops the job.
+ *
+ * @returns {Object} - A promise which will eventually be resolved after the job has been
+ *   stopped.
+ */
+Job.prototype.stop = function () {
+  return utils.makeRequest({
+    method: 'PUT',
+    url: ['https://saucelabs.com/rest/v1', this.user, 'jobs', this.id, 'stop' ].join('/'),
+    auth: { user: this.user, pass: this.key }
+  });
+};
+
+/**
+ * Deletes the job.
+ *
+ * @returns {Object} - A promise which will eventually be resolved after the job has been
+ *   deleted.
+ */
+Job.prototype.del = function () {
+  return utils.makeRequest({
+    method: 'DELETE',
+    url: ['https://saucelabs.com/rest/v1', this.user, 'jobs', this.id].join('/'),
+    auth: { user: this.user, pass: this.key }
+  });
 };
 
 module.exports = Job;

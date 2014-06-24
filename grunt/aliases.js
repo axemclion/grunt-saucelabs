@@ -10,7 +10,8 @@ module.exports = function (grunt) {
     'saucelabs-custom:succeeds',
     'saucelabs-custom:callback-succeeds',
     'saucelabs-custom:callback-async-succeeds',
-    'saucelabs-custom:throttled'
+    'saucelabs-custom:throttled',
+    'saucelabs-custom:timeout'
   ];
   var negativeTests = [
     'saucelabs-qunit:fails',
