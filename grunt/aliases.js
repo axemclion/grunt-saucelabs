@@ -18,7 +18,8 @@ module.exports = function (grunt) {
     'saucelabs-jasmine:fails',
     'saucelabs-yui:fails',
     'saucelabs-mocha:fails',
-    'saucelabs-custom:fails'
+    'saucelabs-custom:fails',
+    'saucelabs-qunit:error'
   ];
 
   if (typeof process.env.SAUCE_ACCESS_KEY !== 'undefined') {
