@@ -230,6 +230,9 @@ The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that
 
 Changelog
 ---------
+####8.1.1####
+* better detection and handling or errors which happen on Sauce Labs
+
 ####8.1.0####
 * added retry logic, thanks again to @gvas, now you can use `maxRetries` parameter to automatically retry tests which fail
 
