@@ -35,7 +35,7 @@ module.exports = function (grunt) {
       }
 
       grunt.log.writeln('Passed: %s', notification.passed);
-      grunt.log.writeln('Url %s', notification.url);
+      grunt.log.writeln('Url %s', notification.jobUrl);
       break;
     case 'testCompleted':
       grunt.log[notification.passed ? 'ok' : 'error']('All tests completed with status %s', notification.passed);

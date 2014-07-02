@@ -118,7 +118,13 @@ Job.prototype.getResult = function () {
       return result;
     })
     .then(function (result) {
-      result.passed = resultParsers[me.framework](result.result);
+      // Sauce Labs sets the result property to null when it encounters an error.
+      // (One way to trigger this is to set a big (~100KB) test result.)
+      if (result.result === null) {
+        result.passed = false;
+      } else {
+        result.passed = resultParsers[me.framework](result.result);
+      }
       return result;
     });
 };
