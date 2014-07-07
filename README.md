@@ -158,7 +158,7 @@ QUnit.done(function (test_results) {
   window.global_test_results = test_results;
 });
 QUnit.testStart(function(testDetails){
-  QUnit.log = function(details){
+  QUnit.log(function(details){
     if (!details.result) {
       details.name = testDetails.name;
       log.push(details);
