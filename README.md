@@ -230,6 +230,9 @@ The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that
 
 Changelog
 ---------
+####8.2.1####
+* upgrade to sauce-tunnel 2.1 (SC 3.4)
+
 ####8.1.1####
 * better detection and handling or errors which happen on Sauce Labs
 
