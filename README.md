@@ -231,6 +231,9 @@ The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that
 Changelog
 ---------
 ####8.2.1####
+* update dependencies
+
+####8.2.0####
 * upgrade to sauce-tunnel 2.1 (SC 3.4)
 
 ####8.1.1####
