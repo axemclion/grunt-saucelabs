@@ -31,10 +31,9 @@ module.exports = function (grunt) {
       tunnelId: tunnelId,
       baseSaucelabsTaskOptions: {
         build: process.env.TRAVIS_JOB_ID,
-        browsers: [{
-          browserName: 'googlechrome',
-          platform: 'XP'
-        }],
+        browsers: [
+          ['XP', 'googlechrome']
+        ],
         tunneled: false,
         sauceConfig: {
           'video-upload-on-pass': false,
