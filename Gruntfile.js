@@ -32,7 +32,7 @@ module.exports = function (grunt) {
       baseSaucelabsTaskOptions: {
         build: process.env.TRAVIS_JOB_ID,
         browsers: [
-          ['XP', 'googlechrome']
+          ['XP', 'chrome', '']
         ],
         tunneled: false,
         sauceConfig: {
