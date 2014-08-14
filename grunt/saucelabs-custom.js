@@ -1,7 +1,6 @@
 'use strict';
 
 var Q = require('q');
-var merge = require('merge');
 var utils = require('../src/utils');
 
 /**
@@ -27,42 +26,43 @@ function updateJob(jobId, attributes) {
 
 module.exports = function (grunt, options) {
   return {
+    options: options.baseSaucelabsTaskOptions,
     'tunnel-test': {
-      options: merge(true, {}, options.baseSaucelabsTaskOptions, {
+      options: {
         urls: ['http://127.0.0.1:9999/custom/succeeds.html'],
         testname: 'saucelabs-custom:tunnel-test',
         tunneled: true
-      })
+      }
     },
     succeeds: {
-      options: merge(true, {}, options.baseSaucelabsTaskOptions, {
+      options: {
         urls: ['http://127.0.0.1:9999/custom/succeeds.html'],
         testname: 'saucelabs-custom:succeeds'
-      })
+      }
     },
     fails: {
-      options: merge(true, {}, options.baseSaucelabsTaskOptions, {
+      options: {
         urls: ['http://127.0.0.1:9999/custom/fails.html'],
         testname: 'saucelabs-custom:fails',
         onTestComplete: options.negateResult
-      })
+      }
     },
     'callback-succeeds': {
-      options: merge(true, {}, options.baseSaucelabsTaskOptions, {
+      options: {
         urls: ['http://127.0.0.1:9999/custom/succeeds.html'],
         testname: 'saucelabs-custom:callback-succeeds',
         onTestComplete: function (result, callback) { callback(null, result.passed); }
-      })
+      }
     },
     'callback-async-succeeds': {
-      options: merge(true, {}, options.baseSaucelabsTaskOptions, {
+      options: {
         urls: ['http://127.0.0.1:9999/custom/succeeds.html'],
         testname: 'saucelabs-custom:callback-async-succeeds',
         onTestComplete: function (result, callback) { return Q.delay(3000).thenResolve(result.passed).nodeify(callback); }
-      })
+      }
     },
     throttled: {
-      options: merge(true, {}, options.baseSaucelabsTaskOptions, {
+      options: {
         browsers: [
           { browserName: 'firefox', version: '19', platform: 'XP' },
           { browserName: 'googlechrome', platform: 'XP' },
@@ -77,10 +77,10 @@ module.exports = function (grunt, options) {
         ],
         throttled: 3,
         testname: 'saucelabs-custom:throttled'
-      })
+      }
     },
     timeout: {
-      options: merge(true, {}, options.baseSaucelabsTaskOptions, {
+      options: {
         urls: ['http://127.0.0.1:9999/custom/timeout.html'],
         testname: 'saucelabs-custom:timeout',
         'max-duration': 3,
@@ -97,7 +97,7 @@ module.exports = function (grunt, options) {
             .thenResolve(true)
             .nodeify(callback);
         }
-      })
+      }
     }
   };
 };
