@@ -53,37 +53,9 @@ var request = require('request');
         browserName: 'firefox',
         version: '19',
         platform: 'XP'
-      }],
-      onTestComplete: function(result, callback) {
-        // Called after a unit test is done, per page, per browser
-        // 'result' param is the object returned by the test framework's reporter
-        // 'callback' is a Node.js style callback function. You must invoke it after you
-        // finish your work.
-        // Pass a non-null value as the callback's first parameter if you want to throw an
-        // exception. If your function is synchronous you can also throw exceptions
-        // directly.
-        // Passing true or false as the callback's second parameter passes or fails the
-        // test. Passing undefined does not alter the test result. Please note that this
-        // only affects the grunt task's result. You have to explicitly update the Sauce
-        // Labs job's status via its REST API, if you want so.
-
-        // The example below negates the result, and also updates the Sauce Labs job's status
-        var user = process.env.SAUCE_USERNAME;
-        var pass = process.env.SAUCE_ACCESS_KEY;
-        request.put({
-            url: ['https://saucelabs.com/rest/v1', user, 'jobs', result.job_id].join('/'),
-            auth: { user: user, pass: pass },
-            json: { passed: !result.passed }
-        }, function (error, response, body) {
-          if (error) {
-            callback(error);
-          } else if (response.statusCode !== 200) {
-            callback(new Error('Unexpected response status'));
-          } else {
-            callback(null, !result.passed);
-          }
-        });
-      }
+      }]
+      // optionally, he `browsers` param can be a flattened array:
+      // [["XP", "firefox", 19], ["XP", "chrome", 31]]
     }
   }
 }
@@ -108,7 +80,7 @@ Full list of parameters which can be added to a saucelabs-* task:
 * __throttled__: Maximum number of unit test pages which will be sent to Sauce Labs concurrently. The maximum number of jobs you may have outstanding is this times the number of browsers, can be used to mitigate concurrency failures if you have a lot of unit test pages. _Optional_
 * __max-duration__: Maximum duration of a test, this is actually a Selenium Capability. Sauce Labs defaults to 180 seconds for js unit tests. _Optional_
 * __browsers__: An array of objects representing the [various browsers](https://saucelabs.com/docs/platforms) on which this test should run. _Optional_
-* __onTestComplete__: A callback that is called every time a unit test for a page is complete. Runs per page, per browser configuration. Receives two arguments `(result, callback)`. `result` is the javascript object exposed to sauce labs as the results of the test. `callback` must be called, node-style (having arguments `err`, `result` where result is a true/false boolean which sets the test result reported to the command line) _Optional_
+* __onTestComplete__: A callback that is called every time a unit test for a page is complete. Runs per page, per browser configuration. Receives two arguments `(result, callback)`. `result` is the javascript object exposed to sauce labs as the results of the test. `callback` must be called, node-style (having arguments `err`, `result` where result is a true/false boolean which sets the test result reported to the command line). See [example below](#ontestcomplete-callback) _Optional_
 * __maxRetries__: Specifies how many times the timed out tests should be retried (default: 0). _Optional_
 
 A typical `test` task running from Grunt could look like `grunt.registerTask('test', ['server', 'qunit', 'saucelabs-qunit']);` This starts a server and then runs the QUnit tests first on PhantomJS and then using the Sauce Labs browsers.
@@ -210,6 +182,64 @@ There's nothing you have to do for YUI Tests! The js library already exposes ```
 
 When you tests are finished, expose your tests results on `window.global_test_results` as explained in [SauceLab's JS Unit Testing REST API Documentation](https://saucelabs.com/docs/rest#jsunit)
 
+OnTestComplete callback
+-----------------------
+An optional parameter to the grunt task is `OnTestComplete`, a callback which is called at the end of every test, before results are logged to the console.
+You can use this callback to intercept results from SauceLabs and re-report the results (or use the information for your own purposes)
+
+Receives two arguments `(result, callback)`. `result` is the javascript object exposed to sauce labs as the results of the test. `callback` must be called, node-style (having arguments `err`, `result` where result is a true/false boolean which sets the test result reported to the command line)
+
+When running the tests for this project, we need to test the case where a test *fails* on Sauce. In this case, we want to record a test Failure as a Success for us.
+
+```
+'saucelabs-qunit': {
+  all: {
+    options: {
+      username: 'saucelabs-user-name', // if not provided it'll default to ENV SAUCE_USERNAME (if applicable)
+      key: 'saucelabs-key', // if not provided it'll default to ENV SAUCE_ACCESS_KEY (if applicable)
+      urls: ['www.example.com/qunitTests', 'www.example.com/mochaTests'],
+      build: process.env.CI_BUILD_NUMBER,
+      testname: 'Sauce Unit Test for example.com',
+      browsers: [{
+        browserName: 'firefox',
+        version: '19',
+        platform: 'XP'
+      }],
+      onTestComplete: function(result, callback) {
+        // Called after a unit test is done, per page, per browser
+        // 'result' param is the object returned by the test framework's reporter
+        // 'callback' is a Node.js style callback function. You must invoke it after you
+        // finish your work.
+        // Pass a non-null value as the callback's first parameter if you want to throw an
+        // exception. If your function is synchronous you can also throw exceptions
+        // directly.
+        // Passing true or false as the callback's second parameter passes or fails the
+        // test. Passing undefined does not alter the test result. Please note that this
+        // only affects the grunt task's result. You have to explicitly update the Sauce
+        // Labs job's status via its REST API, if you want so.
+
+        // The example below negates the result, and also updates the Sauce Labs job's status
+        var user = process.env.SAUCE_USERNAME;
+        var pass = process.env.SAUCE_ACCESS_KEY;
+        request.put({
+            url: ['https://saucelabs.com/rest/v1', user, 'jobs', result.job_id].join('/'),
+            auth: { user: user, pass: pass },
+            json: { passed: !result.passed }
+        }, function (error, response, body) {
+          if (error) {
+            callback(error);
+          } else if (response.statusCode !== 200) {
+            callback(new Error('Unexpected response status'));
+          } else {
+            callback(null, !result.passed);
+          }
+        });
+      }
+    }
+  }
+}
+```
+
 Examples
 --------
 Some projects that use this task are as follows. You can take a look at their GruntFile.js for sample code
@@ -230,6 +260,9 @@ The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that
 
 Changelog
 ---------
+####8.2.2####
+* `browsers` param can optionally be an array identical to the one used by the Sauce API. ex: `["XP", "firefox", "19"]`
+
 ####8.2.1####
 * update dependencies
 
