@@ -109,6 +109,7 @@ Job.prototype.getResult = function () {
   return this
     .complete()
     .then(function (result) {
+      result.testPageUrl = me.url;
       if (result.status === 'test error') {
         // A detailed error message should be composed here after the Sauce Labs API is
         // modified to report errors better, see #102.
