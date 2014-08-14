@@ -260,6 +260,9 @@ The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that
 
 Changelog
 ---------
+####8.3.0####
+* add `testPageUrl` to `result` object. Indicates the url which was the target of the test.
+
 ####8.2.2####
 * `browsers` param can optionally be an array identical to the one used by the Sauce API. ex: `["XP", "firefox", "19"]`
 
