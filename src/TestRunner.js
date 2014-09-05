@@ -119,9 +119,10 @@ TestRunner.prototype.runTest = function (browser, url) {
 
           return job
             .stop()
-          // delete the timed out job otherwise the SauceLabs badge/status image would
-          // indicate failure
-            .then(function () { return job.del(); })
+          // Try to delete the timed out job in order to prevent the SauceLabs badge to
+          // indicate failure. The del() function can also fail, in that case swallow the
+          // exception.
+            .then(function () { return job.del().fail(_.noop); })
             .then(getResult);
         }
         return result;
