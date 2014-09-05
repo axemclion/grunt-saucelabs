@@ -260,6 +260,9 @@ The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that
 
 Changelog
 ---------
+####8.3.2####
+* fixed a bug where DELETE commands which errored on the Sauce side caused test execution to halt
+
 ####8.3.0####
 * add `testPageUrl` to `result` object. Indicates the url which was the target of the test.
 
