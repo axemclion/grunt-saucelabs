@@ -135,7 +135,7 @@ QUnit.testStart(function(testDetails){
       details.name = testDetails.name;
       log.push(details);
     }
-  };
+  });
 });
 ```
 
