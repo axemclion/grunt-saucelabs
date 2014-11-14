@@ -73,6 +73,7 @@ Full list of parameters which can be added to a saucelabs-* task:
 * __urls__: An array or URLs that will be loaded in the browsers, one after another. Since SauceConnect is used, these URLs can also be localhost URLs that are available using the `server` task from grunt. _Required_
 * __build__: The build number for this test. _Optional_
 * __testname__: The name of this test, displayed on the Sauce Labs dashboard. _Optional_
+* __tags__: An array of strings, to be added as tags to the test on Sauce Labs. _Optional_
 * __tunneled__: Defaults to true; Won't launch a Sauce Connect tunnel if set to false. _Optional_
 * __tunnelArgs__: Array of optional arguments to be passed to the Sauce Connect tunnel. example: `['--debug', '--direct-domains', 'google.com']`. See [here](https://saucelabs.com/docs/connect) for further documentation.
 * __sauceConfig__: Map of extra parameters to be passed to sauce labs. example: `{'video-upload-on-pass': false, 'idle-timeout': 60}`. See [here](https://saucelabs.com/docs/additional-config) for further documentation.
@@ -260,6 +261,11 @@ The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that
 
 Changelog
 ---------
+####8.3.3####
+* improvements to README
+* add a 'tags' parameter to the config, to allow setting tags on tests
+* optionally, you can set "name" and "tags" onto the "browser" object and they'll be applied to the corresponding job
+
 ####8.3.2####
 * fixed a bug where DELETE commands which errored on the Sauce side caused test execution to halt
 
