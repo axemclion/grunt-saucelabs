@@ -28,35 +28,25 @@ var resultParsers = {
  * Represents a Sauce Labs job.
  *
  * @constructor
- * @param {String} user - The Sauce Labs username.
- * @param {String} key - The Sauce Labs access key.
- * @param {String} framework - The unit test framework's name. Can be 'jasmine',
- *   'qunit', 'YUI Test', 'mocha' or 'custom'.
- * @param {Number} pollInterval - The polling interval in milliseconds.
+ * @param {Object} runner - TestRunner instance.
  * @param {String} url - The test runner page's URL.
  * @param {Object} browser - Object describing the platform to run the test on.
- * @param {String} build - Build ID.
- * @param {String} testName -  The name of this test, displayed on the Sauce Labs
- *   dashboard.
- * @param {Object} sauceConfig - Map of extra parameters to be passed to Sauce Labs.
- * @param {Boolean} tunneled - Does the test runs on a tunnel?
- * @param {String} tunnelId - Tunnel ID.
  */
-var Job = function (user, key, framework, pollInterval, url, browser, build, testName,
-  sauceConfig, tunneled, tunnelId) {
+var Job = function (runner, url, browser) {
   this.id = null;
   this.taskId = null;
-  this.user = user;
-  this.key = key;
-  this.framework = framework;
-  this.pollInterval = pollInterval;
+  this.user = runner.user;
+  this.key = runner.key;
+  this.framework = runner.framework;
+  this.pollInterval = runner.pollInterval;
   this.url = url;
   this.platform = _.isArray(browser) ? browser : [browser.platform || '', browser.browserName || '', browser.version || ''];
-  this.build = build;
-  this.testName = testName;
-  this.sauceConfig = sauceConfig;
-  this.tunneled = tunneled;
-  this.tunnelId = tunnelId;
+  this.build = runner.build;
+  this.tags = browser.tags || runner.tags;
+  this.testName = browser.name || runner.testName;
+  this.sauceConfig = runner.sauceConfig;
+  this.tunneled = runner.tunneled;
+  this.tunnelId = runner.tunnelId;
 };
 
 /**
@@ -76,6 +66,7 @@ Job.prototype.start = function () {
       url: this.url,
       framework: this.framework,
       build: this.build,
+      tags: this.tags,
       name: this.testName
     }
   };

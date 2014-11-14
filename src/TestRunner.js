@@ -23,6 +23,7 @@ var TestRunner = function (properties, framework, onProgress) {
   this.tunnelId = properties.identifier;
   this.testName = properties.testname;
   this.build = properties.build;
+  this.tags = properties.tags;
   this.sauceConfig = properties.sauceConfig;
   this.onTestComplete = properties.onTestComplete;
   this.throttled = properties.throttled;
@@ -99,8 +100,7 @@ TestRunner.prototype.runTest = function (browser, url) {
   var retry = 0;
 
   function getResult() {
-    var job = new Job(me.user, me.key, me.framework, me.pollInterval, url, browser,
-      me.build, me.testName, me.sauceConfig, me.tunneled, me.tunnelId);
+    var job = new Job(me, url, browser);
 
     return job
       .start()
