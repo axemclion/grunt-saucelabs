@@ -39,6 +39,7 @@ var Job = function (runner, url, browser) {
   this.key = runner.key;
   this.framework = runner.framework;
   this.pollInterval = runner.pollInterval;
+  this.maxPollRetries = runner.maxPollRetries;
   this.url = url;
   this.platform = _.isArray(browser) ? browser : [browser.platform || '', browser.browserName || '', browser.version || ''];
   this.build = runner.build;
@@ -129,6 +130,13 @@ Job.prototype.getResult = function () {
 Job.prototype.complete = function () {
   var me = this;
   var deferred = Q.defer();
+  var tries = 0;
+
+  function reFetch () {
+    return Q
+      .delay(me.pollInterval)
+      .then(fetch);
+  }
 
   function fetch() {
     utils
@@ -142,10 +150,11 @@ Job.prototype.complete = function () {
         var result = body['js tests'] && body['js tests'][0];
         var jobId = result.job_id;
 
+        // Reset tries of poll requests
+        tries = 0;
+
         if (!body.completed || !reJobId.test(jobId)) {
-          return Q
-            .delay(me.pollInterval)
-            .then(fetch);
+          return reFetch();
         }
 
         me.id = jobId;
@@ -153,7 +162,12 @@ Job.prototype.complete = function () {
         deferred.resolve(result);
       })
       .fail(function (error) {
-        deferred.reject(error);
+        tries += 1;
+        if (tries <= me.maxPollRetries) {
+          reFetch();
+        } else {
+          deferred.reject(error);
+        }
       })
       .done();
   }
