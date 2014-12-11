@@ -13,7 +13,7 @@ A Grunt task for running QUnit, Jasmine, Mocha, YUI tests, or any framework usin
 [Grunt](http://gruntjs.com/) is a task-based command line build tool for JavaScript projects, based on nodejs.
 [QUnit](http://qunitjs.com/) is a powerful, easy-to-use JavaScript unit test suite used by the jQuery, jQuery UI and jQuery Mobile projects and is capable of testing any generic JavaScript code, including itself!
 [Jasmine](http://jasmine.github.io/) is a behavior-driven development framework for testing JavaScript code.
-[Mocha](http://visionmedia.github.io/mocha/) is a JavaScript test framework for running serial asynchronous tests.
+[Mocha](https://github.com/mochajs/mocha) is a JavaScript test framework for running serial asynchronous tests.
 [YUI Test](http://developer.yahoo.com/yui/yuitest/) is a browser-based testing framework from Yahoo!.
 [Sauce Labs](https://saucelabs.com/) offers browser environments on the cloud for testing code.
 
