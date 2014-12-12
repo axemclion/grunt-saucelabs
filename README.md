@@ -262,6 +262,10 @@ The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that
 
 Changelog
 ---------
+####8.4.0####
+* polling a job for its status now retries
+* add `maxPollRetries` parameter, which specifies the number of status-requests to make before giving up on a job
+
 ####8.3.3####
 * improvements to README
 * add a 'tags' parameter to the config, to allow setting tags on tests
