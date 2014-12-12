@@ -18,6 +18,7 @@ var TestRunner = function (properties, framework, onProgress) {
   this.user = properties.username;
   this.key = properties.key;
   this.pollInterval = properties.pollInterval;
+  this.maxPollRetries = properties.maxPollRetries;
   this.framework = framework;
   this.tunneled = properties.tunneled;
   this.tunnelId = properties.identifier;
