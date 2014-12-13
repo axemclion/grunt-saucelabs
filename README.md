@@ -262,6 +262,9 @@ The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that
 
 Changelog
 ---------
+####8.4.1####
+* updated sauce-tunnel to v2.1.1 (and therefore Sauce Connect to v4.3.5)
+
 ####8.4.0####
 * polling a job for its status now retries
 * add `maxPollRetries` parameter, which specifies the number of status-requests to make before giving up on a job
