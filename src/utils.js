@@ -80,7 +80,10 @@ function makeRequest(params) {
         return body;
       },
       function (error) {
-        throw 'Could not connect to Sauce Labs API: ' + error.toString();
+        throw [
+          'Could not connect to Sauce Labs API: ' + error.toString(),
+          params.method + ' ' + params.url
+        ].join('\n');
       }
     );
 }
