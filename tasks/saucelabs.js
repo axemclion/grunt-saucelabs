@@ -5,6 +5,8 @@ module.exports = function (grunt) {
   var SauceTunnel = require('sauce-tunnel');
   var TestRunner = require('../src/TestRunner');
 
+  Q.longStackSupport = true;
+
   function reportProgress(notification) {
     switch (notification.type) {
     case 'tunnelOpen':

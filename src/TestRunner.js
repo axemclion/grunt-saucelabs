@@ -4,6 +4,10 @@ var _ = require('lodash');
 var Q = require('q');
 var utils = require('./utils');
 var Job = require('./Job');
+var WrapperError = require('./WrapperError');
+
+Q.longStackSupport = true;
+
 
 /**
  * Test runner.
@@ -145,12 +149,17 @@ TestRunner.prototype.runTest = function (browser, url) {
         var clone = _.clone(result, true);
         return Q
           .nfcall(me.onTestComplete, clone)
-          .then(function (passed) {
-            if (passed !== undefined) {
-              result.passed = !!passed;
+          .then(
+            function (passed) {
+              if (passed !== undefined) {
+                result.passed = !!passed;
+              }
+              return result;
+            },
+            function (error) {
+              throw new WrapperError('onTestComplete raised an error.', error);
             }
-            return result;
-          });
+          );
       }
       return result;
     })

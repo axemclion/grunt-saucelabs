@@ -5,6 +5,8 @@ var _ = require('lodash');
 var utils = require('./utils');
 var reJobId = /^[a-z0-9]{32}$/;
 
+Q.longStackSupport = true;
+
 //these result parsers return true if the tests all passed
 var resultParsers = {
   jasmine: function (result) {
@@ -83,11 +85,12 @@ Job.prototype.start = function () {
       var taskIds = body['js tests'];
 
       if (!taskIds || !taskIds.length) {
-        throw 'Error starting tests through Sauce API: ' + JSON.stringify(body);
+        throw new Error('Error starting tests through Sauce API.');
       }
 
       me.taskId = taskIds[0];
-    });
+    }
+  );
 };
 
 /**
@@ -105,7 +108,7 @@ Job.prototype.getResult = function () {
       if (result.status === 'test error') {
         // A detailed error message should be composed here after the Sauce Labs API is
         // modified to report errors better, see #102.
-        throw 'Test Error';
+        throw new Error('Test Error');
       }
 
       return result;

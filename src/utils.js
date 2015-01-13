@@ -2,6 +2,9 @@
 
 var q = require('q');
 var request = require('request');
+var WrapperError = require('./WrapperError');
+
+q.longStackSupport = true;
 
 /**
  * Constructs a function that proxies to promiseFactory
@@ -63,29 +66,23 @@ function limitConcurrency(promiseFactory, limit) {
 function makeRequest(params) {
   return q
     .nfcall(request, params)
-    .then(
-      function (result) {
-        var response = result[0];
-        var body = result[1];
+    .then(function (result) {
+      var response = result[0];
+      var body = result[1];
 
-        if (response.statusCode !== 200) {
-          throw [
-            'Unexpected response from the Sauce Labs API.',
-            params.method + ' ' + params.url,
-            'Response status: ' + response.statusCode,
-            'Body: ' + JSON.stringify(body)
-          ].join('\n');
-        }
-
-        return body;
-      },
-      function (error) {
-        throw [
-          'Could not connect to Sauce Labs API: ' + error.toString(),
-          params.method + ' ' + params.url
-        ].join('\n');
+      if (response.statusCode !== 200) {
+        throw new Error('HTTP error (' + response.statusCode + ')');
       }
-    );
+
+      return body;
+    })
+    .fail(function (error) {
+      throw new WrapperError([
+        params.method,
+        params.url,
+        'failed.'
+      ].join(' '), error);
+    });
 }
 
 module.exports = {
