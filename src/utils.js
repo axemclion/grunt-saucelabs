@@ -1,7 +1,7 @@
 'use strict';
 
 var q = require('q');
-var request = require('request');
+var request = require('requestretry');
 var WrapperError = require('./WrapperError');
 
 q.longStackSupport = true;
