@@ -3,7 +3,7 @@
 module.exports = function (grunt) {
   var Q = require('q');
   var SauceTunnel = require('sauce-tunnel');
-  var TestRunner = require('../src/TestRunner');
+  var TestRunner = require('../src/TestRunner')(grunt);
 
   Q.longStackSupport = true;
 
