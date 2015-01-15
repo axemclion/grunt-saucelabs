@@ -132,10 +132,9 @@ module.exports = function (grunt) {
    */
   Job.prototype.complete = function () {
     var me = this;
-    var deferred = Q.defer();
 
     function fetch() {
-      utils
+      return utils
         .makeRequest({
           method: 'POST',
           url: ['https://saucelabs.com/rest/v1', me.user, 'js-tests/status'].join('/'),
@@ -154,17 +153,11 @@ module.exports = function (grunt) {
 
           me.id = jobId;
 
-          deferred.resolve(result);
-        })
-        .fail(function (error) {
-          deferred.reject(error);
-        })
-        .done();
+          return result;
+        });
     }
 
-    fetch();
-
-    return deferred.promise;
+    return fetch();
   };
 
   /**
