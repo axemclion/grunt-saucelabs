@@ -1,30 +1,31 @@
 'use strict';
 
-var Q = require('q');
-var utils = require('../src/utils');
+module.exports = function (grunt, options) {
 
-/**
- * Updates a job's attributes.
- *
- * @param {String} jobId - Job ID.
- * @param {Object} attributes - The attributes to update.
- * @returns {Object} - A promise which will eventually be resolved after the job is
- *   updated.
- */
-function updateJob(jobId, attributes) {
-  var user = process.env.SAUCE_USERNAME;
-  var pass = process.env.SAUCE_ACCESS_KEY;
+  var Q = require('q');
+  var utils = require('../src/utils')(grunt);
 
-  return utils
+  /**
+  * Updates a job's attributes.
+  *
+  * @param {String} jobId - Job ID.
+  * @param {Object} attributes - The attributes to update.
+  * @returns {Object} - A promise which will eventually be resolved after the job is
+  *   updated.
+  */
+  function updateJob(jobId, attributes) {
+    var user = process.env.SAUCE_USERNAME;
+    var pass = process.env.SAUCE_ACCESS_KEY;
+
+    return utils
     .makeRequest({
       method: 'PUT',
       url: ['https://saucelabs.com/rest/v1', user, 'jobs', jobId].join('/'),
       auth: { user: user, pass: pass },
       json: attributes
     });
-}
+  }
 
-module.exports = function (grunt, options) {
   return {
     options: options.baseSaucelabsTaskOptions,
     'tunnel-test': {

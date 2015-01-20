@@ -1,14 +1,17 @@
 'use strict';
 
-var utils = require('./src/utils');
+module.exports = function (grunt) {
 
-function negateResult(result, callback) {
-  // Reverses the job's passed status. Can be used as the onTestComplete callback for
-  // the negative tests.
-  var user = process.env.SAUCE_USERNAME;
-  var pass = process.env.SAUCE_ACCESS_KEY;
+  var utils = require('./src/utils')(grunt);
+  var tunnelId = Math.floor((new Date()).getTime() / 1000 - 1230768000).toString();
 
-  utils
+  function negateResult(result, callback) {
+    // Reverses the job's passed status. Can be used as the onTestComplete callback for
+    // the negative tests.
+    var user = process.env.SAUCE_USERNAME;
+    var pass = process.env.SAUCE_ACCESS_KEY;
+
+    utils
     .makeRequest({
       method: 'PUT',
       url: ['https://saucelabs.com/rest/v1', user, 'jobs', result.job_id].join('/'),
@@ -17,10 +20,7 @@ function negateResult(result, callback) {
     })
     .thenResolve(!result.passed)
     .nodeify(callback);
-}
-
-module.exports = function (grunt) {
-  var tunnelId = Math.floor((new Date()).getTime() / 1000 - 1230768000).toString();
+  }
 
   grunt.task.loadTasks('tasks');
 
