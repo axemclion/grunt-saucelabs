@@ -3,7 +3,9 @@
 module.exports = function (grunt) {
   var Q = require('q');
   var SauceTunnel = require('sauce-tunnel');
-  var TestRunner = require('../src/TestRunner');
+  var TestRunner = require('../src/TestRunner')(grunt);
+
+  Q.longStackSupport = true;
 
   function reportProgress(notification) {
     switch (notification.type) {
@@ -130,7 +132,7 @@ module.exports = function (grunt) {
           callback(passed);
         },
         function (error) {
-          grunt.log.error(error.toString());
+          grunt.log.error(error.stack || error.toString());
           callback(false);
         }
       )
@@ -163,7 +165,6 @@ module.exports = function (grunt) {
     tunneled: true,
     identifier: Math.floor((new Date()).getTime() / 1000 - 1230768000).toString(),
     pollInterval: 1000 * 2,
-    maxPollRetries: 0,
     testname: '',
     browsers: [{}],
     tunnelArgs: [],

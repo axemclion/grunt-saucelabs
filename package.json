@@ -29,12 +29,12 @@
     "test": "grunt"
   },
   "dependencies": {
-    "request": "~2.35.0",
-    "q": "~1.0.0",
-    "saucelabs": "~0.1.1",
-    "sauce-tunnel": "~2.1.1",
     "colors": "~0.6.2",
-    "lodash": "~2.4.1"
+    "lodash": "~2.4.1",
+    "q": "~1.0.0",
+    "requestretry": "~1.2.2",
+    "sauce-tunnel": "~2.1.1",
+    "saucelabs": "~0.1.1"
   },
   "peerDependencies": {
     "grunt": "~0.4.1"
