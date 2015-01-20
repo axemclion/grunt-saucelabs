@@ -261,6 +261,10 @@ The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that
 
 Changelog
 ---------
+####8.5.0####
+* fix ECONNRESET errors caused by network connectivity issues
+* better error logging
+
 ####8.4.1####
 * updated sauce-tunnel to v2.1.1 (and therefore Sauce Connect to v4.3.5)
 
