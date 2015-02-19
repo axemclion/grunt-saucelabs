@@ -42,6 +42,7 @@ module.exports = function (grunt) {
     this.key = runner.key;
     this.framework = runner.framework;
     this.pollInterval = runner.pollInterval;
+    this.statusCheckAttempts = runner.statusCheckAttempts;
     this.url = url;
     this.platform = _.isArray(browser) ? browser : [browser.platform || '', browser.browserName || '', browser.version || ''];
     this.build = runner.build;
@@ -133,7 +134,7 @@ module.exports = function (grunt) {
   Job.prototype.complete = function () {
     var me = this;
 
-    function fetch() {
+    function fetch(attempts) {
       return utils
         .makeRequest({
           method: 'POST',
@@ -146,9 +147,17 @@ module.exports = function (grunt) {
           var jobId = result.job_id;
 
           if (!body.completed || !reJobId.test(jobId)) {
-            return Q
-              .delay(me.pollInterval)
-              .then(fetch);
+            var retries = attempts - 1;
+            if (attempts === 0) {
+              var errorMessage = "After trying " + me.statusCheckAttempts +
+                                 " times with a delay of " + me.pollInterval +
+                                 "s, this job never reached 'complete' status.";
+              throw new Error(errorMessage);
+            } else {
+              return Q
+                .delay(me.pollInterval)
+                .then(fetch.bind(this, retries));
+            }
           }
 
           me.id = jobId;
@@ -157,7 +166,8 @@ module.exports = function (grunt) {
         });
     }
 
-    return fetch();
+    var initialAttempts = me.statusCheckAttempts || -1;
+    return fetch(initialAttempts);
   };
 
   /**

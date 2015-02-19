@@ -165,6 +165,7 @@ module.exports = function (grunt) {
     tunneled: true,
     identifier: Math.floor((new Date()).getTime() / 1000 - 1230768000).toString(),
     pollInterval: 1000 * 2,
+    statusCheckAttempts: 90,
     testname: '',
     browsers: [{}],
     tunnelArgs: [],

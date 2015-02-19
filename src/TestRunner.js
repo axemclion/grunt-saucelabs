@@ -23,6 +23,7 @@ module.exports = function (grunt) {
     this.user = properties.username;
     this.key = properties.key;
     this.pollInterval = properties.pollInterval;
+    this.statusCheckAttempts = properties.statusCheckAttempts;
     this.framework = framework;
     this.tunneled = properties.tunneled;
     this.tunnelId = properties.identifier;
