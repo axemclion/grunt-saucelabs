@@ -262,6 +262,12 @@ The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that
 
 Changelog
 ---------
+####8.6.0####
+* check job completion a maximum number of times
+* added a config setting, `statusCheckAttempts` which defaults to 90
+* updated to Sauce Connect v4.3.6
+* update dependencies
+
 ####8.5.0####
 * fix ECONNRESET errors caused by network connectivity issues
 * better error logging
