@@ -84,6 +84,7 @@ Full list of parameters which can be added to a saucelabs-* task:
 * __browsers__: An array of objects representing the [various browsers](https://saucelabs.com/docs/platforms) on which this test should run. _Optional_
 * __onTestComplete__: A callback that is called every time a unit test for a page is complete. Runs per page, per browser configuration. Receives two arguments `(result, callback)`. `result` is the javascript object exposed to sauce labs as the results of the test. `callback` must be called, node-style (having arguments `err`, `result` where result is a true/false boolean which sets the test result reported to the command line). See [example below](#ontestcomplete-callback) _Optional_
 * __maxRetries__: Specifies how many times the timed out tests should be retried (default: 0). _Optional_
+* __public__: The [job visibility level](https://docs.saucelabs.com/reference/test-configuration/#job-visibility). Defaults to 'team'. _Optional_
 
 A typical `test` task running from Grunt could look like `grunt.registerTask('test', ['server', 'qunit', 'saucelabs-qunit']);` This starts a server and then runs the QUnit tests first on PhantomJS and then using the Sauce Labs browsers.
 
