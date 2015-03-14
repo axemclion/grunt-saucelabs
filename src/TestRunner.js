@@ -29,6 +29,7 @@ module.exports = function (grunt) {
     this.tunnelId = properties.identifier;
     this.testName = properties.testname;
     this.build = properties.build;
+    this.public = properties.public;
     this.tags = properties.tags;
     this.sauceConfig = properties.sauceConfig;
     this.onTestComplete = properties.onTestComplete;

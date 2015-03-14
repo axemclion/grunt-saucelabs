@@ -46,6 +46,7 @@ module.exports = function (grunt) {
     this.url = url;
     this.platform = _.isArray(browser) ? browser : [browser.platform || '', browser.browserName || '', browser.version || ''];
     this.build = runner.build;
+    this.public = browser.public || runner.public || "team";
     this.tags = browser.tags || runner.tags;
     this.testName = browser.name || runner.testName;
     this.sauceConfig = runner.sauceConfig;
@@ -70,6 +71,7 @@ module.exports = function (grunt) {
         url: this.url,
         framework: this.framework,
         build: this.build,
+        public: this.public,
         tags: this.tags,
         name: this.testName
       }
