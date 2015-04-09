@@ -43,7 +43,7 @@ module.exports = function (grunt) {
       grunt.log[notification.passed ? 'ok' : 'error']('All tests completed with status %s', notification.passed);
       break;
     case 'retrying':
-      grunt.log.writeln('Timed out, retrying');
+      grunt.log.writeln('Timed out, retrying URL %s on browser %s', notification.url, JSON.stringify(notification.browser));
       break;
     default:
       grunt.log.error('Unexpected notification type');
