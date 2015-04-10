@@ -121,7 +121,9 @@ module.exports = function (grunt) {
             retry += 1;
 
             me.reportProgress({
-              type: 'retrying'
+              type: 'retrying',
+              url: url,
+              browser: browser
             });
 
             return job
