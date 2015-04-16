@@ -1,5 +1,7 @@
 'use strict';
 
+var packageJSON = require('./package.json');
+
 module.exports = function (grunt) {
 
   var utils = require('./src/utils')(grunt);
@@ -30,7 +32,8 @@ module.exports = function (grunt) {
       negateResult: negateResult,
       tunnelId: tunnelId,
       baseSaucelabsTaskOptions: {
-        build: process.env.TRAVIS_JOB_ID,
+        build: process.env.TRAVIS_JOB_ID || 'dev-'+process.env.USER+':'+Date.now(),
+        tags: ['v'+packageJSON.version, 'grunt-saucelabs'],
         browsers: [
           ['XP', 'chrome', '']
         ],
