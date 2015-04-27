@@ -14,13 +14,13 @@ module.exports = function (grunt) {
       return result.passed;
     },
     qunit: function (result) {
-      return result.passed === result.total;
+      return result.passed === result.total && result.total !== undefined;
     },
     mocha: function (result) {
       return result.failures === 0;
     },
     'YUI Test': function (result) {
-      return result.passed === result.total;
+      return result.passed === result.total && result.total !== undefined;
     },
     custom: function (result) {
       return result.failed === 0;
@@ -119,7 +119,7 @@ module.exports = function (grunt) {
       .then(function (result) {
         // Sauce Labs sets the result property to null when it encounters an error.
         // (One way to trigger this is to set a big (~100KB) test result.)
-        if (result.result === null) {
+        if (!result.result) {
           result.passed = false;
         } else {
           result.passed = resultParsers[me.framework](result.result);
