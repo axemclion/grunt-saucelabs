@@ -35,7 +35,7 @@ module.exports = function (grunt) {
         build: process.env.TRAVIS_JOB_ID || 'dev-'+process.env.USER+':'+Date.now(),
         tags: ['v'+packageJSON.version, 'grunt-saucelabs'],
         browsers: [
-          ['XP', 'chrome', '']
+          ['Windows 7', 'chrome', '']
         ],
         tunneled: false,
         sauceConfig: {

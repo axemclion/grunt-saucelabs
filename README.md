@@ -263,6 +263,14 @@ The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that
 
 Changelog
 ---------
+####8.6.1####
+* added `public` parameter, so tests can be made Public on Sauce Labs
+* when retrying a test, browser name and test url are output to stdout
+* default build number added when running tests locally
+* update Sauce Connect to v4.3.7\
+* updated npm dependencies
+* fixed a bug where YUI or Qunit tests were detected as Passed, when they actually failed
+
 ####8.6.0####
 * check job completion a maximum number of times
 * added a config setting, `statusCheckAttempts` which defaults to 90
