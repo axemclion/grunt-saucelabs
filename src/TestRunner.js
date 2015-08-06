@@ -174,6 +174,7 @@ module.exports = function (grunt) {
           jobUrl: result.url,
           platform: result.platform,
           passed: result.passed,
+          result: result.result,
           tunnelId: me.tunnelId
         });
 
