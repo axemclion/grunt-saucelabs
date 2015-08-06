@@ -37,7 +37,7 @@ module.exports = function (grunt) {
     this.browsers = properties.browsers;
     this.urls = properties.url || properties.urls;
     this.maxRetries = properties.maxRetries;
-    this.onProgress = onProgress;
+    this.onProgress = properties.onProgress || onProgress;
 
     if (properties['max-duration']) {
       // max-duration is actually a sauce selenium capability
