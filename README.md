@@ -263,6 +263,9 @@ The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that
 
 Changelog
 ---------
+####8.6.2####
+* updated Sauce Connect to v4.3.12
+
 ####8.6.1####
 * added `public` parameter, so tests can be made Public on Sauce Labs
 * when retrying a test, browser name and test url are output to stdout
