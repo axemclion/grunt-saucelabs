@@ -77,7 +77,7 @@ module.exports = function (grunt) {
       type: 'tunnelOpen'
     });
 
-    tunnel = new SauceTunnel(arg.username, arg.key, arg.identifier, true, ['-P', '0'].concat(arg.tunnelArgs));
+    tunnel = new SauceTunnel(arg.username, arg.key(), arg.identifier, true, ['-P', '0'].concat(arg.tunnelArgs));
 
     ['write', 'writeln', 'error', 'ok', 'debug'].forEach(function (method) {
       tunnel.on('log:' + method, function (text) {
@@ -161,7 +161,6 @@ module.exports = function (grunt) {
 
   var defaults = {
     username: process.env.SAUCE_USERNAME,
-    key: process.env.SAUCE_ACCESS_KEY,
     tunneled: true,
     identifier: Math.floor((new Date()).getTime() / 1000 - 1230768000).toString(),
     pollInterval: 1000 * 2,
@@ -172,6 +171,27 @@ module.exports = function (grunt) {
     sauceConfig: {},
     maxRetries: 0
   };
+
+  // Grunt will print the options hash to console.log when run in verbose
+  // mode. This can cause credential leaks per issue #203. This block will allow
+  // assignments so it can integrate with Grunt's APIs, but it will always
+  // return the getter as a function so that the 'toString' and 'toJSON' can be
+  // overidden.
+  var key = process.env.SAUCE_ACCESS_KEY;
+  Object.defineProperty(defaults, 'key', {
+    enumerable: true,
+    configurable: false,
+    writeable: true,
+    set: function (newKey) {
+      key = newKey;
+    },
+    get: function () {
+      var get = function () { return key; };
+      get.toString = function () { return key ? "[hidden]" : undefined; };
+      get.toJSON = get.toString;
+      return get;
+    }
+  });
 
   grunt.registerMultiTask('saucelabs-jasmine', 'Run Jasmine test cases using Sauce Labs browsers', function () {
     var done = this.async();
