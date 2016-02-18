@@ -33,7 +33,7 @@
     "lodash": "~4.0.0",
     "q": "~1.4.1",
     "requestretry": "~1.6.0",
-    "sauce-tunnel": "~2.3.0",
+    "sauce-tunnel": "~2.4.0",
     "saucelabs": "~1.0.1"
   },
   "peerDependencies": {
