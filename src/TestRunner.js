@@ -15,7 +15,7 @@ module.exports = function (grunt) {
    *
    * @constructor
    * @param {Object} properties - Configuration options.
-   * @param {String} framework - The unit test framework's name. Can be 'yasmine', 'qunit',
+   * @param {String} framework - The unit test framework's name. Can be 'jasmine', 'qunit',
    *   'YUI Test', 'mocha' or 'custom'.
    * @param {Function} onProgress - Progress handler.
    */
