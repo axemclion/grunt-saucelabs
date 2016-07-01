@@ -80,18 +80,17 @@ module.exports = function (grunt) {
    *   body.
    */
   function makeRequest(params) {
+    var QPromiseFactory = function(resolver) {
+      return q.Promise(resolver);
+    };
     params.retryStrategy = loggingRetryStrategy;
-    return q
-      .nfcall(request, params)
-      .then(function (result) {
-        var response = result[0];
-        var body = result[1];
-
+    params.promiseFactory = QPromiseFactory;
+    return request(params)
+      .then(function (response) {
         if (response.statusCode !== 200) {
           throw new Error('HTTP error (' + response.statusCode + ')');
         }
-
-        return body;
+        return response.body;
       })
       .fail(function (error) {
         throw new WrapperError([

@@ -32,7 +32,7 @@
     "colors": "~1.1.2",
     "lodash": "~4.0.0",
     "q": "~1.4.1",
-    "requestretry": "~1.6.0",
+    "requestretry": "~1.9.0",
     "sauce-tunnel": "~2.4.0",
     "saucelabs": "~1.0.1"
   },
