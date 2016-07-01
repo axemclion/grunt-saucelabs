@@ -263,6 +263,12 @@ The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that
 
 Changelog
 ---------
+
+####8.6.3####
+* updated some dependencies
+* support for Grunt 1.0.0
+* fix some broken tests
+
 ####8.6.2####
 * updated Sauce Connect to v4.3.12
 
