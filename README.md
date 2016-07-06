@@ -254,6 +254,10 @@ The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that
 
 Changelog
 ---------
+####9.0.0####
+* removed support for YUI Test (Yahoo deprecated the framework a year ago). It will still work but we are not planning support for it moving forward
+* update Sauce Connect to version 4.3.16
+* updated dependencies (grunt not updated because we are waiting on grunt-sauce-tunnel)
 
 ####8.6.3####
 * updated some dependencies
