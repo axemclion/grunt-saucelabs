@@ -17,7 +17,9 @@
   </div>
   <script type="text/javascript">
     YUI().use('test-console', 'test', 'example-tests', function (Y) {
-
+      var TestRunner = Y.Test.Runner;
+      window.YUITest.TestRunner = TestRunner;
+      
       //create the console
       var yconsole = new Y.Test.Console({
         newestOnTop: false,
@@ -102,7 +104,6 @@
         Y.log(message, messageType, "TestRunner");
       }
 
-      var TestRunner = Y.Test.Runner;
       TestRunner.attach(TestRunner.BEGIN_EVENT, logEvent);
       TestRunner.attach(TestRunner.COMPLETE_EVENT, logEvent);
       TestRunner.attach(TestRunner.TEST_CASE_BEGIN_EVENT, logEvent);
