@@ -5,7 +5,6 @@ module.exports = function (grunt) {
   var positiveTests = [
     'saucelabs-qunit:succeeds',
     'saucelabs-jasmine:succeeds',
-    'saucelabs-yui:succeeds',
     'saucelabs-mocha:succeeds',
     'saucelabs-custom:succeeds',
     'saucelabs-custom:callback-succeeds',
@@ -16,7 +15,6 @@ module.exports = function (grunt) {
   var negativeTests = [
     'saucelabs-qunit:fails',
     'saucelabs-jasmine:fails',
-    'saucelabs-yui:fails',
     'saucelabs-mocha:fails',
     'saucelabs-custom:fails',
     'saucelabs-qunit:error'

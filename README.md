@@ -8,13 +8,12 @@ grunt-saucelabs
 
 [![Dependency Status](https://david-dm.org/axemclion/grunt-saucelabs.png)](https://david-dm.org/axemclion/grunt-saucelabs) [![devDependency Status](https://david-dm.org/axemclion/grunt-saucelabs/dev-status.png)](https://david-dm.org/axemclion/grunt-saucelabs#info=devDependencies)
 
-A Grunt task for running QUnit, Jasmine, Mocha, YUI tests, or any framework using Sauce Labs' Cloudified Browsers.
+A Grunt task for running QUnit, Jasmine, Mocha or any framework using Sauce Labs' Cloudified Browsers.
 
 [Grunt](http://gruntjs.com/) is a task-based command line build tool for JavaScript projects, based on nodejs.
 [QUnit](http://qunitjs.com/) is a powerful, easy-to-use JavaScript unit test suite used by the jQuery, jQuery UI and jQuery Mobile projects and is capable of testing any generic JavaScript code, including itself!
 [Jasmine](http://jasmine.github.io/) is a behavior-driven development framework for testing JavaScript code.
 [Mocha](https://github.com/mochajs/mocha) is a JavaScript test framework for running serial asynchronous tests.
-[YUI Test](http://developer.yahoo.com/yui/yuitest/) is a browser-based testing framework from Yahoo!.
 [Sauce Labs](https://saucelabs.com/) offers browser environments on the cloud for testing code.
 
 About the tool
@@ -22,7 +21,7 @@ About the tool
 The [grunt-contrib-qunit](https://github.com/gruntjs/grunt-contrib-qunit) task runs QUnit based test suites on [PhantomJS](http://phantomjs.org/).
 The `saucelabs-qunit` task is very similar but runs the test suites on the cloudified browser environment provided by Sauce Labs. This ensures that subject of the test runs across different browser environment.
 The task also uses [Sauce Connect](https://saucelabs.com/docs/connect) to establish a tunnel between Sauce Labs browsers and the machine running Grunt to load local pages. This is typically useful for testing pages on localhost that are not publicly accessible on the internet.
-The `saucelabs-jasmine` runs [Jasmine](http://pivotal.github.io/jasmine/) tests in the Sauce Labs browser. The `saucelabs-jasmine` task requires `jasmine-1.3.0`. There are also `saucelabs-mocha` and `saucelabs-yui` tasks that let you run your Mocha and YUI tests on Sauce Labs cloudified browser environment.
+The `saucelabs-jasmine` runs [Jasmine](http://pivotal.github.io/jasmine/) tests in the Sauce Labs browser. The `saucelabs-jasmine` task requires `jasmine-1.3.0`. There is also a `saucelabs-mocha` task that lets you run your Mocha tests on Sauce Labs cloudified browser environment.
 
 Usage
 ------
@@ -62,7 +61,7 @@ var request = require('request');
 
 ```
 
-The configuration of `saucelabs-jasmine`, `saucelabs-mocha`, `saucelabs-yui`, and `saucelabs-custom` are exactly the same.
+The configuration of `saucelabs-jasmine`, `saucelabs-mocha` and `saucelabs-custom` are exactly the same.
 Note the options object inside a grunt target. This was introduced in grunt-saucelabs-* version 4.0.0 to be compatible with grunt@0.4.0
 
 
@@ -176,14 +175,6 @@ Add the following to the mocha test page html. Make sure you remove any calls to
   };
 </script>
 ```
-
-### Test result details with YUI Test ###
-
-There's nothing you have to do for YUI Tests! The js library already exposes ```window.YUITest.TestRunner.getResults()```
-
-### Test result details with a custom framework ###
-
-When you tests are finished, expose your tests results on `window.global_test_results` as explained in [SauceLab's JS Unit Testing REST API Documentation](https://saucelabs.com/docs/rest#jsunit)
 
 OnTestComplete callback
 -----------------------
