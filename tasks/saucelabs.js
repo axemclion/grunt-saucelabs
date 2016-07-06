@@ -67,7 +67,7 @@ module.exports = function (grunt) {
       break;
     default:
       grunt.log.error('Unexpected notification type');
-  }
+    }
   }
 
   function createTunnel(arg) {
