@@ -65,7 +65,7 @@ module.exports = function (grunt) {
     var requestParams = {
       method: 'POST',
       url: ['https://saucelabs.com/rest/v1', this.user, 'js-tests'].join('/'),
-      auth: { user: this.user, pass: this.key() },
+      auth: { user: this.user, pass: this.key },
       json: {
         platforms: [this.platform],
         url: this.url,
@@ -141,7 +141,7 @@ module.exports = function (grunt) {
         .makeRequest({
           method: 'POST',
           url: ['https://saucelabs.com/rest/v1', me.user, 'js-tests/status'].join('/'),
-          auth: { user: me.user, pass: me.key() },
+          auth: { user: me.user, pass: me.key },
           json: { 'js tests': [me.taskId] }
         })
         .then(function (body) {
