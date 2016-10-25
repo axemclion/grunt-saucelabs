@@ -21,6 +21,12 @@ module.exports = function (grunt) {
     var semaphore;
 
     function scheduleNextJob() {
+	  // check if requests exceed the API LIMIT 
+	  // https://wiki.saucelabs.com/display/DOCS/Rate+Limits+for+the+Sauce+Labs+REST+API
+      if (running === 3 && limit > 3) {
+        return q.delay(q, 1000);
+      }
+		
       if (running < limit) {
         running += 1;
         return q();
