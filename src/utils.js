@@ -16,20 +16,14 @@ module.exports = function (grunt) {
    * @param limit how many promises are allowed to be running at the same time.
    * @returns function that returns a promise that eventually proxies to promiseFactory.
    */
-  function limitConcurrency(promiseFactory, limit) {
+  function limitConcurrency(promiseFactory, limit, requestDelay) {
     var running = 0;
     var semaphore;
 
     function scheduleNextJob() {
-      // check if requests exceed the API LIMIT
-      // https://wiki.saucelabs.com/display/DOCS/Rate+Limits+for+the+Sauce+Labs+REST+API
-      if (running === 3 && limit > 3) {
-        return q.delay(q, 1000);
-      }
-
       if (running < limit) {
         running += 1;
-        return q();
+        return requestDelay ? q.delay(q, running * requestDelay) : q();
       }
 
       if (!semaphore) {

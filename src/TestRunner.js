@@ -38,6 +38,7 @@ module.exports = function (grunt) {
     this.urls = properties.url || properties.urls;
     this.maxRetries = properties.maxRetries;
     this.onProgress = onProgress;
+    this.requestDelay = properties.requestDelay || undefined;
 
     if (properties['max-duration']) {
       // max-duration is actually a sauce selenium capability
@@ -68,7 +69,7 @@ module.exports = function (grunt) {
     var me = this;
     var throttledRunTest, promises;
 
-    throttledRunTest = utils.limitConcurrency(this.runTest.bind(this), this.throttled || Number.MAX_VALUE);
+    throttledRunTest = utils.limitConcurrency(this.runTest.bind(this), this.throttled || Number.MAX_VALUE, this.requestDelay);
 
     promises = this.urls
       .map(function (url) {

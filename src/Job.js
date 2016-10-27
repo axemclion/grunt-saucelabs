@@ -52,6 +52,7 @@ module.exports = function (grunt) {
     this.sauceConfig = runner.sauceConfig;
     this.tunneled = runner.tunneled;
     this.tunnelId = runner.tunnelId;
+    this.requestDelay = runner.requestDelay;
   };
 
   /**
