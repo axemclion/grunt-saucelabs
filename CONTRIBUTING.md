@@ -9,11 +9,11 @@ Thank you for submitting a patch to this project, we really appreciate it. Here 
 
 1. Send a pull request with your changes to `incoming-pr` branch
 2. Travis runs only jslint on your pull request.
-	* If the pull request tests fail, please correct the lint errors
+  * If the pull request tests fail, please correct the lint errors
 3. Once the pull request passes the lint test, you pull request is merged into `incoming-pr` branch.
 4. Travis runs *ALL* tests on `incoming-pr` branch. Since `incoming-pr` has access to the secure environment variables, it runs the saucelabs tests also.
-	* If the saucelabs tests fail, `incoming-pr` is reverted to its original state.
-	* Your changes are preserved in a separate branch. Please take a look at this branch and fix any failing tests
+  * If the saucelabs tests fail, `incoming-pr` is reverted to its original state.
+  * Your changes are preserved in a separate branch. Please take a look at this branch and fix any failing tests
 5. Once travis on the `incoming-pr` branch succeeds, your commits are automatically merged into `master`.
 
 
@@ -25,4 +25,4 @@ If you are looking for a feature, it would be best to open a bug and send in a p
 
 Discussions
 ------------
-This project is maintained by [Sebastian Tiedtke](https://github.com/sourishkrout) and [Parashuram](http://github.com/axemcion). It would be easy to send them a tweet and ask them questions.
+This project is maintained by [Sebastian Tiedtke](https://github.com/sourishkrout) and [Parashuram](http://github.com/axemclion). It would be easy to send them a tweet and ask them questions.

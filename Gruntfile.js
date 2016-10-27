@@ -1,119 +1,48 @@
-module.exports = function(grunt) {
-	var browsers = [{
-		browserName: 'firefox',
-		version: '19',
-		platform: 'XP'
-	}, {
-		browserName: 'googlechrome',
-		platform: 'XP'
-	}, {
-		browserName: 'googlechrome',
-		platform: 'linux'
-	}, {
-		browserName: 'internet explorer',
-		platform: 'WIN8',
-		version: '10'
-	}, {
-		browserName: 'internet explorer',
-		platform: 'VISTA',
-		version: '9'
-	}, {
-		browserName: 'internet explorer',
-		platform: 'XP',
-		version: '8'
-	}];
+'use strict';
 
-	grunt.initConfig({
-		pkg: grunt.file.readJSON('package.json'),
-		jshint: {
-			options: {
-				jshintrc: __dirname + '/.jshintrc'
-			},
-			files: ['bin/grunt-saucelabs-qunit',
-				'tasks/**/*.js',
-				'test/qunit/grunt-saucelabs-inject.js',
-				'Gruntfile.js']
-		},
-		connect: {
-			server: {
-				options: {
-					base: 'test',
-					port: 9999
-				}
-			}
-		},
+var packageJSON = require('./package.json');
 
-		'saucelabs-yui': {
-			all: {
-				//username: '',
-				//key: '',
-				options: {
-					urls: ['http://127.0.0.1:9999/yui/index.html'],
-					tunnelTimeout: 5,
-					build: process.env.TRAVIS_JOB_ID,
-					concurrency: 3,
-					browsers: browsers,
-					testname: "yui tests"
-				}
-			}
-		},
-		'saucelabs-mocha': {
-			all: {
-				//username: '',
-				//key: '',
-				options: {
-					urls: ['http://127.0.0.1:9999/mocha/test/browser/index.html'],
-					tunnelTimeout: 5,
-					build: process.env.TRAVIS_JOB_ID,
-					concurrency: 3,
-					browsers: browsers,
-					testname: "mocha tests"
-				}
-			}
-		},
-		'saucelabs-qunit': {
-			all: {
-				//username: '',
-				//key: '',
-				options: {
-					urls: ['http://127.0.0.1:9999/qunit/index.html', 'http://127.0.0.1:9999/qunit/logs.html'],
-					tunnelTimeout: 5,
-					build: process.env.TRAVIS_JOB_ID,
-					concurrency: 3,
-					browsers: browsers,
-					testname: "qunit tests"
-				}
-			}
-		},
-		'saucelabs-jasmine': {
-			all: {
-				//username: 'parashu',
-				//key: '',
-				options: {
-					urls: ['http://127.0.0.1:9999/jasmine/SpecRunner.html', 'http://127.0.0.1:9999/jasmine/SpecRunnerDos.html'],
-					tunnelTimeout: 5,
-					build: process.env.TRAVIS_JOB_ID,
-					concurrency: 3,
-					browsers: browsers,
-					testname: "jasmine tests"
-				}
-			}
-		},
-		watch: {}
-	});
+module.exports = function (grunt) {
 
-	grunt.loadTasks('tasks');
+  var utils = require('./src/utils')(grunt);
+  var tunnelId = Math.floor((new Date()).getTime() / 1000 - 1230768000).toString();
 
-	grunt.loadNpmTasks('grunt-contrib-jshint');
-	grunt.loadNpmTasks('grunt-contrib-connect');
-	grunt.loadNpmTasks('grunt-contrib-watch');
+  function negateResult(result, callback) {
+    // Reverses the job's passed status. Can be used as the onTestComplete callback for
+    // the negative tests.
+    var user = process.env.SAUCE_USERNAME;
+    var pass = process.env.SAUCE_ACCESS_KEY;
 
-	var testjobs = ['jshint', 'connect'];
-	if (typeof process.env.SAUCE_ACCESS_KEY !== 'undefined'){
-		testjobs = testjobs.concat(['saucelabs-qunit', 'saucelabs-jasmine', 'saucelabs-yui', 'saucelabs-mocha']);
-	}
+    utils
+    .makeRequest({
+      method: 'PUT',
+      url: ['https://saucelabs.com/rest/v1', user, 'jobs', result.job_id].join('/'),
+      auth: { user: user, pass: pass },
+      json: { passed: !result.passed }
+    })
+    .thenResolve(!result.passed)
+    .nodeify(callback);
+  }
 
-	grunt.registerTask("dev", ["connect", "watch"]);
-	grunt.registerTask('test', testjobs);
-	grunt.registerTask('default', ['test']);
+  grunt.task.loadTasks('tasks');
+
+  require('load-grunt-config')(grunt, {
+    data: {
+      srcFiles: ['tasks/**/*.js', 'src/**/*.js', 'Gruntfile.js'],
+      negateResult: negateResult,
+      tunnelId: tunnelId,
+      baseSaucelabsTaskOptions: {
+        build: process.env.TRAVIS_JOB_ID || 'dev-'+process.env.USER+':'+Date.now(),
+        tags: ['v'+packageJSON.version, 'grunt-saucelabs'],
+        browsers: [
+          ['Windows 7', 'chrome', '']
+        ],
+        tunneled: false,
+        sauceConfig: {
+          'video-upload-on-pass': false,
+          'tunnel-identifier': tunnelId
+        }
+      }
+    }
+  });
 };

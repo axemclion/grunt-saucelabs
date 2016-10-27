@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <title>Single failing Mocha test</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../../mocha.css" />
+  <script type="text/javascript" src="../../mocha.js"></script>
+  <script type="text/javascript">
+    mocha.setup('bdd');
+
+    function assert(expr, msg) {
+      if (!expr) throw new Error(msg || 'failed');
+    }
+
+    describe('This spec', function () {
+      it('should fail', function () {
+        assert(false);
+      });
+    });
+
+    window.onload = function () {
+      var runner = mocha.run();
+      var failedTests = [];
+      var flattenTitles = function (test) {
+        var titles = [];
+        while (test.parent.title) {
+          titles.push(test.parent.title);
+          test = test.parent;
+        }
+        return titles.reverse();
+      };
+
+      runner.on('end', function () {
+        window.mochaResults = runner.stats;
+        window.mochaResults.reports = failedTests;
+      });
+
+      runner.on('fail', function (test, err) {
+        failedTests.push({ name: test.title, result: false, message: err.message, stack: err.stack, titles: flattenTitles(test) });
+      });
+    };
+  </script>
+</head>
+<body>
+  <div id="mocha">
+  </div>
+</body>
+</html>
