@@ -254,20 +254,20 @@ The [IndexedDBShim](http://github.com/axemclion/IndexedDBShim) is a project that
 
 Changelog
 ---------
-####9.0.0####
+#### 9.0.0 ####
 * removed support for YUI Test (Yahoo deprecated the framework a year ago). It will still work but we are not planning support for it moving forward
 * update Sauce Connect to version 4.3.16
 * updated dependencies (grunt not updated because we are waiting on grunt-sauce-tunnel)
 
-####8.6.3####
+#### 8.6.3 ####
 * updated some dependencies
 * support for Grunt 1.0.0
 * fix some broken tests
 
-####8.6.2####
+#### 8.6.2 ####
 * updated Sauce Connect to v4.3.12
 
-####8.6.1####
+#### 8.6.1 ####
 * added `public` parameter, so tests can be made Public on Sauce Labs
 * when retrying a test, browser name and test url are output to stdout
 * default build number added when running tests locally
@@ -275,79 +275,79 @@ Changelog
 * updated npm dependencies
 * fixed a bug where YUI or Qunit tests were detected as Passed, when they actually failed
 
-####8.6.0####
+#### 8.6.0 ####
 * check job completion a maximum number of times
 * added a config setting, `statusCheckAttempts` which defaults to 90
 * updated to Sauce Connect v4.3.6
 * update dependencies
 
-####8.5.0####
+#### 8.5.0 ####
 * fix ECONNRESET errors caused by network connectivity issues
 * better error logging
 
-####8.4.1####
+#### 8.4.1 ####
 * updated sauce-tunnel to v2.1.1 (and therefore Sauce Connect to v4.3.5)
 
-####8.4.0####
+#### 8.4.0 ####
 * polling a job for its status now retries
 * add `maxPollRetries` parameter, which specifies the number of status-requests to make before giving up on a job
 
-####8.3.3####
+#### 8.3.3 ####
 * improvements to README
 * add a 'tags' parameter to the config, to allow setting tags on tests
 * optionally, you can set "name" and "tags" onto the "browser" object and they'll be applied to the corresponding job
 
-####8.3.2####
+#### 8.3.2 ####
 * fixed a bug where DELETE commands which errored on the Sauce side caused test execution to halt
 
-####8.3.0####
+#### 8.3.0 ####
 * add `testPageUrl` to `result` object. Indicates the url which was the target of the test.
 
-####8.2.2####
+#### 8.2.2 ####
 * `browsers` param can optionally be an array identical to the one used by the Sauce API. ex: `["XP", "firefox", "19"]`
 
-####8.2.1####
+#### 8.2.1 ####
 * update dependencies
 
-####8.2.0####
+#### 8.2.0 ####
 * upgrade to sauce-tunnel 2.1 (SC 3.4)
 
-####8.1.1####
+#### 8.1.1 ####
 * better detection and handling or errors which happen on Sauce Labs
 
-####8.1.0####
+#### 8.1.0 ####
 * added retry logic, thanks again to @gvas, now you can use `maxRetries` parameter to automatically retry tests which fail
 
-####8.0.3####
+#### 8.0.3 ####
 * fixed bug, sauce job urls displayed in log properly again
 
-####8.0.2####
+#### 8.0.2 ####
 * fixed bug, `testname` option not working
 
-####8.0.1####
+#### 8.0.1 ####
 * Major refactor, thanks to all the work done by @gvas
 * async `onTestComplete` callback fixed. Now the callback is passed two args: result, callback. `callback` is a node style callback (err, result);
 * `/examples` directory added, while the actual tests and Gruntfile are now more complicated (and useful)
 
-####7.0.0####
+#### 7.0.0 ####
 * `throttled` parameter now represents the max number of jobs sent concurrently. Previously was `throttled * browsers.length`
 
-####6.0.0####
+#### 6.0.0 ####
 * default `testInterval` changed to 2000ms
 * added `max-duration`, sauceConfig, and sauceTunnel params
 
-####5.1.3####
+#### 5.1.3 ####
 * update to sauce-tunnel 2.0.6, which uses Sauce Connect 4.2
 * queued job throttling added
 
-####5.1.2####
+#### 5.1.2 ####
 * use sauce-tunnel-sc3-1 to protect against heartbleed bug
 
-####5.1.1####
+#### 5.1.1 ####
 * Qunit reporting code made ecma3 compatible
 * Qunit reporting code doesn't clober the `.done()` callback
 * Updated dependencies
 
-####5.1.0####
+#### 5.1.0 ####
 * Added `custom` framework
 * Updated the test reporting on example pages to provide details when tests fail
