@@ -44,10 +44,10 @@ module.exports = function (grunt) {
       this.sauceConfig['maxDuration'] = properties['max-duration'];
     }
 
-    if (properties['maxDuration']) {
+    if (properties.maxDuration) {
       // maxDuration is more consistent with the Sauce Labs capability it maps too
       // Perhaps deprecate max-duration in the future?
-      this.sauceConfig['maxDuration'] = properties['maxDuration'];
+      this.sauceConfig['maxDuration'] = properties.maxDuration;
     }
 
 
