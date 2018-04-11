@@ -79,7 +79,7 @@ Full list of parameters which can be added to a saucelabs-* task:
 * __pollInterval__: Number of milliseconds between each retry to see if a test is completed or not (default: 2000). _Optional_
 * __statusCheckAttempts__: Number of times to attempt to see if a test is completed or not (default: 90).  Effectively, your tests have `statusCheckAttempts * pollInterval` seconds to complete (Thus, 180s by default).  Set to `-1` to try forever.
 * __throttled__: Maximum number of unit test pages which will be sent to Sauce Labs concurrently.  Exceeding your Sauce Labs' allowed concurrency can lead to test failures if you have a lot of unit test pages. _Optional_
-* __max-duration__: Maximum duration of a test, this is actually a Selenium Capability. Sauce Labs defaults to 180 seconds for js unit tests. _Optional_
+* __maxDuration__: Maximum duration of a test, this is actually a Selenium Capability. Sauce Labs defaults to 180 seconds for js unit tests. _Optional_
 * __browsers__: An array of objects representing the [various browsers](https://saucelabs.com/docs/platforms) on which this test should run. _Optional_
 * __onTestComplete__: A callback that is called every time a unit test for a page is complete. Runs per page, per browser configuration. Receives two arguments `(result, callback)`. `result` is the javascript object exposed to sauce labs as the results of the test. `callback` must be called, node-style (having arguments `err`, `result` where result is a true/false boolean which sets the test result reported to the command line). See [example below](#ontestcomplete-callback) _Optional_
 * __maxRetries__: Specifies how many times the timed out tests should be retried (default: 0). _Optional_

@@ -40,9 +40,17 @@ module.exports = function (grunt) {
     this.onProgress = onProgress;
 
     if (properties['max-duration']) {
-      // max-duration is actually a sauce selenium capability
-      this.sauceConfig['max-duration'] = properties['max-duration'];
+      // max-duration is not recognized; use maxDuration
+      this.sauceConfig['maxDuration'] = properties['max-duration'];
     }
+
+    if (properties['maxDuration']) {
+      // maxDuration is more consistent with the Sauce Labs capability it maps too
+      // Perhaps deprecate max-duration in the future?
+      this.sauceConfig['maxDuration'] = properties['maxDuration'];
+    }
+
+
     this.urls = this.urls.length !== undefined ? this.urls : [this.urls];
     this.numberOfJobs = this.browsers.length * this.urls.length;
     this.startedJobs = 0;
