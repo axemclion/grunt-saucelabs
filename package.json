@@ -15,12 +15,7 @@
   "bugs": {
     "url": "https://github.com/axemclion/grunt-saucelabs/issues"
   },
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "https://github.com/axemclion/grunt-saucelabs/blob/master/LICENSE-MIT"
-    }
-  ],
+  "license": "MIT",
   "engines": {
     "node": ">=0.6",
     "npm": ">=1.2.12"
