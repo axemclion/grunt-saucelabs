@@ -30,11 +30,11 @@
   },
   "dependencies": {
     "colors": "~1.1.2",
-    "lodash": "~4.13.1",
+    "lodash": "^4.17.11",
     "q": "~1.4.1",
     "requestretry": "~1.9.0",
     "sauce-tunnel": "~2.5.0",
-    "saucelabs": "~1.2.0"
+    "saucelabs": "^1.5.0"
   },
   "peerDependencies": {
     "grunt": ">=0.4.1"
