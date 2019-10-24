@@ -3,26 +3,26 @@
  * Module dependencies.
  */
 
-var tty = require('tty')
-  , diff = require('diff')
-  , ms = require('../ms')
-  , utils = require('../utils');
+const tty = require('tty')
+  ; const diff = require('diff')
+  ; const ms = require('../ms')
+  ; const utils = require('../utils');
 
 /**
  * Save timer references to avoid Sinon interfering (see GH-237).
  */
 
-var Date = global.Date
-  , setTimeout = global.setTimeout
-  , setInterval = global.setInterval
-  , clearTimeout = global.clearTimeout
-  , clearInterval = global.clearInterval;
+const Date = global.Date
+  ; const setTimeout = global.setTimeout
+  ; const setInterval = global.setInterval
+  ; const clearTimeout = global.clearTimeout
+  ; const clearInterval = global.clearInterval;
 
 /**
  * Check if both stdio streams are associated with a tty.
  */
 
-var isatty = tty.isatty(1) && tty.isatty(2);
+const isatty = tty.isatty(1) && tty.isatty(2);
 
 /**
  * Expose `Base`.
@@ -47,25 +47,25 @@ exports.inlineDiffs = false;
  */
 
 exports.colors = {
-    'pass': 90
-  , 'fail': 31
-  , 'bright pass': 92
-  , 'bright fail': 91
-  , 'bright yellow': 93
-  , 'pending': 36
-  , 'suite': 0
-  , 'error title': 0
-  , 'error message': 31
-  , 'error stack': 90
-  , 'checkmark': 32
-  , 'fast': 90
-  , 'medium': 33
-  , 'slow': 31
-  , 'green': 32
-  , 'light': 90
-  , 'diff gutter': 90
-  , 'diff added': 42
-  , 'diff removed': 41
+  'pass': 90,
+  'fail': 31,
+  'bright pass': 92,
+  'bright fail': 91,
+  'bright yellow': 93,
+  'pending': 36,
+  'suite': 0,
+  'error title': 0,
+  'error message': 31,
+  'error stack': 90,
+  'checkmark': 32,
+  'fast': 90,
+  'medium': 33,
+  'slow': 31,
+  'green': 32,
+  'light': 90,
+  'diff gutter': 90,
+  'diff added': 42,
+  'diff removed': 41,
 };
 
 /**
@@ -75,7 +75,7 @@ exports.colors = {
 exports.symbols = {
   ok: '✓',
   err: '✖',
-  dot: '․'
+  dot: '․',
 };
 
 // With node.js on Windows: use symbols available in terminal default fonts
@@ -97,7 +97,7 @@ if ('win32' == process.platform) {
  * @api private
  */
 
-var color = exports.color = function(type, str) {
+const color = exports.color = function(type, str) {
   if (!exports.useColors) return str;
   return '\u001b[' + exports.colors[type] + 'm' + str + '\u001b[0m';
 };
@@ -108,11 +108,11 @@ var color = exports.color = function(type, str) {
  */
 
 exports.window = {
-  width: isatty
-    ? process.stdout.getWindowSize
-      ? process.stdout.getWindowSize(1)[0]
-      : tty.getWindowSize()[1]
-    : 75
+  width: isatty ?
+    process.stdout.getWindowSize ?
+      process.stdout.getWindowSize(1)[0] :
+      tty.getWindowSize()[1] :
+    75,
 };
 
 /**
@@ -121,30 +121,30 @@ exports.window = {
  */
 
 exports.cursor = {
-  hide: function(){
+  hide: function() {
     isatty && process.stdout.write('\u001b[?25l');
   },
 
-  show: function(){
+  show: function() {
     isatty && process.stdout.write('\u001b[?25h');
   },
 
-  deleteLine: function(){
+  deleteLine: function() {
     isatty && process.stdout.write('\u001b[2K');
   },
 
-  beginningOfLine: function(){
+  beginningOfLine: function() {
     isatty && process.stdout.write('\u001b[0G');
   },
 
-  CR: function(){
+  CR: function() {
     if (isatty) {
       exports.cursor.deleteLine();
       exports.cursor.beginningOfLine();
     } else {
       process.stdout.write('\r');
     }
-  }
+  },
 };
 
 /**
@@ -154,23 +154,23 @@ exports.cursor = {
  * @api public
  */
 
-exports.list = function(failures){
+exports.list = function(failures) {
   console.error();
-  failures.forEach(function(test, i){
+  failures.forEach(function(test, i) {
     // format
-    var fmt = color('error title', '  %s) %s:\n')
-      + color('error message', '     %s')
-      + color('error stack', '\n%s\n');
+    let fmt = color('error title', '  %s) %s:\n') +
+      color('error message', '     %s') +
+      color('error stack', '\n%s\n');
 
     // msg
-    var err = test.err
-      , message = err.message || ''
-      , stack = err.stack || message
-      , index = stack.indexOf(message) + message.length
-      , msg = stack.slice(0, index)
-      , actual = err.actual
-      , expected = err.expected
-      , escape = true;
+    const err = test.err
+      ; const message = err.message || ''
+      ; let stack = err.stack || message
+      ; const index = stack.indexOf(message) + message.length
+      ; let msg = stack.slice(0, index)
+      ; let actual = err.actual
+      ; let expected = err.expected
+      ; let escape = true;
 
     // uncaught
     if (err.uncaught) {
@@ -187,7 +187,7 @@ exports.list = function(failures){
     // actual / expected diff
     if ('string' == typeof actual && 'string' == typeof expected) {
       fmt = color('error title', '  %s) %s:\n%s') + color('error stack', '\n%s\n');
-      var match = message.match(/^([^:]+): expected/);
+      const match = message.match(/^([^:]+): expected/);
       msg = match ? '\n      ' + color('error message', match[1]) : '';
 
       if (exports.inlineDiffs) {
@@ -199,7 +199,7 @@ exports.list = function(failures){
 
     // indent stack trace without msg
     stack = stack.slice(index ? index + 1 : index)
-      .replace(/^/gm, '  ');
+        .replace(/^/gm, '  ');
 
     console.error(fmt, (i + 1), test.fullTitle(), msg, stack);
   });
@@ -218,55 +218,55 @@ exports.list = function(failures){
  */
 
 function Base(runner) {
-  var self = this
-    , stats = this.stats = { suites: 0, tests: 0, passes: 0, pending: 0, failures: 0 }
-    , failures = this.failures = [];
+  const self = this
+    ; const stats = this.stats = {suites: 0, tests: 0, passes: 0, pending: 0, failures: 0}
+    ; const failures = this.failures = [];
 
   if (!runner) return;
   this.runner = runner;
 
   runner.stats = stats;
 
-  runner.on('start', function(){
+  runner.on('start', function() {
     stats.start = new Date;
   });
 
-  runner.on('suite', function(suite){
+  runner.on('suite', function(suite) {
     stats.suites = stats.suites || 0;
     suite.root || stats.suites++;
   });
 
-  runner.on('test end', function(test){
+  runner.on('test end', function(test) {
     stats.tests = stats.tests || 0;
     stats.tests++;
   });
 
-  runner.on('pass', function(test){
+  runner.on('pass', function(test) {
     stats.passes = stats.passes || 0;
 
-    var medium = test.slow() / 2;
-    test.speed = test.duration > test.slow()
-      ? 'slow'
-      : test.duration > medium
-        ? 'medium'
-        : 'fast';
+    const medium = test.slow() / 2;
+    test.speed = test.duration > test.slow() ?
+      'slow' :
+      test.duration > medium ?
+        'medium' :
+        'fast';
 
     stats.passes++;
   });
 
-  runner.on('fail', function(test, err){
+  runner.on('fail', function(test, err) {
     stats.failures = stats.failures || 0;
     stats.failures++;
     test.err = err;
     failures.push(test);
   });
 
-  runner.on('end', function(){
+  runner.on('end', function() {
     stats.end = new Date;
     stats.duration = new Date - stats.start;
   });
 
-  runner.on('pending', function(){
+  runner.on('pending', function() {
     stats.pending++;
   });
 }
@@ -278,26 +278,26 @@ function Base(runner) {
  * @api public
  */
 
-Base.prototype.epilogue = function(){
-  var stats = this.stats;
-  var tests;
-  var fmt;
+Base.prototype.epilogue = function() {
+  const stats = this.stats;
+  let tests;
+  let fmt;
 
   console.log();
 
   // passes
-  fmt = color('bright pass', ' ')
-    + color('green', ' %d passing')
-    + color('light', ' (%s)');
+  fmt = color('bright pass', ' ') +
+    color('green', ' %d passing') +
+    color('light', ' (%s)');
 
   console.log(fmt,
-    stats.passes || 0,
-    ms(stats.duration));
+      stats.passes || 0,
+      ms(stats.duration));
 
   // pending
   if (stats.pending) {
-    fmt = color('pending', ' ')
-      + color('pending', ' %d pending');
+    fmt = color('pending', ' ') +
+      color('pending', ' %d pending');
 
     console.log(fmt, stats.pending);
   }
@@ -307,7 +307,7 @@ Base.prototype.epilogue = function(){
     fmt = color('fail', '  %d failing');
 
     console.error(fmt,
-      stats.failures);
+        stats.failures);
 
     Base.list(this.failures);
     console.error();
@@ -340,25 +340,25 @@ function pad(str, len) {
  */
 
 function inlineDiff(err, escape) {
-  var msg = errorDiff(err, 'WordsWithSpace', escape);
+  let msg = errorDiff(err, 'WordsWithSpace', escape);
 
   // linenos
-  var lines = msg.split('\n');
+  const lines = msg.split('\n');
   if (lines.length > 4) {
-    var width = String(lines.length).length;
-    msg = lines.map(function(str, i){
+    const width = String(lines.length).length;
+    msg = lines.map(function(str, i) {
       return pad(++i, width) + ' |' + ' ' + str;
     }).join('\n');
   }
 
   // legend
-  msg = '\n'
-    + color('diff removed', 'actual')
-    + ' '
-    + color('diff added', 'expected')
-    + '\n\n'
-    + msg
-    + '\n';
+  msg = '\n' +
+    color('diff removed', 'actual') +
+    ' ' +
+    color('diff added', 'expected') +
+    '\n\n' +
+    msg +
+    '\n';
 
   // indent
   msg = msg.replace(/^/gm, '      ');
@@ -374,7 +374,7 @@ function inlineDiff(err, escape) {
  */
 
 function unifiedDiff(err, escape) {
-  var indent = '      ';
+  const indent = '      ';
   function cleanUp(line) {
     if (escape) {
       line = escapeInvisibles(line);
@@ -389,12 +389,12 @@ function unifiedDiff(err, escape) {
     return line != null;
   }
   msg = diff.createPatch('string', err.actual, err.expected);
-  var lines = msg.split('\n').splice(4);
-  return '\n      '
-         + colorLines('diff added',   '+ expected') + ' '
-         + colorLines('diff removed', '- actual')
-         + '\n\n'
-         + lines.map(cleanUp).filter(notBlank).join('\n');
+  const lines = msg.split('\n').splice(4);
+  return '\n      ' +
+         colorLines('diff added', '+ expected') + ' ' +
+         colorLines('diff removed', '- actual') +
+         '\n\n' +
+         lines.map(cleanUp).filter(notBlank).join('\n');
 }
 
 /**
@@ -406,9 +406,9 @@ function unifiedDiff(err, escape) {
  */
 
 function errorDiff(err, type, escape) {
-  var actual   = escape ? escapeInvisibles(err.actual)   : err.actual;
-  var expected = escape ? escapeInvisibles(err.expected) : err.expected;
-  return diff['diff' + type](actual, expected).map(function(str){
+  const actual = escape ? escapeInvisibles(err.actual) : err.actual;
+  const expected = escape ? escapeInvisibles(err.expected) : err.expected;
+  return diff['diff' + type](actual, expected).map(function(str) {
     if (str.added) return colorLines('diff added', str.value);
     if (str.removed) return colorLines('diff removed', str.value);
     return str.value;
@@ -423,9 +423,9 @@ function errorDiff(err, type, escape) {
  * @api private
  */
 function escapeInvisibles(line) {
-    return line.replace(/\t/g, '<tab>')
-               .replace(/\r/g, '<CR>')
-               .replace(/\n/g, '<LF>\n');
+  return line.replace(/\t/g, '<tab>')
+      .replace(/\r/g, '<CR>')
+      .replace(/\n/g, '<LF>\n');
 }
 
 /**
@@ -438,7 +438,7 @@ function escapeInvisibles(line) {
  */
 
 function colorLines(name, str) {
-  return str.split('\n').map(function(str){
+  return str.split('\n').map(function(str) {
     return color(name, str);
   }).join('\n');
 }
@@ -463,32 +463,32 @@ function stringify(obj) {
  * @api private
  */
 
- function canonicalize(obj, stack) {
-   stack = stack || [];
+function canonicalize(obj, stack) {
+  stack = stack || [];
 
-   if (utils.indexOf(stack, obj) !== -1) return obj;
+  if (utils.indexOf(stack, obj) !== -1) return obj;
 
-   var canonicalizedObj;
+  let canonicalizedObj;
 
-   if ('[object Array]' == {}.toString.call(obj)) {
-     stack.push(obj);
-     canonicalizedObj = utils.map(obj, function(item) {
-       return canonicalize(item, stack);
-     });
-     stack.pop();
-   } else if (typeof obj === 'object' && obj !== null) {
-     stack.push(obj);
-     canonicalizedObj = {};
-     utils.forEach(utils.keys(obj).sort(), function(key) {
-       canonicalizedObj[key] = canonicalize(obj[key], stack);
-     });
-     stack.pop();
-   } else {
-     canonicalizedObj = obj;
-   }
+  if ('[object Array]' == {}.toString.call(obj)) {
+    stack.push(obj);
+    canonicalizedObj = utils.map(obj, function(item) {
+      return canonicalize(item, stack);
+    });
+    stack.pop();
+  } else if (typeof obj === 'object' && obj !== null) {
+    stack.push(obj);
+    canonicalizedObj = {};
+    utils.forEach(utils.keys(obj).sort(), function(key) {
+      canonicalizedObj[key] = canonicalize(obj[key], stack);
+    });
+    stack.pop();
+  } else {
+    canonicalizedObj = obj;
+  }
 
-   return canonicalizedObj;
- }
+  return canonicalizedObj;
+}
 
 /**
  * Check that a / b have the same type.

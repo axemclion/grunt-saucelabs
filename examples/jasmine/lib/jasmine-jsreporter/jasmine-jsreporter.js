@@ -27,10 +27,9 @@
   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-(function (jasmine) {
-
+(function(jasmine) {
   if (!jasmine) {
-    throw new Error("[Jasmine JSReporter] 'Jasmine' library not found");
+    throw new Error('[Jasmine JSReporter] \'Jasmine\' library not found');
   }
 
   // ------------------------------------------------------------------------
@@ -42,8 +41,8 @@
    * @param startMs Start time in Milliseconds
    * @param finishMs Finish time in Milliseconds
    * @return Elapsed time in Seconds */
-  function elapsedSec (startMs, finishMs) {
-      return (finishMs - startMs) / 1000;
+  function elapsedSec(startMs, finishMs) {
+    return (finishMs - startMs) / 1000;
   }
 
   /**
@@ -52,129 +51,129 @@
    * @param amount Amount to round
    * @param numOfDecDigits Number of Digits to round to. Default value is '2'.
    * @return Rounded amount */
-  function round (amount, numOfDecDigits) {
-      numOfDecDigits = numOfDecDigits || 2;
-      return Math.round(amount * Math.pow(10, numOfDecDigits)) / Math.pow(10, numOfDecDigits);
+  function round(amount, numOfDecDigits) {
+    numOfDecDigits = numOfDecDigits || 2;
+    return Math.round(amount * Math.pow(10, numOfDecDigits)) / Math.pow(10, numOfDecDigits);
   }
 
   /**
    * Create a new array which contains only the failed items.
    * @param items Items which will be filtered
-   * @returns {Array} of failed items */
-  function failures (items) {
-      var fs = [], i, v;
-      for (i = 0; i < items.length; i += 1) {
-          v = items[i];
-          if (!v.passed_) {
-              fs.push(v);
-          }
+   * @return {Array} of failed items */
+  function failures(items) {
+    const fs = []; let i; let v;
+    for (i = 0; i < items.length; i += 1) {
+      v = items[i];
+      if (!v.passed_) {
+        fs.push(v);
       }
-      return fs;
+    }
+    return fs;
   }
 
   /**
    * Collect information about a Suite, recursively, and return a JSON result.
    * @param suite The Jasmine Suite to get data from
    */
-  function getSuiteData (suite) {
-      var suiteData = {
-              description : suite.description,
-              durationSec : 0,
-              specs: [],
-              suites: [],
-              passed: true
-          },
-          specs = suite.specs(),
-          suites = suite.suites(),
-          i, ilen;
+  function getSuiteData(suite) {
+    const suiteData = {
+      description: suite.description,
+      durationSec: 0,
+      specs: [],
+      suites: [],
+      passed: true,
+    };
+    const specs = suite.specs();
+    const suites = suite.suites();
+    let i; let ilen;
 
-      // Loop over all the Suite's Specs
-      for (i = 0, ilen = specs.length; i < ilen; ++i) {
-          suiteData.specs[i] = {
-              description : specs[i].description,
-              durationSec : specs[i].durationSec,
-              passed : specs[i].results().passedCount === specs[i].results().totalCount,
-              skipped : specs[i].results().skipped,
-              passedCount : specs[i].results().passedCount,
-              failedCount : specs[i].results().failedCount,
-              totalCount : specs[i].results().totalCount,
-              failures: failures(specs[i].results().getItems())
-          };
-          suiteData.passed = !suiteData.specs[i].passed ? false : suiteData.passed;
-          suiteData.durationSec += suiteData.specs[i].durationSec;
-      }
+    // Loop over all the Suite's Specs
+    for (i = 0, ilen = specs.length; i < ilen; ++i) {
+      suiteData.specs[i] = {
+        description: specs[i].description,
+        durationSec: specs[i].durationSec,
+        passed: specs[i].results().passedCount === specs[i].results().totalCount,
+        skipped: specs[i].results().skipped,
+        passedCount: specs[i].results().passedCount,
+        failedCount: specs[i].results().failedCount,
+        totalCount: specs[i].results().totalCount,
+        failures: failures(specs[i].results().getItems()),
+      };
+      suiteData.passed = !suiteData.specs[i].passed ? false : suiteData.passed;
+      suiteData.durationSec += suiteData.specs[i].durationSec;
+    }
 
-      // Loop over all the Suite's sub-Suites
-      for (i = 0, ilen = suites.length; i < ilen; ++i) {
-          suiteData.suites[i] = getSuiteData(suites[i]); //< recursive population
-          suiteData.passed = !suiteData.suites[i].passed ? false : suiteData.passed;
-          suiteData.durationSec += suiteData.suites[i].durationSec;
-      }
+    // Loop over all the Suite's sub-Suites
+    for (i = 0, ilen = suites.length; i < ilen; ++i) {
+      suiteData.suites[i] = getSuiteData(suites[i]); // < recursive population
+      suiteData.passed = !suiteData.suites[i].passed ? false : suiteData.passed;
+      suiteData.durationSec += suiteData.suites[i].durationSec;
+    }
 
-      // Rounding duration numbers to 3 decimal digits
-      suiteData.durationSec = round(suiteData.durationSec, 4);
+    // Rounding duration numbers to 3 decimal digits
+    suiteData.durationSec = round(suiteData.durationSec, 4);
 
-      return suiteData;
+    return suiteData;
   }
 
-  var JSReporter =  function () {
+  const JSReporter = function() {
   };
 
   JSReporter.prototype = {
-      reportRunnerStarting: function (runner) {
-          // Nothing to do
-      },
+    reportRunnerStarting: function(runner) {
+      // Nothing to do
+    },
 
-      reportSpecStarting: function (spec) {
-          // Start timing this spec
-          spec.startedAt = new Date();
-      },
+    reportSpecStarting: function(spec) {
+      // Start timing this spec
+      spec.startedAt = new Date();
+    },
 
-      reportSpecResults: function (spec) {
-          // Finish timing this spec and calculate duration/delta (in sec)
-          spec.finishedAt = new Date();
-          // If the spec was skipped, reportSpecStarting is never called and spec.startedAt is undefined
-          spec.durationSec = spec.startedAt ? elapsedSec(spec.startedAt.getTime(), spec.finishedAt.getTime()) : 0;
-      },
+    reportSpecResults: function(spec) {
+      // Finish timing this spec and calculate duration/delta (in sec)
+      spec.finishedAt = new Date();
+      // If the spec was skipped, reportSpecStarting is never called and spec.startedAt is undefined
+      spec.durationSec = spec.startedAt ? elapsedSec(spec.startedAt.getTime(), spec.finishedAt.getTime()) : 0;
+    },
 
-      reportSuiteResults: function (suite) {
-          // Nothing to do
-      },
+    reportSuiteResults: function(suite) {
+      // Nothing to do
+    },
 
-      reportRunnerResults: function (runner) {
-          var suites = runner.suites(),
-              i, j, ilen;
+    reportRunnerResults: function(runner) {
+      const suites = runner.suites();
+      let i; let j; let ilen;
 
-          // Attach results to the "jasmine" object to make those results easy to scrap/find
-          jasmine.runnerResults = {
-              suites: [],
-              durationSec : 0,
-              passed : true
-          };
+      // Attach results to the "jasmine" object to make those results easy to scrap/find
+      jasmine.runnerResults = {
+        suites: [],
+        durationSec: 0,
+        passed: true,
+      };
 
-          // Loop over all the Suites
-          for (i = 0, ilen = suites.length, j = 0; i < ilen; ++i) {
-              if (suites[i].parentSuite === null) {
-                  jasmine.runnerResults.suites[j] = getSuiteData(suites[i]);
-                  // If 1 suite fails, the whole runner fails
-                  jasmine.runnerResults.passed = !jasmine.runnerResults.suites[j].passed ? false : jasmine.runnerResults.passed;
-                  // Add up all the durations
-                  jasmine.runnerResults.durationSec += jasmine.runnerResults.suites[j].durationSec;
-                  j++;
-              }
-          }
-
-          // Decorate the 'jasmine' object with getters
-          jasmine.getJSReport = function () {
-              if (jasmine.runnerResults) {
-                  return jasmine.runnerResults;
-              }
-              return null;
-          };
-          jasmine.getJSReportAsString = function () {
-              return JSON.stringify(jasmine.getJSReport());
-          };
+      // Loop over all the Suites
+      for (i = 0, ilen = suites.length, j = 0; i < ilen; ++i) {
+        if (suites[i].parentSuite === null) {
+          jasmine.runnerResults.suites[j] = getSuiteData(suites[i]);
+          // If 1 suite fails, the whole runner fails
+          jasmine.runnerResults.passed = !jasmine.runnerResults.suites[j].passed ? false : jasmine.runnerResults.passed;
+          // Add up all the durations
+          jasmine.runnerResults.durationSec += jasmine.runnerResults.suites[j].durationSec;
+          j++;
+        }
       }
+
+      // Decorate the 'jasmine' object with getters
+      jasmine.getJSReport = function() {
+        if (jasmine.runnerResults) {
+          return jasmine.runnerResults;
+        }
+        return null;
+      };
+      jasmine.getJSReportAsString = function() {
+        return JSON.stringify(jasmine.getJSReport());
+      };
+    },
   };
 
   // export public
@@ -188,14 +187,14 @@
   /*
     Simple timer implementation
   */
-  var Timer = function () {};
+  const Timer = function() {};
 
-  Timer.prototype.start = function () {
+  Timer.prototype.start = function() {
     this.startTime = new Date().getTime();
     return this;
   };
 
-  Timer.prototype.elapsed = function () {
+  Timer.prototype.elapsed = function() {
     if (this.startTime == null) {
       return -1;
     }
@@ -205,21 +204,21 @@
   /*
     Utility methods
   */
-  var _extend = function (obj1, obj2) {
-    for (var prop in obj2) {
+  const _extend = function(obj1, obj2) {
+    for (const prop in obj2) {
       obj1[prop] = obj2[prop];
     }
     return obj1;
   };
-  var _clone = function (obj) {
+  const _clone = function(obj) {
     if (obj !== Object(obj)) {
       return obj;
     }
     return _extend({}, obj);
   };
 
-  jasmine.JSReporter2 = function () {
-    this.specs  = {};
+  jasmine.JSReporter2 = function() {
+    this.specs = {};
     this.suites = {};
     this.rootSuites = [];
     this.suiteStack = [];
@@ -229,12 +228,12 @@
     jasmine.getJSReportAsString = this.getJSReportAsString;
   };
 
-  var JSR = jasmine.JSReporter2.prototype;
+  const JSR = jasmine.JSReporter2.prototype;
 
   // Reporter API methods
   // --------------------
 
-  JSR.suiteStarted = function (suite) {
+  JSR.suiteStarted = function(suite) {
     suite = this._cacheSuite(suite);
     // build up suite tree as we go
     suite.specs = [];
@@ -250,14 +249,14 @@
     suite.timer = new Timer().start();
   };
 
-  JSR.suiteDone = function (suite) {
+  JSR.suiteDone = function(suite) {
     suite = this._cacheSuite(suite);
     suite.duration = suite.timer.elapsed();
     suite.durationSec = suite.duration / 1000;
     this.suiteStack.pop();
 
     // maintain parent suite state
-    var parent = this.suites[suite.parentId];
+    const parent = this.suites[suite.parentId];
     if (parent) {
       parent.passed = parent.passed && suite.passed;
     }
@@ -269,7 +268,7 @@
     delete suite.fullName;
   };
 
-  JSR.specStarted = function (spec) {
+  JSR.specStarted = function(spec) {
     spec = this._cacheSpec(spec);
     spec.timer = new Timer().start();
     // build up suites->spec tree as we go
@@ -277,7 +276,7 @@
     this.suites[spec.suiteId].specs.push(spec);
   };
 
-  JSR.specDone = function (spec) {
+  JSR.specDone = function(spec) {
     spec = this._cacheSpec(spec);
 
     spec.duration = spec.timer.elapsed();
@@ -293,8 +292,8 @@
     spec.failedCount = spec.failedExpectations.length;
     spec.failures = [];
 
-    for (var i = 0, j = spec.failedExpectations.length; i < j; i++) {
-      var fail = spec.failedExpectations[i];
+    for (let i = 0, j = spec.failedExpectations.length; i < j; i++) {
+      const fail = spec.failedExpectations[i];
       spec.failures.push({
         type: 'expect',
         expected: fail.expected,
@@ -302,13 +301,13 @@
         message: fail.message,
         matcherName: fail.matcherName,
         trace: {
-          stack: fail.stack
-        }
+          stack: fail.stack,
+        },
       });
     }
 
     // maintain parent suite state
-    var parent = this.suites[spec.suiteId];
+    const parent = this.suites[spec.suiteId];
     if (spec.failed) {
       parent.failingSpecs.push(spec);
     }
@@ -325,17 +324,17 @@
     delete spec.failedExpectations;
   };
 
-  JSR.jasmineDone = function () {
+  JSR.jasmineDone = function() {
     this._buildReport();
   };
 
-  JSR.getJSReport = function () {
+  JSR.getJSReport = function() {
     if (jasmine.jsReport) {
       return jasmine.jsReport;
     }
   };
 
-  JSR.getJSReportAsString = function () {
+  JSR.getJSReportAsString = function() {
     if (jasmine.jsReport) {
       return JSON.stringify(jasmine.jsReport);
     }
@@ -344,12 +343,12 @@
   // Private methods
   // ---------------
 
-  JSR._haveSpec = function (spec) {
+  JSR._haveSpec = function(spec) {
     return this.specs[spec.id] != null;
   };
 
-  JSR._cacheSpec = function (spec) {
-    var existing = this.specs[spec.id];
+  JSR._cacheSpec = function(spec) {
+    let existing = this.specs[spec.id];
     if (existing == null) {
       existing = this.specs[spec.id] = _clone(spec);
     } else {
@@ -358,12 +357,12 @@
     return existing;
   };
 
-  JSR._haveSuite = function (suite) {
+  JSR._haveSuite = function(suite) {
     return this.suites[suite.id] != null;
   };
 
-  JSR._cacheSuite = function (suite) {
-    var existing = this.suites[suite.id];
+  JSR._cacheSuite = function(suite) {
+    let existing = this.suites[suite.id];
     if (existing == null) {
       existing = this.suites[suite.id] = _clone(suite);
     } else {
@@ -372,13 +371,13 @@
     return existing;
   };
 
-  JSR._buildReport = function () {
-    var overallDuration = 0;
-    var overallPassed = true;
-    var overallSuites = [];
+  JSR._buildReport = function() {
+    let overallDuration = 0;
+    let overallPassed = true;
+    const overallSuites = [];
 
-    for (var i = 0, j = this.rootSuites.length; i < j; i++) {
-      var suite = this.suites[this.rootSuites[i]];
+    for (let i = 0, j = this.rootSuites.length; i < j; i++) {
+      const suite = this.suites[this.rootSuites[i]];
       overallDuration += suite.duration;
       overallPassed = overallPassed && suite.passed;
       overallSuites.push(suite);
@@ -387,8 +386,7 @@
     jasmine.jsReport = {
       passed: overallPassed,
       durationSec: overallDuration / 1000,
-      suites: overallSuites
+      suites: overallSuites,
     };
   };
-
 })(jasmine);

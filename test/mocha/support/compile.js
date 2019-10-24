@@ -3,28 +3,28 @@
  * Module dependencies.
  */
 
-var fs = require('fs');
+const fs = require('fs');
 
 /**
  * Arguments.
  */
 
-var args = process.argv.slice(2)
-  , pending = args.length
-  , files = {};
+const args = process.argv.slice(2)
+  ; let pending = args.length
+  ; const files = {};
 
 console.log('');
 
 // parse arguments
 
-args.forEach(function(file){
-  var mod = file.replace('lib/', '');
-  fs.readFile(file, 'utf8', function(err, js){
+args.forEach(function(file) {
+  const mod = file.replace('lib/', '');
+  fs.readFile(file, 'utf8', function(err, js) {
     if (err) throw err;
     console.log('  \u001b[90mcompile : \u001b[0m\u001b[36m%s\u001b[0m', file);
-    files[file] = ~js.indexOf('require: off')
-      ? js
-      : parse(js);
+    files[file] = ~js.indexOf('require: off') ?
+      js :
+      parse(js);
     --pending || compile();
   });
 });
@@ -43,12 +43,12 @@ function parse(js) {
 
 function parseRequires(js) {
   return js
-    .replace(/require\('events'\)/g, "require('browser/events')")
-    .replace(/require\('debug'\)/g, "require('browser/debug')")
-    .replace(/require\('path'\)/g, "require('browser/path')")
-    .replace(/require\('diff'\)/g, "require('browser/diff')")
-    .replace(/require\('tty'\)/g, "require('browser/tty')")
-    .replace(/require\('fs'\)/g, "require('browser/fs')")
+      .replace(/require\('events'\)/g, 'require(\'browser/events\')')
+      .replace(/require\('debug'\)/g, 'require(\'browser/debug\')')
+      .replace(/require\('path'\)/g, 'require(\'browser/path\')')
+      .replace(/require\('diff'\)/g, 'require(\'browser/diff\')')
+      .replace(/require\('tty'\)/g, 'require(\'browser/tty\')')
+      .replace(/require\('fs'\)/g, 'require(\'browser/fs\')');
 }
 
 /**
@@ -57,12 +57,12 @@ function parseRequires(js) {
 
 function parseInheritance(js) {
   return js
-    .replace(/^ *(\w+)\.prototype\.__proto__ * = *(\w+)\.prototype *;?/gm, function(_, child, parent){
-      return 'function F(){};\n'
-        + 'F.prototype = ' + parent + '.prototype;\n'
-        + child + '.prototype = new F;\n'
-        + child + '.prototype.constructor = '+ child + ';\n';
-    });
+      .replace(/^ *(\w+)\.prototype\.__proto__ * = *(\w+)\.prototype *;?/gm, function(_, child, parent) {
+        return 'function F(){};\n' +
+        'F.prototype = ' + parent + '.prototype;\n' +
+        child + '.prototype = new F;\n' +
+        child + '.prototype.constructor = '+ child + ';\n';
+      });
 }
 
 /**
@@ -70,21 +70,21 @@ function parseInheritance(js) {
  */
 
 function compile() {
-  var buf = '';
+  let buf = '';
   buf += '\n// CommonJS require()\n\n';
   buf += browser.require + '\n\n';
   buf += 'require.modules = {};\n\n';
   buf += 'require.resolve = ' + browser.resolve + ';\n\n';
   buf += 'require.register = ' + browser.register + ';\n\n';
   buf += 'require.relative = ' + browser.relative + ';\n\n';
-  args.forEach(function(file){
-    var js = files[file];
+  args.forEach(function(file) {
+    const js = files[file];
     file = file.replace('lib/', '');
     buf += '\nrequire.register("' + file + '", function(module, exports, require){\n';
     buf += js;
     buf += '\n}); // module: ' + file + '\n';
   });
-  fs.writeFile('_mocha.js', buf, function(err){
+  fs.writeFile('_mocha.js', buf, function(err) {
     if (err) throw err;
     console.log('  \u001b[90m create : \u001b[0m\u001b[36m%s\u001b[0m', 'mocha.js');
     console.log();
@@ -100,9 +100,9 @@ var browser = {
    * Require a module.
    */
 
-  require: function require(p){
-    var path = require.resolve(p)
-      , mod = require.modules[path];
+  require: function require(p) {
+    const path = require.resolve(p)
+      ; const mod = require.modules[path];
     if (!mod) throw new Error('failed to require "' + p + '"');
     if (!mod.exports) {
       mod.exports = {};
@@ -115,13 +115,13 @@ var browser = {
    * Resolve module path.
    */
 
-  resolve: function(path){
-    var orig = path
-      , reg = path + '.js'
-      , index = path + '/index.js';
-    return require.modules[reg] && reg
-      || require.modules[index] && index
-      || orig;
+  resolve: function(path) {
+    const orig = path
+      ; const reg = path + '.js'
+      ; const index = path + '/index.js';
+    return require.modules[reg] && reg ||
+      require.modules[index] && index ||
+      orig;
   },
 
   /**
@@ -129,15 +129,15 @@ var browser = {
    */
 
   relative: function(parent) {
-    return function(p){
+    return function(p) {
       if ('.' != p.charAt(0)) return require(p);
 
-      var path = parent.split('/')
-        , segs = p.split('/');
+      const path = parent.split('/')
+        ; const segs = p.split('/');
       path.pop();
 
-      for (var i = 0; i < segs.length; i++) {
-        var seg = segs[i];
+      for (let i = 0; i < segs.length; i++) {
+        const seg = segs[i];
         if ('..' == seg) path.pop();
         else if ('.' != seg) path.push(seg);
       }
@@ -150,7 +150,7 @@ var browser = {
    * Register a module.
    */
 
-  register: function(path, fn){
+  register: function(path, fn) {
     require.modules[path] = fn;
-  }
+  },
 };

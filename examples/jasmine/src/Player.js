@@ -11,7 +11,7 @@ Player.prototype.pause = function() {
 
 Player.prototype.resume = function() {
   if (this.isPlaying) {
-    throw new Error("song is already playing");
+    throw new Error('song is already playing');
   }
 
   this.isPlaying = true;

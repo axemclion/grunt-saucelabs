@@ -3,11 +3,11 @@
  * Module dependencies.
  */
 
-var EventEmitter = require('events').EventEmitter
-  , debug = require('debug')('mocha:suite')
-  , milliseconds = require('./ms')
-  , utils = require('./utils')
-  , Hook = require('./hook');
+const EventEmitter = require('events').EventEmitter
+  ; const debug = require('debug')('mocha:suite')
+  ; const milliseconds = require('./ms')
+  ; const utils = require('./utils')
+  ; const Hook = require('./hook');
 
 /**
  * Expose `Suite`.
@@ -28,8 +28,8 @@ exports = module.exports = Suite;
  * @api public
  */
 
-exports.create = function(parent, title){
-  var suite = new Suite(title, parent.ctx);
+exports.create = function(parent, title) {
+  const suite = new Suite(title, parent.ctx);
   suite.parent = parent;
   if (parent.pending) suite.pending = true;
   title = suite.fullTitle();
@@ -75,8 +75,8 @@ Suite.prototype.__proto__ = EventEmitter.prototype;
  * @api private
  */
 
-Suite.prototype.clone = function(){
-  var suite = new Suite(this.title);
+Suite.prototype.clone = function() {
+  const suite = new Suite(this.title);
   debug('clone');
   suite.ctx = this.ctx;
   suite.timeout(this.timeout());
@@ -93,7 +93,7 @@ Suite.prototype.clone = function(){
  * @api private
  */
 
-Suite.prototype.timeout = function(ms){
+Suite.prototype.timeout = function(ms) {
   if (0 == arguments.length) return this._timeout;
   if ('string' == typeof ms) ms = milliseconds(ms);
   debug('timeout %d', ms);
@@ -109,7 +109,7 @@ Suite.prototype.timeout = function(ms){
  * @api private
  */
 
-Suite.prototype.slow = function(ms){
+Suite.prototype.slow = function(ms) {
   if (0 === arguments.length) return this._slow;
   if ('string' == typeof ms) ms = milliseconds(ms);
   debug('slow %d', ms);
@@ -125,7 +125,7 @@ Suite.prototype.slow = function(ms){
  * @api private
  */
 
-Suite.prototype.bail = function(bail){
+Suite.prototype.bail = function(bail) {
   if (0 == arguments.length) return this._bail;
   debug('bail %s', bail);
   this._bail = bail;
@@ -140,9 +140,9 @@ Suite.prototype.bail = function(bail){
  * @api private
  */
 
-Suite.prototype.beforeAll = function(fn){
+Suite.prototype.beforeAll = function(fn) {
   if (this.pending) return this;
-  var hook = new Hook('"before all" hook', fn);
+  const hook = new Hook('"before all" hook', fn);
   hook.parent = this;
   hook.timeout(this.timeout());
   hook.slow(this.slow());
@@ -160,9 +160,9 @@ Suite.prototype.beforeAll = function(fn){
  * @api private
  */
 
-Suite.prototype.afterAll = function(fn){
+Suite.prototype.afterAll = function(fn) {
   if (this.pending) return this;
-  var hook = new Hook('"after all" hook', fn);
+  const hook = new Hook('"after all" hook', fn);
   hook.parent = this;
   hook.timeout(this.timeout());
   hook.slow(this.slow());
@@ -180,9 +180,9 @@ Suite.prototype.afterAll = function(fn){
  * @api private
  */
 
-Suite.prototype.beforeEach = function(fn){
+Suite.prototype.beforeEach = function(fn) {
   if (this.pending) return this;
-  var hook = new Hook('"before each" hook', fn);
+  const hook = new Hook('"before each" hook', fn);
   hook.parent = this;
   hook.timeout(this.timeout());
   hook.slow(this.slow());
@@ -200,9 +200,9 @@ Suite.prototype.beforeEach = function(fn){
  * @api private
  */
 
-Suite.prototype.afterEach = function(fn){
+Suite.prototype.afterEach = function(fn) {
   if (this.pending) return this;
-  var hook = new Hook('"after each" hook', fn);
+  const hook = new Hook('"after each" hook', fn);
   hook.parent = this;
   hook.timeout(this.timeout());
   hook.slow(this.slow());
@@ -220,7 +220,7 @@ Suite.prototype.afterEach = function(fn){
  * @api private
  */
 
-Suite.prototype.addSuite = function(suite){
+Suite.prototype.addSuite = function(suite) {
   suite.parent = this;
   suite.timeout(this.timeout());
   suite.slow(this.slow());
@@ -238,7 +238,7 @@ Suite.prototype.addSuite = function(suite){
  * @api private
  */
 
-Suite.prototype.addTest = function(test){
+Suite.prototype.addTest = function(test) {
   test.parent = this;
   test.timeout(this.timeout());
   test.slow(this.slow());
@@ -256,9 +256,9 @@ Suite.prototype.addTest = function(test){
  * @api public
  */
 
-Suite.prototype.fullTitle = function(){
+Suite.prototype.fullTitle = function() {
   if (this.parent) {
-    var full = this.parent.fullTitle();
+    const full = this.parent.fullTitle();
     if (full) return full + ' ' + this.title;
   }
   return this.title;
@@ -271,8 +271,8 @@ Suite.prototype.fullTitle = function(){
  * @api public
  */
 
-Suite.prototype.total = function(){
-  return utils.reduce(this.suites, function(sum, suite){
+Suite.prototype.total = function() {
+  return utils.reduce(this.suites, function(sum, suite) {
     return sum + suite.total();
   }, 0) + this.tests.length;
 };
@@ -287,9 +287,9 @@ Suite.prototype.total = function(){
  * @api private
  */
 
-Suite.prototype.eachTest = function(fn){
+Suite.prototype.eachTest = function(fn) {
   utils.forEach(this.tests, fn);
-  utils.forEach(this.suites, function(suite){
+  utils.forEach(this.suites, function(suite) {
     suite.eachTest(fn);
   });
   return this;

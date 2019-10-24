@@ -3,7 +3,7 @@
  * Module dependencies.
  */
 
-var Base = require('./base');
+const Base = require('./base');
 
 /**
  * Expose `Min`.
@@ -21,7 +21,7 @@ exports = module.exports = Min;
 function Min(runner) {
   Base.call(this, runner);
 
-  runner.on('start', function(){
+  runner.on('start', function() {
     // clear screen
     process.stdout.write('\u001b[2J');
     // set cursor position

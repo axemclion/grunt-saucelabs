@@ -3,8 +3,8 @@
  * Module dependencies.
  */
 
-var JSONCov = require('./json-cov')
-  , fs = require('fs');
+const JSONCov = require('./json-cov')
+  ; const fs = require('fs');
 
 /**
  * Expose `HTMLCov`.
@@ -20,18 +20,18 @@ exports = module.exports = HTMLCov;
  */
 
 function HTMLCov(runner) {
-  var jade = require('jade')
-    , file = __dirname + '/templates/coverage.jade'
-    , str = fs.readFileSync(file, 'utf8')
-    , fn = jade.compile(str, { filename: file })
-    , self = this;
+  const jade = require('jade')
+    ; const file = __dirname + '/templates/coverage.jade'
+    ; const str = fs.readFileSync(file, 'utf8')
+    ; const fn = jade.compile(str, {filename: file})
+    ; const self = this;
 
   JSONCov.call(this, runner, false);
 
-  runner.on('end', function(){
+  runner.on('end', function() {
     process.stdout.write(fn({
-        cov: self.cov
-      , coverageClass: coverageClass
+      cov: self.cov,
+      coverageClass: coverageClass,
     }));
   });
 }

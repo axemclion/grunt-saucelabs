@@ -1,9 +1,9 @@
 
-exports.isatty = function(){
+exports.isatty = function() {
   return true;
 };
 
-exports.getWindowSize = function(){
+exports.getWindowSize = function() {
   if ('innerHeight' in global) {
     return [global.innerHeight, global.innerWidth];
   } else {

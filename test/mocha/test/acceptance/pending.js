@@ -1,4 +1,4 @@
 
-describe('pending', function(){
-  it('should be allowed')
-})
+describe('pending', function() {
+  it('should be allowed');
+});

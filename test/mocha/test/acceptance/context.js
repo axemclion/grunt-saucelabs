@@ -1,26 +1,26 @@
 
-describe('Context', function(){
-  beforeEach(function(){
+describe('Context', function() {
+  beforeEach(function() {
     this.calls = ['before'];
-  })
+  });
 
-  describe('nested', function(){
-    beforeEach(function(){
+  describe('nested', function() {
+    beforeEach(function() {
       this.calls.push('before two');
-    })
+    });
 
-    it('should work', function(){
+    it('should work', function() {
       this.calls.should.eql(['before', 'before two']);
       this.calls.push('test');
-    })
+    });
 
-    after(function(){
+    after(function() {
       this.calls.should.eql(['before', 'before two', 'test']);
       this.calls.push('after two');
-    })
-  })
+    });
+  });
 
-  after(function(){
+  after(function() {
     this.calls.should.eql(['before', 'before two', 'test', 'after two']);
-  })
-})
+  });
+});

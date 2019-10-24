@@ -1,10 +1,10 @@
 
-describe('asyncOnly', function(){
-  it('should display an error', function(){
+describe('asyncOnly', function() {
+  it('should display an error', function() {
 
-  })
+  });
 
-  it('should pass', function(done){
+  it('should pass', function(done) {
     done();
-  })
-})
+  });
+});

@@ -3,9 +3,9 @@
  * Module dependencies.
  */
 
-var Base = require('./base')
-  , cursor = Base.cursor
-  , color = Base.color;
+const Base = require('./base')
+  ; const cursor = Base.cursor
+  ; const color = Base.color;
 
 /**
  * Expose `List`.
@@ -23,33 +23,33 @@ exports = module.exports = List;
 function List(runner) {
   Base.call(this, runner);
 
-  var self = this
-    , stats = this.stats
-    , n = 0;
+  const self = this
+    ; const stats = this.stats
+    ; let n = 0;
 
-  runner.on('start', function(){
+  runner.on('start', function() {
     console.log();
   });
 
-  runner.on('test', function(test){
+  runner.on('test', function(test) {
     process.stdout.write(color('pass', '    ' + test.fullTitle() + ': '));
   });
 
-  runner.on('pending', function(test){
-    var fmt = color('checkmark', '  -')
-      + color('pending', ' %s');
+  runner.on('pending', function(test) {
+    const fmt = color('checkmark', '  -') +
+      color('pending', ' %s');
     console.log(fmt, test.fullTitle());
   });
 
-  runner.on('pass', function(test){
-    var fmt = color('checkmark', '  '+Base.symbols.dot)
-      + color('pass', ' %s: ')
-      + color(test.speed, '%dms');
+  runner.on('pass', function(test) {
+    const fmt = color('checkmark', '  '+Base.symbols.dot) +
+      color('pass', ' %s: ') +
+      color(test.speed, '%dms');
     cursor.CR();
     console.log(fmt, test.fullTitle(), test.duration);
   });
 
-  runner.on('fail', function(test, err){
+  runner.on('fail', function(test, err) {
     cursor.CR();
     console.log(color('fail', '  %d) %s'), ++n, test.fullTitle());
   });

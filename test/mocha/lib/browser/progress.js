@@ -23,7 +23,7 @@ function Progress() {
  * @api public
  */
 
-Progress.prototype.size = function(n){
+Progress.prototype.size = function(n) {
   this._size = n;
   return this;
 };
@@ -36,7 +36,7 @@ Progress.prototype.size = function(n){
  * @api public
  */
 
-Progress.prototype.text = function(str){
+Progress.prototype.text = function(str) {
   this._text = str;
   return this;
 };
@@ -49,7 +49,7 @@ Progress.prototype.text = function(str){
  * @api public
  */
 
-Progress.prototype.fontSize = function(n){
+Progress.prototype.fontSize = function(n) {
   this._fontSize = n;
   return this;
 };
@@ -61,7 +61,7 @@ Progress.prototype.fontSize = function(n){
  * @return {Progress} for chaining
  */
 
-Progress.prototype.font = function(family){
+Progress.prototype.font = function(family) {
   this._font = family;
   return this;
 };
@@ -73,7 +73,7 @@ Progress.prototype.font = function(family){
  * @return {Progress} for chaining
  */
 
-Progress.prototype.update = function(n){
+Progress.prototype.update = function(n) {
   this.percent = n;
   return this;
 };
@@ -85,41 +85,41 @@ Progress.prototype.update = function(n){
  * @return {Progress} for chaining
  */
 
-Progress.prototype.draw = function(ctx){
+Progress.prototype.draw = function(ctx) {
   try {
-    var percent = Math.min(this.percent, 100)
-      , size = this._size
-      , half = size / 2
-      , x = half
-      , y = half
-      , rad = half - 1
-      , fontSize = this._fontSize;
-  
+    const percent = Math.min(this.percent, 100)
+      ; const size = this._size
+      ; const half = size / 2
+      ; const x = half
+      ; const y = half
+      ; const rad = half - 1
+      ; const fontSize = this._fontSize;
+
     ctx.font = fontSize + 'px ' + this._font;
-  
-    var angle = Math.PI * 2 * (percent / 100);
+
+    const angle = Math.PI * 2 * (percent / 100);
     ctx.clearRect(0, 0, size, size);
-  
+
     // outer circle
     ctx.strokeStyle = '#9f9f9f';
     ctx.beginPath();
     ctx.arc(x, y, rad, 0, angle, false);
     ctx.stroke();
-  
+
     // inner circle
     ctx.strokeStyle = '#eee';
     ctx.beginPath();
     ctx.arc(x, y, rad - 1, 0, angle, true);
     ctx.stroke();
-  
+
     // text
-    var text = this._text || (percent | 0) + '%'
-      , w = ctx.measureText(text).width;
-  
+    const text = this._text || (percent | 0) + '%'
+      ; const w = ctx.measureText(text).width;
+
     ctx.fillText(
         text
-      , x - w / 2 + 1
-      , y + fontSize / 2 - 1);
-  } catch (ex) {} //don't fail if we can't render progress
+        , x - w / 2 + 1
+        , y + fontSize / 2 - 1);
+  } catch (ex) {} // don't fail if we can't render progress
   return this;
 };

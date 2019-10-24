@@ -3,7 +3,7 @@
  * Module dependencies.
  */
 
-var Base = require('./base');
+const Base = require('./base');
 
 /**
  * Expose `JSONCov`.
@@ -20,30 +20,30 @@ exports = module.exports = JSONCov;
  */
 
 function JSONCov(runner, output) {
-  var self = this
-    , output = 1 == arguments.length ? true : output;
+  const self = this
+    ; var output = 1 == arguments.length ? true : output;
 
   Base.call(this, runner);
 
-  var tests = []
-    , failures = []
-    , passes = [];
+  const tests = []
+    ; const failures = []
+    ; const passes = [];
 
-  runner.on('test end', function(test){
+  runner.on('test end', function(test) {
     tests.push(test);
   });
 
-  runner.on('pass', function(test){
+  runner.on('pass', function(test) {
     passes.push(test);
   });
 
-  runner.on('fail', function(test){
+  runner.on('fail', function(test) {
     failures.push(test);
   });
 
-  runner.on('end', function(){
-    var cov = global._$jscoverage || {};
-    var result = self.cov = map(cov);
+  runner.on('end', function() {
+    const cov = global._$jscoverage || {};
+    const result = self.cov = map(cov);
     result.stats = self.stats;
     result.tests = tests.map(clean);
     result.failures = failures.map(clean);
@@ -63,17 +63,17 @@ function JSONCov(runner, output) {
  */
 
 function map(cov) {
-  var ret = {
-      instrumentation: 'node-jscoverage'
-    , sloc: 0
-    , hits: 0
-    , misses: 0
-    , coverage: 0
-    , files: []
+  const ret = {
+    instrumentation: 'node-jscoverage',
+    sloc: 0,
+    hits: 0,
+    misses: 0,
+    coverage: 0,
+    files: [],
   };
 
-  for (var filename in cov) {
-    var data = coverage(filename, cov[filename]);
+  for (const filename in cov) {
+    const data = coverage(filename, cov[filename]);
     ret.files.push(data);
     ret.hits += data.hits;
     ret.misses += data.misses;
@@ -102,16 +102,16 @@ function map(cov) {
  */
 
 function coverage(filename, data) {
-  var ret = {
+  const ret = {
     filename: filename,
     coverage: 0,
     hits: 0,
     misses: 0,
     sloc: 0,
-    source: {}
+    source: {},
   };
 
-  data.source.forEach(function(line, num){
+  data.source.forEach(function(line, num) {
     num++;
 
     if (data[num] === 0) {
@@ -123,10 +123,10 @@ function coverage(filename, data) {
     }
 
     ret.source[num] = {
-        source: line
-      , coverage: data[num] === undefined
-        ? ''
-        : data[num]
+      source: line,
+      coverage: data[num] === undefined ?
+        '' :
+        data[num],
     };
   });
 
@@ -146,8 +146,8 @@ function coverage(filename, data) {
 
 function clean(test) {
   return {
-      title: test.title
-    , fullTitle: test.fullTitle()
-    , duration: test.duration
-  }
+    title: test.title,
+    fullTitle: test.fullTitle(),
+    duration: test.duration,
+  };
 }

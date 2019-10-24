@@ -1,2 +1,2 @@
-global.required = (global.required || [])
-global.required.push('c.js')
+global.required = (global.required || []);
+global.required.push('c.js');

@@ -19,7 +19,7 @@ function isArray(obj) {
  * @api public
  */
 
-function EventEmitter(){};
+function EventEmitter() {};
 
 /**
  * Adds a listener.
@@ -27,7 +27,7 @@ function EventEmitter(){};
  * @api public
  */
 
-EventEmitter.prototype.on = function (name, fn) {
+EventEmitter.prototype.on = function(name, fn) {
   if (!this.$events) {
     this.$events = {};
   }
@@ -51,10 +51,10 @@ EventEmitter.prototype.addListener = EventEmitter.prototype.on;
  * @api public
  */
 
-EventEmitter.prototype.once = function (name, fn) {
-  var self = this;
+EventEmitter.prototype.once = function(name, fn) {
+  const self = this;
 
-  function on () {
+  function on() {
     self.removeListener(name, on);
     fn.apply(this, arguments);
   };
@@ -71,14 +71,14 @@ EventEmitter.prototype.once = function (name, fn) {
  * @api public
  */
 
-EventEmitter.prototype.removeListener = function (name, fn) {
+EventEmitter.prototype.removeListener = function(name, fn) {
   if (this.$events && this.$events[name]) {
-    var list = this.$events[name];
+    const list = this.$events[name];
 
     if (isArray(list)) {
-      var pos = -1;
+      let pos = -1;
 
-      for (var i = 0, l = list.length; i < l; i++) {
+      for (let i = 0, l = list.length; i < l; i++) {
         if (list[i] === fn || (list[i].listener && list[i].listener === fn)) {
           pos = i;
           break;
@@ -108,7 +108,7 @@ EventEmitter.prototype.removeListener = function (name, fn) {
  * @api public
  */
 
-EventEmitter.prototype.removeAllListeners = function (name) {
+EventEmitter.prototype.removeAllListeners = function(name) {
   if (name === undefined) {
     this.$events = {};
     return this;
@@ -127,7 +127,7 @@ EventEmitter.prototype.removeAllListeners = function (name) {
  * @api public
  */
 
-EventEmitter.prototype.listeners = function (name) {
+EventEmitter.prototype.listeners = function(name) {
   if (!this.$events) {
     this.$events = {};
   }
@@ -149,25 +149,25 @@ EventEmitter.prototype.listeners = function (name) {
  * @api public
  */
 
-EventEmitter.prototype.emit = function (name) {
+EventEmitter.prototype.emit = function(name) {
   if (!this.$events) {
     return false;
   }
 
-  var handler = this.$events[name];
+  const handler = this.$events[name];
 
   if (!handler) {
     return false;
   }
 
-  var args = [].slice.call(arguments, 1);
+  const args = [].slice.call(arguments, 1);
 
   if ('function' == typeof handler) {
     handler.apply(this, args);
   } else if (isArray(handler)) {
-    var listeners = handler.slice();
+    const listeners = handler.slice();
 
-    for (var i = 0, l = listeners.length; i < l; i++) {
+    for (let i = 0, l = listeners.length; i < l; i++) {
       listeners[i].apply(this, args);
     }
   } else {

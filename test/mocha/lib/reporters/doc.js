@@ -3,8 +3,8 @@
  * Module dependencies.
  */
 
-var Base = require('./base')
-  , utils = require('../utils');
+const Base = require('./base')
+  ; const utils = require('../utils');
 
 /**
  * Expose `Doc`.
@@ -22,16 +22,16 @@ exports = module.exports = Doc;
 function Doc(runner) {
   Base.call(this, runner);
 
-  var self = this
-    , stats = this.stats
-    , total = runner.total
-    , indents = 2;
+  const self = this
+    ; const stats = this.stats
+    ; const total = runner.total
+    ; let indents = 2;
 
   function indent() {
     return Array(indents).join('  ');
   }
 
-  runner.on('suite', function(suite){
+  runner.on('suite', function(suite) {
     if (suite.root) return;
     ++indents;
     console.log('%s<section class="suite">', indent());
@@ -40,7 +40,7 @@ function Doc(runner) {
     console.log('%s<dl>', indent());
   });
 
-  runner.on('suite end', function(suite){
+  runner.on('suite end', function(suite) {
     if (suite.root) return;
     console.log('%s</dl>', indent());
     --indents;
@@ -48,9 +48,9 @@ function Doc(runner) {
     --indents;
   });
 
-  runner.on('pass', function(test){
+  runner.on('pass', function(test) {
     console.log('%s  <dt>%s</dt>', indent(), utils.escape(test.title));
-    var code = utils.escape(utils.clean(test.fn.toString()));
+    const code = utils.escape(utils.clean(test.fn.toString()));
     console.log('%s  <dd><pre><code>%s</code></pre></dd>', indent(), code);
   });
 }

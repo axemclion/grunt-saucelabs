@@ -3,7 +3,7 @@
  * Module dependencies.
  */
 
-var Runnable = require('./runnable');
+const Runnable = require('./runnable');
 
 /**
  * Expose `Test`.

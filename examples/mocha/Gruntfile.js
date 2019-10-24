@@ -1,52 +1,52 @@
-module.exports = function (grunt) {
-  var browsers = [{
+module.exports = function(grunt) {
+  const browsers = [{
     browserName: 'firefox',
     version: '19',
-    platform: 'XP'
+    platform: 'XP',
   }, {
     browserName: 'googlechrome',
-    platform: 'XP'
+    platform: 'XP',
   }, {
     browserName: 'googlechrome',
-    platform: 'linux'
+    platform: 'linux',
   }, {
     browserName: 'internet explorer',
     platform: 'WIN8',
-    version: '10'
+    version: '10',
   }, {
     browserName: 'internet explorer',
     platform: 'VISTA',
-    version: '9'
+    version: '9',
   }];
 
   grunt.initConfig({
-    pkg: grunt.file.readJSON('package.json'),
-    connect: {
+    'pkg': grunt.file.readJSON('package.json'),
+    'connect': {
       server: {
         options: {
           base: '',
-          port: 9999
-        }
-      }
+          port: 9999,
+        },
+      },
     },
 
     'saucelabs-mocha': {
       all: {
         options: {
           urls: [
-            'http://127.0.0.1:9999/index.html'
+            'http://127.0.0.1:9999/index.html',
           ],
           browsers: browsers,
           build: process.env.TRAVIS_JOB_ID,
           testname: 'mocha tests',
           throttled: 3,
           sauceConfig: {
-            'video-upload-on-pass': false
-          }
-        }
-      }
+            'video-upload-on-pass': false,
+          },
+        },
+      },
     },
-    watch: {}
+    'watch': {},
   });
 
   grunt.loadNpmTasks('grunt-contrib-connect');

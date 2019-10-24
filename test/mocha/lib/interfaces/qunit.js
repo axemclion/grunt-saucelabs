@@ -3,9 +3,9 @@
  * Module dependencies.
  */
 
-var Suite = require('../suite')
-  , Test = require('../test')
-  , utils = require('../utils');
+const Suite = require('../suite')
+  ; const Test = require('../test')
+  ; const utils = require('../utils');
 
 /**
  * QUnit-style interface:
@@ -32,16 +32,15 @@ var Suite = require('../suite')
  *
  */
 
-module.exports = function(suite){
-  var suites = [suite];
+module.exports = function(suite) {
+  const suites = [suite];
 
-  suite.on('pre-require', function(context, file, mocha){
-
+  suite.on('pre-require', function(context, file, mocha) {
     /**
      * Execute before running tests.
      */
 
-    context.before = function(fn){
+    context.before = function(fn) {
       suites[0].beforeAll(fn);
     };
 
@@ -49,7 +48,7 @@ module.exports = function(suite){
      * Execute after running tests.
      */
 
-    context.after = function(fn){
+    context.after = function(fn) {
       suites[0].afterAll(fn);
     };
 
@@ -57,7 +56,7 @@ module.exports = function(suite){
      * Execute before each test case.
      */
 
-    context.beforeEach = function(fn){
+    context.beforeEach = function(fn) {
       suites[0].beforeEach(fn);
     };
 
@@ -65,7 +64,7 @@ module.exports = function(suite){
      * Execute after each test case.
      */
 
-    context.afterEach = function(fn){
+    context.afterEach = function(fn) {
       suites[0].afterEach(fn);
     };
 
@@ -73,9 +72,9 @@ module.exports = function(suite){
      * Describe a "suite" with the given `title`.
      */
 
-    context.suite = function(title){
+    context.suite = function(title) {
       if (suites.length > 1) suites.shift();
-      var suite = Suite.create(suites[0], title);
+      const suite = Suite.create(suites[0], title);
       suites.unshift(suite);
       return suite;
     };
@@ -84,8 +83,8 @@ module.exports = function(suite){
      * Exclusive test-case.
      */
 
-    context.suite.only = function(title, fn){
-      var suite = context.suite(title, fn);
+    context.suite.only = function(title, fn) {
+      const suite = context.suite(title, fn);
       mocha.grep(suite.fullTitle());
     };
 
@@ -95,8 +94,8 @@ module.exports = function(suite){
      * acting as a thunk.
      */
 
-    context.test = function(title, fn){
-      var test = new Test(title, fn);
+    context.test = function(title, fn) {
+      const test = new Test(title, fn);
       suites[0].addTest(test);
       return test;
     };
@@ -105,9 +104,9 @@ module.exports = function(suite){
      * Exclusive test-case.
      */
 
-    context.test.only = function(title, fn){
-      var test = context.test(title, fn);
-      var reString = '^' + utils.escapeRegexp(test.fullTitle()) + '$';
+    context.test.only = function(title, fn) {
+      const test = context.test(title, fn);
+      const reString = '^' + utils.escapeRegexp(test.fullTitle()) + '$';
       mocha.grep(new RegExp(reString));
     };
 
@@ -115,7 +114,7 @@ module.exports = function(suite){
      * Pending test case.
      */
 
-    context.test.skip = function(title){
+    context.test.skip = function(title) {
       context.test(title);
     };
   });

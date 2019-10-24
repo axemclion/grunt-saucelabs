@@ -2,8 +2,8 @@
  * Module dependencies.
  */
 
-var Base = require('./base')
-  , color = Base.color;
+const Base = require('./base')
+  ; const color = Base.color;
 
 /**
  * Expose `Dot`.
@@ -20,39 +20,39 @@ exports = module.exports = NyanCat;
 
 function NyanCat(runner) {
   Base.call(this, runner);
-  var self = this
-    , stats = this.stats
-    , width = Base.window.width * .75 | 0
-    , rainbowColors = this.rainbowColors = self.generateColors()
-    , colorIndex = this.colorIndex = 0
-    , numerOfLines = this.numberOfLines = 4
-    , trajectories = this.trajectories = [[], [], [], []]
-    , nyanCatWidth = this.nyanCatWidth = 11
-    , trajectoryWidthMax = this.trajectoryWidthMax = (width - nyanCatWidth)
-    , scoreboardWidth = this.scoreboardWidth = 5
-    , tick = this.tick = 0
-    , n = 0;
+  const self = this
+    ; const stats = this.stats
+    ; const width = Base.window.width * .75 | 0
+    ; const rainbowColors = this.rainbowColors = self.generateColors()
+    ; const colorIndex = this.colorIndex = 0
+    ; const numerOfLines = this.numberOfLines = 4
+    ; const trajectories = this.trajectories = [[], [], [], []]
+    ; const nyanCatWidth = this.nyanCatWidth = 11
+    ; const trajectoryWidthMax = this.trajectoryWidthMax = (width - nyanCatWidth)
+    ; const scoreboardWidth = this.scoreboardWidth = 5
+    ; const tick = this.tick = 0
+    ; const n = 0;
 
-  runner.on('start', function(){
+  runner.on('start', function() {
     Base.cursor.hide();
     self.draw();
   });
 
-  runner.on('pending', function(test){
+  runner.on('pending', function(test) {
     self.draw();
   });
 
-  runner.on('pass', function(test){
+  runner.on('pass', function(test) {
     self.draw();
   });
 
-  runner.on('fail', function(test, err){
+  runner.on('fail', function(test, err) {
     self.draw();
   });
 
-  runner.on('end', function(){
+  runner.on('end', function() {
     Base.cursor.show();
-    for (var i = 0; i < self.numberOfLines; i++) write('\n');
+    for (let i = 0; i < self.numberOfLines; i++) write('\n');
     self.epilogue();
   });
 }
@@ -63,7 +63,7 @@ function NyanCat(runner) {
  * @api private
  */
 
-NyanCat.prototype.draw = function(){
+NyanCat.prototype.draw = function() {
   this.appendRainbow();
   this.drawScoreboard();
   this.drawRainbow();
@@ -78,9 +78,9 @@ NyanCat.prototype.draw = function(){
  * @api private
  */
 
-NyanCat.prototype.drawScoreboard = function(){
-  var stats = this.stats;
-  var colors = Base.colors;
+NyanCat.prototype.drawScoreboard = function() {
+  const stats = this.stats;
+  const colors = Base.colors;
 
   function draw(color, n) {
     write(' ');
@@ -102,12 +102,12 @@ NyanCat.prototype.drawScoreboard = function(){
  * @api private
  */
 
-NyanCat.prototype.appendRainbow = function(){
-  var segment = this.tick ? '_' : '-';
-  var rainbowified = this.rainbowify(segment);
+NyanCat.prototype.appendRainbow = function() {
+  const segment = this.tick ? '_' : '-';
+  const rainbowified = this.rainbowify(segment);
 
-  for (var index = 0; index < this.numberOfLines; index++) {
-    var trajectory = this.trajectories[index];
+  for (let index = 0; index < this.numberOfLines; index++) {
+    const trajectory = this.trajectories[index];
     if (trajectory.length >= this.trajectoryWidthMax) trajectory.shift();
     trajectory.push(rainbowified);
   }
@@ -119,8 +119,8 @@ NyanCat.prototype.appendRainbow = function(){
  * @api private
  */
 
-NyanCat.prototype.drawRainbow = function(){
-  var self = this;
+NyanCat.prototype.drawRainbow = function() {
+  const self = this;
 
   this.trajectories.forEach(function(line, index) {
     write('\u001b[' + self.scoreboardWidth + 'C');
@@ -138,10 +138,10 @@ NyanCat.prototype.drawRainbow = function(){
  */
 
 NyanCat.prototype.drawNyanCat = function() {
-  var self = this;
-  var startWidth = this.scoreboardWidth + this.trajectories[0].length;
-  var color = '\u001b[' + startWidth + 'C';
-  var padding = '';
+  const self = this;
+  const startWidth = this.scoreboardWidth + this.trajectories[0].length;
+  const color = '\u001b[' + startWidth + 'C';
+  let padding = '';
 
   write(color);
   write('_,------,');
@@ -154,8 +154,8 @@ NyanCat.prototype.drawNyanCat = function() {
 
   write(color);
   padding = self.tick ? '_' : '__';
-  var tail = self.tick ? '~' : '^';
-  var face;
+  const tail = self.tick ? '~' : '^';
+  let face;
   write(tail + '|' + padding + this.face() + ' ');
   write('\n');
 
@@ -175,17 +175,17 @@ NyanCat.prototype.drawNyanCat = function() {
  */
 
 NyanCat.prototype.face = function() {
-  var stats = this.stats;
+  const stats = this.stats;
   if (stats.failures) {
     return '( x .x)';
   } else if (stats.pending) {
     return '( o .o)';
-  } else if(stats.passes) {
+  } else if (stats.passes) {
     return '( ^ .^)';
   } else {
     return '( - .-)';
   }
-}
+};
 
 /**
  * Move cursor up `n`.
@@ -216,15 +216,15 @@ NyanCat.prototype.cursorDown = function(n) {
  * @api private
  */
 
-NyanCat.prototype.generateColors = function(){
-  var colors = [];
+NyanCat.prototype.generateColors = function() {
+  const colors = [];
 
-  for (var i = 0; i < (6 * 7); i++) {
-    var pi3 = Math.floor(Math.PI / 3);
-    var n = (i * (1.0 / 6));
-    var r = Math.floor(3 * Math.sin(n) + 3);
-    var g = Math.floor(3 * Math.sin(n + 2 * pi3) + 3);
-    var b = Math.floor(3 * Math.sin(n + 4 * pi3) + 3);
+  for (let i = 0; i < (6 * 7); i++) {
+    const pi3 = Math.floor(Math.PI / 3);
+    const n = (i * (1.0 / 6));
+    const r = Math.floor(3 * Math.sin(n) + 3);
+    const g = Math.floor(3 * Math.sin(n + 2 * pi3) + 3);
+    const b = Math.floor(3 * Math.sin(n + 4 * pi3) + 3);
     colors.push(36 * r + 6 * g + b + 16);
   }
 
@@ -239,8 +239,8 @@ NyanCat.prototype.generateColors = function(){
  * @api private
  */
 
-NyanCat.prototype.rainbowify = function(str){
-  var color = this.rainbowColors[this.colorIndex % this.rainbowColors.length];
+NyanCat.prototype.rainbowify = function(str) {
+  const color = this.rainbowColors[this.colorIndex % this.rainbowColors.length];
   this.colorIndex += 1;
   return '\u001b[38;5;' + color + 'm' + str + '\u001b[0m';
 };

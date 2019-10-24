@@ -1,4 +1,4 @@
-/*!
+/* !
  * mocha
  * Copyright(c) 2011 TJ Holowaychuk <tj@vision-media.ca>
  * MIT Licensed
@@ -8,8 +8,8 @@
  * Module dependencies.
  */
 
-var path = require('path')
-  , utils = require('./utils');
+const path = require('path')
+  ; const utils = require('./utils');
 
 /**
  * Expose `Mocha`.
@@ -71,10 +71,10 @@ function Mocha(options) {
   this.bail(options.bail);
   this.reporter(options.reporter);
   if (null != options.timeout) this.timeout(options.timeout);
-  this.useColors(options.useColors)
+  this.useColors(options.useColors);
   if (options.slow) this.slow(options.slow);
 
-  this.suite.on('pre-require', function (context) {
+  this.suite.on('pre-require', function(context) {
     exports.afterEach = context.afterEach || context.teardown;
     exports.after = context.after || context.suiteTeardown;
     exports.beforeEach = context.beforeEach || context.setup;
@@ -97,7 +97,7 @@ function Mocha(options) {
  * @api public
  */
 
-Mocha.prototype.bail = function(bail){
+Mocha.prototype.bail = function(bail) {
   if (0 == arguments.length) bail = true;
   this.suite.bail(bail);
   return this;
@@ -110,7 +110,7 @@ Mocha.prototype.bail = function(bail){
  * @api public
  */
 
-Mocha.prototype.addFile = function(file){
+Mocha.prototype.addFile = function(file) {
   this.files.push(file);
   return this;
 };
@@ -122,18 +122,25 @@ Mocha.prototype.addFile = function(file){
  * @api public
  */
 
-Mocha.prototype.reporter = function(reporter){
+Mocha.prototype.reporter = function(reporter) {
   if ('function' == typeof reporter) {
     this._reporter = reporter;
   } else {
     reporter = reporter || 'dot';
-    var _reporter;
-    try { _reporter = require('./reporters/' + reporter); } catch (err) {};
-    if (!_reporter) try { _reporter = require(reporter); } catch (err) {};
-    if (!_reporter && reporter === 'teamcity')
+    let _reporter;
+    try {
+      _reporter = require('./reporters/' + reporter);
+    } catch (err) {};
+    if (!_reporter) {
+      try {
+        _reporter = require(reporter);
+      } catch (err) {}
+    };
+    if (!_reporter && reporter === 'teamcity') {
       console.warn('The Teamcity reporter was moved to a package named ' +
         'mocha-teamcity-reporter ' +
         '(https://npmjs.org/package/mocha-teamcity-reporter).');
+    }
     if (!_reporter) throw new Error('invalid reporter "' + reporter + '"');
     this._reporter = _reporter;
   }
@@ -147,10 +154,14 @@ Mocha.prototype.reporter = function(reporter){
  * @api public
  */
 
-Mocha.prototype.ui = function(name){
+Mocha.prototype.ui = function(name) {
   name = name || 'bdd';
   this._ui = exports.interfaces[name];
-  if (!this._ui) try { this._ui = require(name); } catch (err) {};
+  if (!this._ui) {
+    try {
+      this._ui = require(name);
+    } catch (err) {}
+  };
   if (!this._ui) throw new Error('invalid interface "' + name + '"');
   this._ui = this._ui(this.suite);
   return this;
@@ -162,11 +173,11 @@ Mocha.prototype.ui = function(name){
  * @api private
  */
 
-Mocha.prototype.loadFiles = function(fn){
-  var self = this;
-  var suite = this.suite;
-  var pending = this.files.length;
-  this.files.forEach(function(file){
+Mocha.prototype.loadFiles = function(fn) {
+  const self = this;
+  const suite = this.suite;
+  let pending = this.files.length;
+  this.files.forEach(function(file) {
     file = path.resolve(file);
     suite.emit('pre-require', global, file, self);
     suite.emit('require', require(file), file, self);
@@ -182,18 +193,18 @@ Mocha.prototype.loadFiles = function(fn){
  */
 
 Mocha.prototype._growl = function(runner, reporter) {
-  var notify = require('growl');
+  const notify = require('growl');
 
-  runner.on('end', function(){
-    var stats = reporter.stats;
+  runner.on('end', function() {
+    const stats = reporter.stats;
     if (stats.failures) {
-      var msg = stats.failures + ' of ' + runner.total + ' tests failed';
-      notify(msg, { name: 'mocha', title: 'Failed', image: image('error') });
+      const msg = stats.failures + ' of ' + runner.total + ' tests failed';
+      notify(msg, {name: 'mocha', title: 'Failed', image: image('error')});
     } else {
       notify(stats.passes + ' tests passed in ' + stats.duration + 'ms', {
-          name: 'mocha'
-        , title: 'Passed'
-        , image: image('ok')
+        name: 'mocha',
+        title: 'Passed',
+        image: image('ok'),
       });
     }
   });
@@ -207,10 +218,10 @@ Mocha.prototype._growl = function(runner, reporter) {
  * @api public
  */
 
-Mocha.prototype.grep = function(re){
-  this.options.grep = 'string' == typeof re
-    ? new RegExp(utils.escapeRegexp(re))
-    : re;
+Mocha.prototype.grep = function(re) {
+  this.options.grep = 'string' == typeof re ?
+    new RegExp(utils.escapeRegexp(re)) :
+    re;
   return this;
 };
 
@@ -221,7 +232,7 @@ Mocha.prototype.grep = function(re){
  * @api public
  */
 
-Mocha.prototype.invert = function(){
+Mocha.prototype.invert = function() {
   this.options.invert = true;
   return this;
 };
@@ -234,7 +245,7 @@ Mocha.prototype.invert = function(){
  * @api public
  */
 
-Mocha.prototype.ignoreLeaks = function(ignore){
+Mocha.prototype.ignoreLeaks = function(ignore) {
   this.options.ignoreLeaks = !!ignore;
   return this;
 };
@@ -246,7 +257,7 @@ Mocha.prototype.ignoreLeaks = function(ignore){
  * @api public
  */
 
-Mocha.prototype.checkLeaks = function(){
+Mocha.prototype.checkLeaks = function() {
   this.options.ignoreLeaks = false;
   return this;
 };
@@ -258,7 +269,7 @@ Mocha.prototype.checkLeaks = function(){
  * @api public
  */
 
-Mocha.prototype.growl = function(){
+Mocha.prototype.growl = function() {
   this.options.growl = true;
   return this;
 };
@@ -271,7 +282,7 @@ Mocha.prototype.growl = function(){
  * @api public
  */
 
-Mocha.prototype.globals = function(globals){
+Mocha.prototype.globals = function(globals) {
   this.options.globals = (this.options.globals || []).concat(globals);
   return this;
 };
@@ -284,10 +295,10 @@ Mocha.prototype.globals = function(globals){
  * @api public
  */
 
-Mocha.prototype.useColors = function(colors){
-  this.options.useColors = arguments.length && colors != undefined
-    ? colors
-    : true;
+Mocha.prototype.useColors = function(colors) {
+  this.options.useColors = arguments.length && colors != undefined ?
+    colors :
+    true;
   return this;
 };
 
@@ -300,9 +311,9 @@ Mocha.prototype.useColors = function(colors){
  */
 
 Mocha.prototype.useInlineDiffs = function(inlineDiffs) {
-  this.options.useInlineDiffs = arguments.length && inlineDiffs != undefined
-  ? inlineDiffs
-  : false;
+  this.options.useInlineDiffs = arguments.length && inlineDiffs != undefined ?
+  inlineDiffs :
+  false;
   return this;
 };
 
@@ -314,7 +325,7 @@ Mocha.prototype.useInlineDiffs = function(inlineDiffs) {
  * @api public
  */
 
-Mocha.prototype.timeout = function(timeout){
+Mocha.prototype.timeout = function(timeout) {
   this.suite.timeout(timeout);
   return this;
 };
@@ -327,7 +338,7 @@ Mocha.prototype.timeout = function(timeout){
  * @api public
  */
 
-Mocha.prototype.slow = function(slow){
+Mocha.prototype.slow = function(slow) {
   this.suite.slow(slow);
   return this;
 };
@@ -339,7 +350,7 @@ Mocha.prototype.slow = function(slow){
  * @api public
  */
 
-Mocha.prototype.asyncOnly = function(){
+Mocha.prototype.asyncOnly = function() {
   this.options.asyncOnly = true;
   return this;
 };
@@ -352,12 +363,12 @@ Mocha.prototype.asyncOnly = function(){
  * @api public
  */
 
-Mocha.prototype.run = function(fn){
+Mocha.prototype.run = function(fn) {
   if (this.files.length) this.loadFiles();
-  var suite = this.suite;
-  var options = this.options;
-  var runner = new exports.Runner(suite);
-  var reporter = new this._reporter(runner);
+  const suite = this.suite;
+  const options = this.options;
+  const runner = new exports.Runner(suite);
+  const reporter = new this._reporter(runner);
   runner.ignoreLeaks = false !== options.ignoreLeaks;
   runner.asyncOnly = options.asyncOnly;
   if (options.grep) runner.grep(options.grep, options.invert);

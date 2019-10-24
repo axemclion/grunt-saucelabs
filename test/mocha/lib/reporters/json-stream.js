@@ -3,8 +3,8 @@
  * Module dependencies.
  */
 
-var Base = require('./base')
-  , color = Base.color;
+const Base = require('./base')
+  ; const color = Base.color;
 
 /**
  * Expose `List`.
@@ -22,23 +22,23 @@ exports = module.exports = List;
 function List(runner) {
   Base.call(this, runner);
 
-  var self = this
-    , stats = this.stats
-    , total = runner.total;
+  const self = this
+    ; const stats = this.stats
+    ; const total = runner.total;
 
-  runner.on('start', function(){
-    console.log(JSON.stringify(['start', { total: total }]));
+  runner.on('start', function() {
+    console.log(JSON.stringify(['start', {total: total}]));
   });
 
-  runner.on('pass', function(test){
+  runner.on('pass', function(test) {
     console.log(JSON.stringify(['pass', clean(test)]));
   });
 
-  runner.on('fail', function(test, err){
+  runner.on('fail', function(test, err) {
     console.log(JSON.stringify(['fail', clean(test)]));
   });
 
-  runner.on('end', function(){
+  runner.on('end', function() {
     process.stdout.write(JSON.stringify(['end', self.stats]));
   });
 }
@@ -54,8 +54,8 @@ function List(runner) {
 
 function clean(test) {
   return {
-      title: test.title
-    , fullTitle: test.fullTitle()
-    , duration: test.duration
-  }
+    title: test.title,
+    fullTitle: test.fullTitle(),
+    duration: test.duration,
+  };
 }

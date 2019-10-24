@@ -1,12 +1,12 @@
 
-var Mocha = require('../../')
-  , path = require('path');
+const Mocha = require('../../')
+  ; const path = require('path');
 
-var mocha = new Mocha({
+const mocha = new Mocha({
   ui: 'bdd',
   globals: ['okGlobalA', 'okGlobalB', 'okGlobalC', 'callback*'],
   // ignoreLeaks: true,
-  growl: true
+  growl: true,
 });
 
 // mocha.reporter('spec');
@@ -24,8 +24,8 @@ mocha.addFile('test/acceptance/globals.js');
 mocha.addFile('test/acceptance/pending.js');
 mocha.addFile('test/acceptance/timeout.js');
 
-mocha.run(function(){
+mocha.run(function() {
   console.log('done');
-}).on('pass', function(test){
+}).on('pass', function(test) {
   // console.log('... %s', test.title);
 });

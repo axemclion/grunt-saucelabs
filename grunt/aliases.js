@@ -1,8 +1,8 @@
 'use strict';
 
-module.exports = function (grunt) {
-  var testjobs = ['jscs', 'jshint', 'connect'];
-  var positiveTests = [
+module.exports = function(grunt) {
+  let testjobs = ['jscs', 'jshint', 'connect'];
+  const positiveTests = [
     'saucelabs-qunit:succeeds',
     'saucelabs-jasmine:succeeds',
     'saucelabs-mocha:succeeds',
@@ -10,14 +10,14 @@ module.exports = function (grunt) {
     'saucelabs-custom:callback-succeeds',
     'saucelabs-custom:callback-async-succeeds',
     'saucelabs-custom:throttled',
-    'saucelabs-custom:timeout'
+    'saucelabs-custom:timeout',
   ];
-  var negativeTests = [
+  const negativeTests = [
     'saucelabs-qunit:fails',
     'saucelabs-jasmine:fails',
     'saucelabs-mocha:fails',
     'saucelabs-custom:fails',
-    'saucelabs-qunit:error'
+    'saucelabs-qunit:error',
   ];
 
   if (typeof process.env.SAUCE_ACCESS_KEY !== 'undefined') {

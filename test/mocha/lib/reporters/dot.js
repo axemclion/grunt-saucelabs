@@ -3,8 +3,8 @@
  * Module dependencies.
  */
 
-var Base = require('./base')
-  , color = Base.color;
+const Base = require('./base')
+  ; const color = Base.color;
 
 /**
  * Expose `Dot`.
@@ -22,20 +22,20 @@ exports = module.exports = Dot;
 function Dot(runner) {
   Base.call(this, runner);
 
-  var self = this
-    , stats = this.stats
-    , width = Base.window.width * .75 | 0
-    , n = 0;
+  const self = this
+    ; const stats = this.stats
+    ; const width = Base.window.width * .75 | 0
+    ; let n = 0;
 
-  runner.on('start', function(){
+  runner.on('start', function() {
     process.stdout.write('\n  ');
   });
 
-  runner.on('pending', function(test){
+  runner.on('pending', function(test) {
     process.stdout.write(color('pending', Base.symbols.dot));
   });
 
-  runner.on('pass', function(test){
+  runner.on('pass', function(test) {
     if (++n % width == 0) process.stdout.write('\n  ');
     if ('slow' == test.speed) {
       process.stdout.write(color('bright yellow', Base.symbols.dot));
@@ -44,12 +44,12 @@ function Dot(runner) {
     }
   });
 
-  runner.on('fail', function(test, err){
+  runner.on('fail', function(test, err) {
     if (++n % width == 0) process.stdout.write('\n  ');
     process.stdout.write(color('fail', Base.symbols.dot));
   });
 
-  runner.on('end', function(){
+  runner.on('end', function() {
     console.log();
     self.epilogue();
   });
