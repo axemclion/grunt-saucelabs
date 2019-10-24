@@ -26,6 +26,7 @@ env:
       zkP183w3LESZo2MA/iWtADxSY8e4ws1UJ7gwNH4P2sw+Qcxr+Q4=
 
 install:
+  - npm install -g jshint jsonlint npm
   - npm install -g grunt-cli
   - npm install
 
