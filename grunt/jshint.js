@@ -1,10 +1,10 @@
 'use strict';
 
-module.exports = function (grunt, options) {
+module.exports = function(grunt, options) {
   return {
     options: {
-      jshintrc: true
+      jshintrc: true,
     },
-    all: options.srcFiles
+    all: options.srcFiles,
   };
 };

@@ -11,7 +11,7 @@ module.exports = Context;
  * @api private
  */
 
-function Context(){}
+function Context() {}
 
 /**
  * Set or get the context `Runnable` to `runnable`.
@@ -21,7 +21,7 @@ function Context(){}
  * @api private
  */
 
-Context.prototype.runnable = function(runnable){
+Context.prototype.runnable = function(runnable) {
   if (0 == arguments.length) return this._runnable;
   this.test = this._runnable = runnable;
   return this;
@@ -35,7 +35,7 @@ Context.prototype.runnable = function(runnable){
  * @api private
  */
 
-Context.prototype.timeout = function(ms){
+Context.prototype.timeout = function(ms) {
   this.runnable().timeout(ms);
   return this;
 };
@@ -48,7 +48,7 @@ Context.prototype.timeout = function(ms){
  * @api private
  */
 
-Context.prototype.slow = function(ms){
+Context.prototype.slow = function(ms) {
   this.runnable().slow(ms);
   return this;
 };
@@ -60,8 +60,8 @@ Context.prototype.slow = function(ms){
  * @api private
  */
 
-Context.prototype.inspect = function(){
-  return JSON.stringify(this, function(key, val){
+Context.prototype.inspect = function() {
+  return JSON.stringify(this, function(key, val) {
     if ('_runnable' == key) return;
     if ('test' == key) return;
     return val;

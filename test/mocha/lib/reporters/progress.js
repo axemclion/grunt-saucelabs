@@ -3,9 +3,9 @@
  * Module dependencies.
  */
 
-var Base = require('./base')
-  , cursor = Base.cursor
-  , color = Base.color;
+const Base = require('./base')
+  ; const cursor = Base.cursor
+  ; const color = Base.color;
 
 /**
  * Expose `Progress`.
@@ -30,13 +30,13 @@ Base.colors.progress = 90;
 function Progress(runner, options) {
   Base.call(this, runner);
 
-  var self = this
-    , options = options || {}
-    , stats = this.stats
-    , width = Base.window.width * .50 | 0
-    , total = runner.total
-    , complete = 0
-    , max = Math.max;
+  const self = this
+    ; var options = options || {}
+    ; const stats = this.stats
+    ; const width = Base.window.width * .50 | 0
+    ; const total = runner.total
+    ; let complete = 0
+    ; const max = Math.max;
 
   // default chars
   options.open = options.open || '[';
@@ -46,18 +46,18 @@ function Progress(runner, options) {
   options.verbose = false;
 
   // tests started
-  runner.on('start', function(){
+  runner.on('start', function() {
     console.log();
     cursor.hide();
   });
 
   // tests complete
-  runner.on('test end', function(){
+  runner.on('test end', function() {
     complete++;
-    var incomplete = total - complete
-      , percent = complete / total
-      , n = width * percent | 0
-      , i = width - n;
+    const incomplete = total - complete
+      ; const percent = complete / total
+      ; const n = width * percent | 0
+      ; const i = width - n;
 
     cursor.CR();
     process.stdout.write('\u001b[J');
@@ -72,7 +72,7 @@ function Progress(runner, options) {
 
   // tests are complete, output some stats
   // and the failures if any
-  runner.on('end', function(){
+  runner.on('end', function() {
     cursor.show();
     console.log();
     self.epilogue();

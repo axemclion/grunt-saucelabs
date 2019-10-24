@@ -2,24 +2,24 @@
  * Module dependencies.
  */
 
-var EventEmitter = require('events').EventEmitter
-  , debug = require('debug')('mocha:runner')
-  , Test = require('./test')
-  , utils = require('./utils')
-  , filter = utils.filter
-  , keys = utils.keys;
+const EventEmitter = require('events').EventEmitter
+  ; const debug = require('debug')('mocha:runner')
+  ; const Test = require('./test')
+  ; const utils = require('./utils')
+  ; const filter = utils.filter
+  ; const keys = utils.keys;
 
 /**
  * Non-enumerable globals.
  */
 
-var globals = [
+const globals = [
   'setTimeout',
   'clearTimeout',
   'setInterval',
   'clearInterval',
   'XMLHttpRequest',
-  'Date'
+  'Date',
 ];
 
 /**
@@ -49,14 +49,18 @@ module.exports = Runner;
  */
 
 function Runner(suite) {
-  var self = this;
+  const self = this;
   this._globals = [];
   this._abort = false;
   this.suite = suite;
   this.total = suite.total();
   this.failures = 0;
-  this.on('test end', function(test){ self.checkGlobals(test); });
-  this.on('hook end', function(hook){ self.checkGlobals(hook); });
+  this.on('test end', function(test) {
+    self.checkGlobals(test);
+  });
+  this.on('hook end', function(hook) {
+    self.checkGlobals(hook);
+  });
   this.grep(/.*/);
   this.globals(this.globalProps().concat(['errno']));
 }
@@ -86,7 +90,7 @@ Runner.prototype.__proto__ = EventEmitter.prototype;
  * @api public
  */
 
-Runner.prototype.grep = function(re, invert){
+Runner.prototype.grep = function(re, invert) {
   debug('grep %s', re);
   this._grep = re;
   this._invert = invert;
@@ -104,11 +108,11 @@ Runner.prototype.grep = function(re, invert){
  */
 
 Runner.prototype.grepTotal = function(suite) {
-  var self = this;
-  var total = 0;
+  const self = this;
+  let total = 0;
 
-  suite.eachTest(function(test){
-    var match = self._grep.test(test.fullTitle());
+  suite.eachTest(function(test) {
+    let match = self._grep.test(test.fullTitle());
     if (self._invert) match = !match;
     if (match) total++;
   });
@@ -124,10 +128,10 @@ Runner.prototype.grepTotal = function(suite) {
  */
 
 Runner.prototype.globalProps = function() {
-  var props = utils.keys(global);
+  const props = utils.keys(global);
 
   // non-enumerables
-  for (var i = 0; i < globals.length; ++i) {
+  for (let i = 0; i < globals.length; ++i) {
     if (~utils.indexOf(props, globals[i])) continue;
     props.push(globals[i]);
   }
@@ -143,7 +147,7 @@ Runner.prototype.globalProps = function() {
  * @api public
  */
 
-Runner.prototype.globals = function(arr){
+Runner.prototype.globals = function(arr) {
   if (0 == arguments.length) return this._globals;
   debug('globals %j', arr);
   this._globals = this._globals.concat(arr);
@@ -156,13 +160,13 @@ Runner.prototype.globals = function(arr){
  * @api private
  */
 
-Runner.prototype.checkGlobals = function(test){
+Runner.prototype.checkGlobals = function(test) {
   if (this.ignoreLeaks) return;
-  var ok = this._globals;
+  let ok = this._globals;
 
-  var globals = this.globalProps();
-  var isNode = process.kill;
-  var leaks;
+  const globals = this.globalProps();
+  const isNode = process.kill;
+  let leaks;
 
   if (test) {
     ok = ok.concat(test._allowedGlobals || []);
@@ -172,7 +176,7 @@ Runner.prototype.checkGlobals = function(test){
   if (isNode && 1 == ok.length - globals.length) return;
   else if (2 == ok.length - globals.length) return;
 
-  if(this.prevGlobalsLength == globals.length) return;
+  if (this.prevGlobalsLength == globals.length) return;
   this.prevGlobalsLength = globals.length;
 
   leaks = filterLeaks(ok, globals);
@@ -193,7 +197,7 @@ Runner.prototype.checkGlobals = function(test){
  * @api private
  */
 
-Runner.prototype.fail = function(test, err){
+Runner.prototype.fail = function(test, err) {
   ++this.failures;
   test.state = 'failed';
 
@@ -225,7 +229,7 @@ Runner.prototype.fail = function(test, err){
  * @api private
  */
 
-Runner.prototype.failHook = function(hook, err){
+Runner.prototype.failHook = function(hook, err) {
   this.fail(hook, err);
   if (this.suite.bail()) {
     this.emit('end');
@@ -240,14 +244,14 @@ Runner.prototype.failHook = function(hook, err){
  * @api private
  */
 
-Runner.prototype.hook = function(name, fn){
-  var suite = this.suite
-    , hooks = suite['_' + name]
-    , self = this
-    , timer;
+Runner.prototype.hook = function(name, fn) {
+  const suite = this.suite
+    ; const hooks = suite['_' + name]
+    ; const self = this
+    ; let timer;
 
   function next(i) {
-    var hook = hooks[i];
+    const hook = hooks[i];
     if (!hook) return fn();
     if (self.failures && suite.bail()) return fn();
     self.currentRunnable = hook;
@@ -256,13 +260,13 @@ Runner.prototype.hook = function(name, fn){
 
     self.emit('hook', hook);
 
-    hook.on('error', function(err){
+    hook.on('error', function(err) {
       self.failHook(hook, err);
     });
 
-    hook.run(function(err){
+    hook.run(function(err) {
       hook.removeAllListeners('error');
-      var testError = hook.error();
+      const testError = hook.error();
       if (testError) self.fail(self.test, testError);
       if (err) {
         self.failHook(hook, err);
@@ -276,7 +280,7 @@ Runner.prototype.hook = function(name, fn){
     });
   }
 
-  Runner.immediately(function(){
+  Runner.immediately(function() {
     next(0);
   });
 };
@@ -291,9 +295,9 @@ Runner.prototype.hook = function(name, fn){
  * @api private
  */
 
-Runner.prototype.hooks = function(name, suites, fn){
-  var self = this
-    , orig = this.suite;
+Runner.prototype.hooks = function(name, suites, fn) {
+  const self = this
+    ; const orig = this.suite;
 
   function next(suite) {
     self.suite = suite;
@@ -303,9 +307,9 @@ Runner.prototype.hooks = function(name, suites, fn){
       return fn();
     }
 
-    self.hook(name, function(err){
+    self.hook(name, function(err) {
       if (err) {
-        var errSuite = self.suite;
+        const errSuite = self.suite;
         self.suite = orig;
         return fn(err, errSuite);
       }
@@ -325,8 +329,8 @@ Runner.prototype.hooks = function(name, suites, fn){
  * @api private
  */
 
-Runner.prototype.hookUp = function(name, fn){
-  var suites = [this.suite].concat(this.parents()).reverse();
+Runner.prototype.hookUp = function(name, fn) {
+  const suites = [this.suite].concat(this.parents()).reverse();
   this.hooks(name, suites, fn);
 };
 
@@ -338,8 +342,8 @@ Runner.prototype.hookUp = function(name, fn){
  * @api private
  */
 
-Runner.prototype.hookDown = function(name, fn){
-  var suites = [this.suite].concat(this.parents());
+Runner.prototype.hookDown = function(name, fn) {
+  const suites = [this.suite].concat(this.parents());
   this.hooks(name, suites, fn);
 };
 
@@ -351,9 +355,9 @@ Runner.prototype.hookDown = function(name, fn){
  * @api private
  */
 
-Runner.prototype.parents = function(){
-  var suite = this.suite
-    , suites = [];
+Runner.prototype.parents = function() {
+  let suite = this.suite
+    ; const suites = [];
   while (suite = suite.parent) suites.push(suite);
   return suites;
 };
@@ -365,14 +369,14 @@ Runner.prototype.parents = function(){
  * @api private
  */
 
-Runner.prototype.runTest = function(fn){
-  var test = this.test
-    , self = this;
+Runner.prototype.runTest = function(fn) {
+  const test = this.test
+    ; const self = this;
 
   if (this.asyncOnly) test.asyncOnly = true;
 
   try {
-    test.on('error', function(err){
+    test.on('error', function(err) {
       self.fail(test, err);
     });
     test.run(fn);
@@ -390,15 +394,15 @@ Runner.prototype.runTest = function(fn){
  * @api private
  */
 
-Runner.prototype.runTests = function(suite, fn){
-  var self = this
-    , tests = suite.tests.slice()
-    , test;
+Runner.prototype.runTests = function(suite, fn) {
+  const self = this
+    ; const tests = suite.tests.slice()
+    ; let test;
 
 
   function hookErr(err, errSuite, after) {
     // before/after Each hook for errSuite failed:
-    var orig = self.suite;
+    const orig = self.suite;
 
     // for failed 'after each' hook start from errSuite parent,
     // otherwise start from errSuite itself
@@ -435,7 +439,7 @@ Runner.prototype.runTests = function(suite, fn){
     if (!test) return fn();
 
     // grep
-    var match = self._grep.test(test.fullTitle());
+    let match = self._grep.test(test.fullTitle());
     if (self._invert) match = !match;
     if (!match) return next();
 
@@ -448,12 +452,11 @@ Runner.prototype.runTests = function(suite, fn){
 
     // execute test and hook(s)
     self.emit('test', self.test = test);
-    self.hookDown('beforeEach', function(err, errSuite){
-
+    self.hookDown('beforeEach', function(err, errSuite) {
       if (err) return hookErr(err, errSuite, false);
 
       self.currentRunnable = self.test;
-      self.runTest(function(err){
+      self.runTest(function(err) {
         test = self.test;
 
         if (err) {
@@ -483,10 +486,10 @@ Runner.prototype.runTests = function(suite, fn){
  * @api private
  */
 
-Runner.prototype.runSuite = function(suite, fn){
-  var total = this.grepTotal(suite)
-    , self = this
-    , i = 0;
+Runner.prototype.runSuite = function(suite, fn) {
+  const total = this.grepTotal(suite)
+    ; const self = this
+    ; let i = 0;
 
   debug('run suite %s', suite.fullTitle());
 
@@ -510,20 +513,20 @@ Runner.prototype.runSuite = function(suite, fn){
 
     if (self._abort) return done();
 
-    var curr = suite.suites[i++];
+    const curr = suite.suites[i++];
     if (!curr) return done();
     self.runSuite(curr, next);
   }
 
   function done(errSuite) {
     self.suite = suite;
-    self.hook('afterAll', function(){
+    self.hook('afterAll', function() {
       self.emit('suite end', suite);
       fn(errSuite);
     });
   }
 
-  this.hook('beforeAll', function(err){
+  this.hook('beforeAll', function(err) {
     if (err) return done();
     self.runTests(suite, next);
   });
@@ -536,9 +539,9 @@ Runner.prototype.runSuite = function(suite, fn){
  * @api private
  */
 
-Runner.prototype.uncaught = function(err){
+Runner.prototype.uncaught = function(err) {
   debug('uncaught exception %s', err.message);
-  var runnable = this.currentRunnable;
+  const runnable = this.currentRunnable;
   if (!runnable || 'failed' == runnable.state) return;
   runnable.clearTimeout();
   err.uncaught = true;
@@ -564,18 +567,18 @@ Runner.prototype.uncaught = function(err){
  * @api public
  */
 
-Runner.prototype.run = function(fn){
-  var self = this
-    , fn = fn || function(){};
+Runner.prototype.run = function(fn) {
+  const self = this
+    ; var fn = fn || function() {};
 
-  function uncaught(err){
+  function uncaught(err) {
     self.uncaught(err);
   }
 
   debug('start');
 
   // callback
-  this.on('end', function(){
+  this.on('end', function() {
     debug('end');
     process.removeListener('uncaughtException', uncaught);
     fn(self.failures);
@@ -583,7 +586,7 @@ Runner.prototype.run = function(fn){
 
   // run suites
   this.emit('start');
-  this.runSuite(this.suite, function(){
+  this.runSuite(this.suite, function() {
     debug('finished running');
     self.emit('end');
   });
@@ -600,10 +603,10 @@ Runner.prototype.run = function(fn){
  * @return {Runner} for chaining
  * @api public
  */
-Runner.prototype.abort = function(){
+Runner.prototype.abort = function() {
   debug('aborting');
   this._abort = true;
-}
+};
 
 /**
  * Filter leaks with the given globals flagged as `ok`.
@@ -615,7 +618,7 @@ Runner.prototype.abort = function(){
  */
 
 function filterLeaks(ok, globals) {
-  return filter(globals, function(key){
+  return filter(globals, function(key) {
     // Firefox and Chrome exposes iframes as index inside the window object
     if (/^d+/.test(key)) return false;
 
@@ -631,7 +634,7 @@ function filterLeaks(ok, globals) {
     // Opera and IE expose global variables for HTML element IDs (issue #243)
     if (/^mocha-/.test(key)) return false;
 
-    var matched = filter(ok, function(ok){
+    const matched = filter(ok, function(ok) {
       if (~ok.indexOf('*')) return 0 == key.indexOf(ok.split('*')[0]);
       return key == ok;
     });

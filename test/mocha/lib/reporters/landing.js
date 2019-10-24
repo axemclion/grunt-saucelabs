@@ -3,9 +3,9 @@
  * Module dependencies.
  */
 
-var Base = require('./base')
-  , cursor = Base.cursor
-  , color = Base.color;
+const Base = require('./base')
+  ; const cursor = Base.cursor
+  ; const color = Base.color;
 
 /**
  * Expose `Landing`.
@@ -41,30 +41,30 @@ Base.colors.runway = 90;
 function Landing(runner) {
   Base.call(this, runner);
 
-  var self = this
-    , stats = this.stats
-    , width = Base.window.width * .75 | 0
-    , total = runner.total
-    , stream = process.stdout
-    , plane = color('plane', '✈')
-    , crashed = -1
-    , n = 0;
+  const self = this
+    ; const stats = this.stats
+    ; const width = Base.window.width * .75 | 0
+    ; const total = runner.total
+    ; const stream = process.stdout
+    ; let plane = color('plane', '✈')
+    ; let crashed = -1
+    ; let n = 0;
 
   function runway() {
-    var buf = Array(width).join('-');
+    const buf = Array(width).join('-');
     return '  ' + color('runway', buf);
   }
 
-  runner.on('start', function(){
+  runner.on('start', function() {
     stream.write('\n  ');
     cursor.hide();
   });
 
-  runner.on('test end', function(test){
+  runner.on('test end', function(test) {
     // check if the plane crashed
-    var col = -1 == crashed
-      ? width * ++n / total | 0
-      : crashed;
+    const col = -1 == crashed ?
+      width * ++n / total | 0 :
+      crashed;
 
     // show the crash
     if ('failed' == test.state) {
@@ -77,13 +77,13 @@ function Landing(runner) {
     stream.write(runway());
     stream.write('\n  ');
     stream.write(color('runway', Array(col).join('⋅')));
-    stream.write(plane)
+    stream.write(plane);
     stream.write(color('runway', Array(width - col).join('⋅') + '\n'));
     stream.write(runway());
     stream.write('\u001b[0m');
   });
 
-  runner.on('end', function(){
+  runner.on('end', function() {
     cursor.show();
     console.log();
     self.epilogue();

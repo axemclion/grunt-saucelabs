@@ -2,16 +2,16 @@
  * Module dependencies.
  */
 
-var fs = require('fs')
-  , path = require('path')
-  , join = path.join
-  , debug = require('debug')('mocha:watch');
+const fs = require('fs')
+  ; const path = require('path')
+  ; const join = path.join
+  ; const debug = require('debug')('mocha:watch');
 
 /**
  * Ignored directories.
  */
 
-var ignore = ['node_modules', '.git'];
+const ignore = ['node_modules', '.git'];
 
 /**
  * Escape special characters in the given string of html.
@@ -21,12 +21,12 @@ var ignore = ['node_modules', '.git'];
  * @api private
  */
 
-exports.escape = function(html){
+exports.escape = function(html) {
   return String(html)
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
 };
 
 /**
@@ -38,9 +38,10 @@ exports.escape = function(html){
  * @api private
  */
 
-exports.forEach = function(arr, fn, scope){
-  for (var i = 0, l = arr.length; i < l; i++)
+exports.forEach = function(arr, fn, scope) {
+  for (let i = 0, l = arr.length; i < l; i++) {
     fn.call(scope, arr[i], i);
+  }
 };
 
 /**
@@ -52,10 +53,11 @@ exports.forEach = function(arr, fn, scope){
  * @api private
  */
 
-exports.map = function(arr, fn, scope){
-  var result = [];
-  for (var i = 0, l = arr.length; i < l; i++)
+exports.map = function(arr, fn, scope) {
+  const result = [];
+  for (let i = 0, l = arr.length; i < l; i++) {
     result.push(fn.call(scope, arr[i], i));
+  }
   return result;
 };
 
@@ -68,10 +70,11 @@ exports.map = function(arr, fn, scope){
  * @api private
  */
 
-exports.indexOf = function(arr, obj, start){
-  for (var i = start || 0, l = arr.length; i < l; i++) {
-    if (arr[i] === obj)
+exports.indexOf = function(arr, obj, start) {
+  for (let i = start || 0, l = arr.length; i < l; i++) {
+    if (arr[i] === obj) {
       return i;
+    }
   }
   return -1;
 };
@@ -85,10 +88,10 @@ exports.indexOf = function(arr, obj, start){
  * @api private
  */
 
-exports.reduce = function(arr, fn, val){
-  var rval = val;
+exports.reduce = function(arr, fn, val) {
+  let rval = val;
 
-  for (var i = 0, l = arr.length; i < l; i++) {
+  for (let i = 0, l = arr.length; i < l; i++) {
     rval = fn(rval, arr[i], i, arr);
   }
 
@@ -103,11 +106,11 @@ exports.reduce = function(arr, fn, val){
  * @api private
  */
 
-exports.filter = function(arr, fn){
-  var ret = [];
+exports.filter = function(arr, fn) {
+  const ret = [];
 
-  for (var i = 0, l = arr.length; i < l; i++) {
-    var val = arr[i];
+  for (let i = 0, l = arr.length; i < l; i++) {
+    const val = arr[i];
     if (fn(val, i, arr)) ret.push(val);
   }
 
@@ -123,10 +126,10 @@ exports.filter = function(arr, fn){
  */
 
 exports.keys = Object.keys || function(obj) {
-  var keys = []
-    , has = Object.prototype.hasOwnProperty // for `window` on <=IE8
+  const keys = []
+    ; const has = Object.prototype.hasOwnProperty; // for `window` on <=IE8
 
-  for (var key in obj) {
+  for (const key in obj) {
     if (has.call(obj, key)) {
       keys.push(key);
     }
@@ -144,11 +147,11 @@ exports.keys = Object.keys || function(obj) {
  * @api private
  */
 
-exports.watch = function(files, fn){
-  var options = { interval: 100 };
-  files.forEach(function(file){
+exports.watch = function(files, fn) {
+  const options = {interval: 100};
+  files.forEach(function(file) {
     debug('file %s', file);
-    fs.watchFile(file, options, function(curr, prev){
+    fs.watchFile(file, options, function(curr, prev) {
       if (prev.mtime < curr.mtime) fn(file);
     });
   });
@@ -158,7 +161,7 @@ exports.watch = function(files, fn){
  * Ignored files.
  */
 
-function ignored(path){
+function ignored(path) {
   return !~ignore.indexOf(path);
 }
 
@@ -169,19 +172,19 @@ function ignored(path){
  * @api private
  */
 
-exports.files = function(dir, ret){
+exports.files = function(dir, ret) {
   ret = ret || [];
 
   fs.readdirSync(dir)
-  .filter(ignored)
-  .forEach(function(path){
-    path = join(dir, path);
-    if (fs.statSync(path).isDirectory()) {
-      exports.files(path, ret);
-    } else if (path.match(/\.(js|coffee|litcoffee|coffee.md)$/)) {
-      ret.push(path);
-    }
-  });
+      .filter(ignored)
+      .forEach(function(path) {
+        path = join(dir, path);
+        if (fs.statSync(path).isDirectory()) {
+          exports.files(path, ret);
+        } else if (path.match(/\.(js|coffee|litcoffee|coffee.md)$/)) {
+          ret.push(path);
+        }
+      });
 
   return ret;
 };
@@ -194,11 +197,11 @@ exports.files = function(dir, ret){
  * @api private
  */
 
-exports.slug = function(str){
+exports.slug = function(str) {
   return str
-    .toLowerCase()
-    .replace(/ +/g, '-')
-    .replace(/[^-\w]/g, '');
+      .toLowerCase()
+      .replace(/ +/g, '-')
+      .replace(/[^-\w]/g, '');
 };
 
 /**
@@ -208,13 +211,13 @@ exports.slug = function(str){
 
 exports.clean = function(str) {
   str = str
-    .replace(/\r\n?|[\n\u2028\u2029]/g, "\n").replace(/^\uFEFF/, '')
-    .replace(/^function *\(.*\) *{/, '')
-    .replace(/\s+\}$/, '');
+      .replace(/\r\n?|[\n\u2028\u2029]/g, '\n').replace(/^\uFEFF/, '')
+      .replace(/^function *\(.*\) *{/, '')
+      .replace(/\s+\}$/, '');
 
-  var spaces = str.match(/^\n?( *)/)[1].length
-    , tabs = str.match(/^\n?(\t*)/)[1].length
-    , re = new RegExp('^\n?' + (tabs ? '\t' : ' ') + '{' + (tabs ? tabs : spaces) + '}', 'gm');
+  const spaces = str.match(/^\n?( *)/)[1].length
+    ; const tabs = str.match(/^\n?(\t*)/)[1].length
+    ; const re = new RegExp('^\n?' + (tabs ? '\t' : ' ') + '{' + (tabs ? tabs : spaces) + '}', 'gm');
 
   str = str.replace(re, '');
 
@@ -229,8 +232,8 @@ exports.clean = function(str) {
  * @api private
  */
 
-exports.escapeRegexp = function(str){
-  return str.replace(/[-\\^$*+?.()|[\]{}]/g, "\\$&");
+exports.escapeRegexp = function(str) {
+  return str.replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&');
 };
 
 /**
@@ -241,7 +244,7 @@ exports.escapeRegexp = function(str){
  * @api private
  */
 
-exports.trim = function(str){
+exports.trim = function(str) {
   return str.replace(/^\s+|\s+$/g, '');
 };
 
@@ -253,11 +256,11 @@ exports.trim = function(str){
  * @api private
  */
 
-exports.parseQuery = function(qs){
-  return exports.reduce(qs.replace('?', '').split('&'), function(obj, pair){
-    var i = pair.indexOf('=')
-      , key = pair.slice(0, i)
-      , val = pair.slice(++i);
+exports.parseQuery = function(qs) {
+  return exports.reduce(qs.replace('?', '').split('&'), function(obj, pair) {
+    let i = pair.indexOf('=')
+      ; const key = pair.slice(0, i)
+      ; const val = pair.slice(++i);
 
     obj[key] = decodeURIComponent(val);
     return obj;
@@ -274,14 +277,14 @@ exports.parseQuery = function(qs){
 
 function highlight(js) {
   return js
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/\/\/(.*)/gm, '<span class="comment">//$1</span>')
-    .replace(/('.*?')/gm, '<span class="string">$1</span>')
-    .replace(/(\d+\.\d+)/gm, '<span class="number">$1</span>')
-    .replace(/(\d+)/gm, '<span class="number">$1</span>')
-    .replace(/\bnew *(\w+)/gm, '<span class="keyword">new</span> <span class="init">$1</span>')
-    .replace(/\b(function|new|throw|return|var|if|else)\b/gm, '<span class="keyword">$1</span>')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\/\/(.*)/gm, '<span class="comment">//$1</span>')
+      .replace(/('.*?')/gm, '<span class="string">$1</span>')
+      .replace(/(\d+\.\d+)/gm, '<span class="number">$1</span>')
+      .replace(/(\d+)/gm, '<span class="number">$1</span>')
+      .replace(/\bnew *(\w+)/gm, '<span class="keyword">new</span> <span class="init">$1</span>')
+      .replace(/\b(function|new|throw|return|var|if|else)\b/gm, '<span class="keyword">$1</span>');
 }
 
 /**
@@ -292,8 +295,8 @@ function highlight(js) {
  */
 
 exports.highlightTags = function(name) {
-  var code = document.getElementsByTagName(name);
-  for (var i = 0, len = code.length; i < len; ++i) {
+  const code = document.getElementsByTagName(name);
+  for (let i = 0, len = code.length; i < len; ++i) {
     code[i].innerHTML = highlight(code[i].innerHTML);
   }
 };

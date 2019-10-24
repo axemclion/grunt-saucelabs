@@ -3,7 +3,7 @@
  * Module dependencies.
  */
 
-var Runnable = require('./runnable');
+const Runnable = require('./runnable');
 
 /**
  * Expose `Hook`.
@@ -38,7 +38,7 @@ Hook.prototype.__proto__ = Runnable.prototype;
  * @api public
  */
 
-Hook.prototype.error = function(err){
+Hook.prototype.error = function(err) {
   if (0 == arguments.length) {
     var err = this._error;
     this._error = null;

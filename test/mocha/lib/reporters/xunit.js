@@ -3,19 +3,19 @@
  * Module dependencies.
  */
 
-var Base = require('./base')
-  , utils = require('../utils')
-  , escape = utils.escape;
+const Base = require('./base')
+  ; const utils = require('../utils')
+  ; const escape = utils.escape;
 
 /**
  * Save timer references to avoid Sinon interfering (see GH-237).
  */
 
-var Date = global.Date
-  , setTimeout = global.setTimeout
-  , setInterval = global.setInterval
-  , clearTimeout = global.clearTimeout
-  , clearInterval = global.clearInterval;
+const Date = global.Date
+  ; const setTimeout = global.setTimeout
+  ; const setInterval = global.setInterval
+  ; const clearTimeout = global.clearTimeout
+  ; const clearInterval = global.clearInterval;
 
 /**
  * Expose `XUnit`.
@@ -32,31 +32,31 @@ exports = module.exports = XUnit;
 
 function XUnit(runner) {
   Base.call(this, runner);
-  var stats = this.stats
-    , tests = []
-    , self = this;
+  const stats = this.stats
+    ; const tests = []
+    ; const self = this;
 
-  runner.on('pending', function(test){
+  runner.on('pending', function(test) {
     tests.push(test);
   });
 
-  runner.on('pass', function(test){
+  runner.on('pass', function(test) {
     tests.push(test);
   });
 
-  runner.on('fail', function(test){
+  runner.on('fail', function(test) {
     tests.push(test);
   });
 
-  runner.on('end', function(){
+  runner.on('end', function() {
     console.log(tag('testsuite', {
-        name: 'Mocha Tests'
-      , tests: stats.tests
-      , failures: stats.failures
-      , errors: stats.failures
-      , skipped: stats.tests - stats.failures - stats.passes
-      , timestamp: (new Date).toUTCString()
-      , time: (stats.duration / 1000) || 0
+      name: 'Mocha Tests',
+      tests: stats.tests,
+      failures: stats.failures,
+      errors: stats.failures,
+      skipped: stats.tests - stats.failures - stats.passes,
+      timestamp: (new Date).toUTCString(),
+      time: (stats.duration / 1000) || 0,
     }, false));
 
     tests.forEach(test);
@@ -75,14 +75,14 @@ XUnit.prototype.__proto__ = Base.prototype;
  */
 
 function test(test) {
-  var attrs = {
-      classname: test.parent.fullTitle()
-    , name: test.title
-    , time: (test.duration / 1000) || 0
+  const attrs = {
+    classname: test.parent.fullTitle(),
+    name: test.title,
+    time: (test.duration / 1000) || 0,
   };
 
   if ('failed' == test.state) {
-    var err = test.err;
+    const err = test.err;
     attrs.message = escape(err.message);
     console.log(tag('testcase', attrs, false, tag('failure', attrs, false, cdata(err.stack))));
   } else if (test.pending) {
@@ -97,11 +97,11 @@ function test(test) {
  */
 
 function tag(name, attrs, close, content) {
-  var end = close ? '/>' : '>'
-    , pairs = []
-    , tag;
+  const end = close ? '/>' : '>'
+    ; const pairs = []
+    ; let tag;
 
-  for (var key in attrs) {
+  for (const key in attrs) {
     pairs.push(key + '="' + escape(attrs[key]) + '"');
   }
 

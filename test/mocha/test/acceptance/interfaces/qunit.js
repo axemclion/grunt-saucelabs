@@ -5,13 +5,13 @@ function ok(expr, msg) {
 
 suite('Array');
 
-test('#length', function(){
-  var arr = [1,2,3];
+test('#length', function() {
+  const arr = [1, 2, 3];
   ok(arr.length == 3);
 });
 
-test('#indexOf()', function(){
-  var arr = [1,2,3];
+test('#indexOf()', function() {
+  const arr = [1, 2, 3];
   ok(arr.indexOf(1) == 0);
   ok(arr.indexOf(2) == 1);
   ok(arr.indexOf(3) == 2);
@@ -19,6 +19,6 @@ test('#indexOf()', function(){
 
 suite('String');
 
-test('#length', function(){
+test('#length', function() {
   ok('foo'.length == 3);
 });

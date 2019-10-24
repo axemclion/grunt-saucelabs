@@ -24,13 +24,13 @@ function WrapperError(message, innerError) {
 WrapperError.prototype = Object.create(Error.prototype);
 WrapperError.prototype.constructor = WrapperError;
 
-var origPrepareStackTrace = Error.prototype.prepareStackTrace;
+const origPrepareStackTrace = Error.prototype.prepareStackTrace;
 
 /**
  * Prepends 4 spaces to s.
  *
  * @param {String} s - The string to modify.
- * @returns {String} - The modified string.
+ * @return {String} - The modified string.
  */
 function padLeft(s) {
   return '    ' + s;
@@ -40,7 +40,7 @@ function padLeft(s) {
  * Creates and returns a string representation of an error.
  *
  * @param {Error} error - The error.
- * @returns {String} - A string representation of the error.
+ * @return {String} - A string representation of the error.
  */
 function formatError(error, stack) {
   if (origPrepareStackTrace) {
@@ -49,11 +49,11 @@ function formatError(error, stack) {
   return [
     error.toString(),
     stack
-      .map(function (frame) {
-        return 'at ' + frame.toString();
-      })
-      .map(padLeft)
-      .join('\n')
+        .map(function(frame) {
+          return 'at ' + frame.toString();
+        })
+        .map(padLeft)
+        .join('\n'),
   ].join('\n');
 }
 
@@ -64,8 +64,8 @@ function formatError(error, stack) {
  * @param {Error} error - The error.
  * @param {CallSite[]} stack - Array of stack frames.
  */
-Error.prepareStackTrace = function (error, stack) {
-  var result = formatError(error, stack);
+Error.prepareStackTrace = function(error, stack) {
+  let result = formatError(error, stack);
 
   if (error instanceof WrapperError &&
       error.innerError !== null &&

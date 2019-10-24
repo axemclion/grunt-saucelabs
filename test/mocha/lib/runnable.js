@@ -3,25 +3,25 @@
  * Module dependencies.
  */
 
-var EventEmitter = require('events').EventEmitter
-  , debug = require('debug')('mocha:runnable')
-  , milliseconds = require('./ms');
+const EventEmitter = require('events').EventEmitter
+  ; const debug = require('debug')('mocha:runnable')
+  ; const milliseconds = require('./ms');
 
 /**
  * Save timer references to avoid Sinon interfering (see GH-237).
  */
 
-var Date = global.Date
-  , setTimeout = global.setTimeout
-  , setInterval = global.setInterval
-  , clearTimeout = global.clearTimeout
-  , clearInterval = global.clearInterval;
+const Date = global.Date
+  ; const setTimeout = global.setTimeout
+  ; const setInterval = global.setInterval
+  ; const clearTimeout = global.clearTimeout
+  ; const clearInterval = global.clearInterval;
 
 /**
  * Object#toString().
  */
 
-var toString = Object.prototype.toString;
+const toString = Object.prototype.toString;
 
 /**
  * Expose `Runnable`.
@@ -61,7 +61,7 @@ Runnable.prototype.__proto__ = EventEmitter.prototype;
  * @api private
  */
 
-Runnable.prototype.timeout = function(ms){
+Runnable.prototype.timeout = function(ms) {
   if (0 == arguments.length) return this._timeout;
   if ('string' == typeof ms) ms = milliseconds(ms);
   debug('timeout %d', ms);
@@ -78,7 +78,7 @@ Runnable.prototype.timeout = function(ms){
  * @api private
  */
 
-Runnable.prototype.slow = function(ms){
+Runnable.prototype.slow = function(ms) {
   if (0 === arguments.length) return this._slow;
   if ('string' == typeof ms) ms = milliseconds(ms);
   debug('timeout %d', ms);
@@ -94,7 +94,7 @@ Runnable.prototype.slow = function(ms){
  * @api public
  */
 
-Runnable.prototype.fullTitle = function(){
+Runnable.prototype.fullTitle = function() {
   return this.parent.fullTitle() + ' ' + this.title;
 };
 
@@ -104,7 +104,7 @@ Runnable.prototype.fullTitle = function(){
  * @api private
  */
 
-Runnable.prototype.clearTimeout = function(){
+Runnable.prototype.clearTimeout = function() {
   clearTimeout(this.timer);
 };
 
@@ -115,8 +115,8 @@ Runnable.prototype.clearTimeout = function(){
  * @api private
  */
 
-Runnable.prototype.inspect = function(){
-  return JSON.stringify(this, function(key, val){
+Runnable.prototype.inspect = function() {
+  return JSON.stringify(this, function(key, val) {
     if ('_' == key[0]) return;
     if ('parent' == key) return '#<Suite>';
     if ('ctx' == key) return '#<Context>';
@@ -130,12 +130,12 @@ Runnable.prototype.inspect = function(){
  * @api private
  */
 
-Runnable.prototype.resetTimeout = function(){
-  var self = this;
-  var ms = this.timeout() || 1e9;
+Runnable.prototype.resetTimeout = function() {
+  const self = this;
+  const ms = this.timeout() || 1e9;
 
   this.clearTimeout();
-  this.timer = setTimeout(function(){
+  this.timer = setTimeout(function() {
     self.callback(new Error('timeout of ' + ms + 'ms exceeded'));
     self.timedOut = true;
   }, ms);
@@ -146,8 +146,8 @@ Runnable.prototype.resetTimeout = function(){
  *
  * @api private
  */
-Runnable.prototype.globals = function(arr){
-  var self = this;
+Runnable.prototype.globals = function(arr) {
+  const self = this;
   this._allowedGlobals = arr;
 };
 
@@ -158,20 +158,20 @@ Runnable.prototype.globals = function(arr){
  * @api private
  */
 
-Runnable.prototype.run = function(fn){
-  var self = this
-    , ms = this.timeout()
-    , start = new Date
-    , ctx = this.ctx
-    , finished
-    , emitted;
+Runnable.prototype.run = function(fn) {
+  const self = this
+    ; const ms = this.timeout()
+    ; const start = new Date
+    ; const ctx = this.ctx
+    ; let finished
+    ; let emitted;
 
   if (ctx) ctx.runnable(this);
 
   // timeout
   if (this.async) {
     if (ms) {
-      this.timer = setTimeout(function(){
+      this.timer = setTimeout(function() {
         done(new Error('timeout of ' + ms + 'ms exceeded'));
         self.timedOut = true;
       }, ms);
@@ -201,8 +201,8 @@ Runnable.prototype.run = function(fn){
   // async
   if (this.async) {
     try {
-      this.fn.call(ctx, function(err){
-        if (err instanceof Error || toString.call(err) === "[object Error]") return done(err);
+      this.fn.call(ctx, function(err) {
+        if (err instanceof Error || toString.call(err) === '[object Error]') return done(err);
         if (null != err) return done(new Error('done() invoked with non-Error: ' + err));
         done();
       });

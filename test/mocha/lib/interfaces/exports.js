@@ -3,8 +3,8 @@
  * Module dependencies.
  */
 
-var Suite = require('../suite')
-  , Test = require('../test');
+const Suite = require('../suite')
+  ; const Test = require('../test');
 
 /**
  * TDD-style interface:
@@ -23,16 +23,16 @@ var Suite = require('../suite')
  *
  */
 
-module.exports = function(suite){
-  var suites = [suite];
+module.exports = function(suite) {
+  const suites = [suite];
 
   suite.on('require', visit);
 
   function visit(obj) {
     var suite;
-    for (var key in obj) {
+    for (const key in obj) {
       if ('function' == typeof obj[key]) {
-        var fn = obj[key];
+        const fn = obj[key];
         switch (key) {
           case 'before':
             suites[0].beforeAll(fn);
