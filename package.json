@@ -21,7 +21,7 @@
     "npm": ">=1.2.12"
   },
   "scripts": {
-    "test": "grunt"
+    "test": "node test/smoke.js"
   },
   "dependencies": {
     "colors": "~1.1.2",
