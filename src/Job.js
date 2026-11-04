@@ -148,6 +148,10 @@ module.exports = function (grunt) {
           var result = body['js tests'] && body['js tests'][0];
           var jobId = result.job_id;
 
+          if (result.status === 'test error') {
+            throw new Error("test throws unknown error");
+          }
+
           if (!body.completed || !reJobId.test(jobId)) {
             var retries = attempts - 1;
             if (attempts === 0) {
