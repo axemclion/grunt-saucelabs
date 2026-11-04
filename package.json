@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "colors": "~1.4.0",
+    "form-data": "^2.5.4",
     "lodash": "^4.17.11",
     "q": "~1.5.1",
     "requestretry": "~8.0.0",
